@@ -1,0 +1,102 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+      <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-arrow-repeat text-primary me-2"></i>My Medication Subscriptions</h3>
+      <p class="text-muted small mb-0">Manage chronic medication refill schedules and prescription approvals</p>
+    </div>
+    <a routerLink="/subscriptions/create" class="btn btn-pharma-primary">
+      <i class="bi bi-plus-lg me-1"></i> New Subscription
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading && subscriptions.length > 0" class="row g-4">
+    <div class="col-md-6 col-lg-4" *ngFor="let sub of subscriptions">
+      <div class="card card-pharma h-100 bg-white shadow-sm border-0 d-flex flex-column">
+        <div class="card-body p-4 d-flex flex-column">
+          <!-- Status Banner -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-bold text-muted small">Subscription #{{ sub.id }}</span>
+            <span [ngClass]="{
+              'badge-active': sub.status === 'ACTIVE',
+              'badge-pending': sub.status === 'PENDING',
+              'badge-rejected': sub.status === 'REJECTED' || sub.status === 'CANCELLED',
+              'badge-expired': sub.status === 'EXPIRED' || sub.status === 'PRESCRIPTION_EXPIRED'
+            }" class="px-3 py-1 rounded-pill">
+              {{ sub.status }}
+            </span>
+          </div>
+
+          <h4 class="fw-bold text-dark mb-1">{{ sub.medicineName }}</h4>
+          <p class="text-muted small mb-3">Brand: <strong class="text-dark">{{ sub.brandName }}</strong></p>
+
+          <div class="bg-light p-3 rounded-3 mb-3 border small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Composition:</span>
+              <strong class="text-dark">{{ sub.composition }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Strength:</span>
+              <strong class="text-dark">{{ sub.strength }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Dosage:</span>
+              <strong class="text-success">{{ sub.dosage }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Frequency:</span>
+              <span>{{ sub.frequency }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1 border-top pt-1 mt-1" *ngIf="sub.prescriptionFileName">
+              <span class="text-muted">File:</span>
+              <span class="text-dark text-truncate" style="max-width: 150px;" [title]="sub.prescriptionFileName">
+                <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ sub.prescriptionFileName }}
+              </span>
+            </div>
+            <div class="d-flex justify-content-between" *ngIf="sub.prescriptionExpiryDate">
+              <span class="text-muted">Prescription Expiry:</span>
+              <span class="text-danger fw-bold">{{ sub.prescriptionExpiryDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <!-- Schedule Box -->
+          <div *ngIf="sub.status === 'ACTIVE'" class="alert alert-success py-2 px-3 small mb-3">
+            <div class="d-flex justify-content-between">
+              <span><i class="bi bi-calendar-check me-1"></i> Next Refill:</span>
+              <strong>{{ sub.nextRefillDate | date:'mediumDate' }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span><i class="bi bi-truck me-1"></i> Next Dispatch:</span>
+              <span>{{ sub.nextDispatchDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="sub.status === 'PENDING'" class="alert alert-warning py-2 px-3 small mb-3">
+            <i class="bi bi-clock-history me-1"></i> Pending Pharmacist review & medicine assignment for your uploaded prescription.
+          </div>
+
+          <div *ngIf="sub.status === 'CLARIFICATION_REQUIRED'" class="alert alert-danger py-2 px-3 small mb-3">
+            <i class="bi bi-exclamation-circle me-1"></i> Clarification requested by Pharmacist.
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-auto pt-3 border-top d-flex gap-2">
+            <button *ngIf="sub.status === 'ACTIVE'" (click)="pause(sub.id)" class="btn btn-sm btn-outline-warning flex-fill">Pause</button>
+            <button *ngIf="sub.status === 'PAUSED'" (click)="resume(sub.id)" class="btn btn-sm btn-outline-success flex-fill">Resume</button>
+            <button *ngIf="sub.status === 'ACTIVE' || sub.status === 'PAUSED' || sub.status === 'PENDING'" (click)="cancel(sub.id)" class="btn btn-sm btn-outline-danger flex-fill">Cancel</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && subscriptions.length === 0" class="text-center py-5">
+    <i class="bi bi-inbox text-muted display-4 mb-3 d-block"></i>
+    <h5 class="text-muted">No medication subscriptions found.</h5>
+    <a routerLink="/subscriptions/create" class="btn btn-pharma-primary mt-2">Start a Subscription</a>
+  </div>
+</div>

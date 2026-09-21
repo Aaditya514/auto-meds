@@ -1,0 +1,162 @@
+<div class="container py-4">
+  <!-- Header Banner -->
+  <div class="p-4 mb-4 rounded-3 bg-brand-gradient text-white shadow-sm">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2 class="fw-bold mb-2">My Medication Portal</h2>
+        <p class="mb-0 text-light opacity-75">Automated chronic refills, composition matching & order tracking.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a routerLink="/subscriptions/create" class="btn btn-light text-primary fw-bold px-4 py-2 rounded-pill shadow-sm">
+          <i class="bi bi-plus-circle me-1"></i> Start New Subscription
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Summary Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card card-pharma p-3 bg-white border-start border-4 border-success">
+        <div class="d-flex align-items-center">
+          <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle me-3">
+            <i class="bi bi-capsule-pill fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small fw-semibold">Active Subscriptions</span>
+            <h3 class="fw-bold mb-0">{{ activeSubscriptions.length }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-pharma p-3 bg-white border-start border-4 border-warning">
+        <div class="d-flex align-items-center">
+          <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-circle me-3">
+            <i class="bi bi-calendar-event fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small fw-semibold">Upcoming Refills</span>
+            <h3 class="fw-bold mb-0">{{ upcomingRefills.length }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-pharma p-3 bg-white border-start border-4 border-primary">
+        <div class="d-flex align-items-center">
+          <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-circle me-3">
+            <i class="bi bi-bag-check fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small fw-semibold">Recent Orders</span>
+            <h3 class="fw-bold mb-0">{{ recentOrders.length }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card card-pharma p-3 bg-white border-start border-4 border-info">
+        <div class="d-flex align-items-center">
+          <div class="p-3 bg-info bg-opacity-10 text-info rounded-circle me-3">
+            <i class="bi bi-bell fs-3"></i>
+          </div>
+          <div>
+            <span class="text-muted small fw-semibold">Notifications</span>
+            <h3 class="fw-bold mb-0">{{ notifications.length }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Medications Section -->
+  <div class="card card-pharma p-4 mb-4 bg-white shadow-sm border-0">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+      <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-heart-pulse text-danger me-2"></i>MY ACTIVE MEDICATIONS</h4>
+      <a routerLink="/subscriptions" class="text-decoration-none fw-semibold">View All ({{ subscriptions.length }})</a>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-4">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Active Subscriptions List -->
+    <div *ngIf="!loading && activeSubscriptions.length > 0">
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-4" *ngFor="let sub of activeSubscriptions">
+          <div class="card h-100 border-0 bg-light p-3 shadow-sm rounded-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="fw-bold text-primary mb-0">{{ sub.medicineName }}</h5>
+              <span class="badge badge-active">ACTIVE</span>
+            </div>
+            <p class="text-muted small mb-2">Brand: <strong class="text-dark">{{ sub.brandName }}</strong></p>
+            
+            <div class="bg-white p-2 rounded mb-3 border small">
+              <div class="d-flex justify-content-between">
+                <span>Composition:</span>
+                <strong>{{ sub.composition }}</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Strength:</span>
+                <strong>{{ sub.strength }}</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Dosage:</span>
+                <span class="text-success fw-bold">{{ sub.dosage }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Quantity:</span>
+                <span>{{ sub.quantity }} units</span>
+              </div>
+            </div>
+
+            <div class="mb-3 small">
+              <div class="d-flex align-items-center text-primary mb-1">
+                <i class="bi bi-arrow-repeat me-1"></i> Next Refill:
+                <strong class="ms-auto">{{ sub.nextRefillDate | date:'mediumDate' }}</strong>
+              </div>
+              <div class="d-flex align-items-center text-muted">
+                <i class="bi bi-truck me-1"></i> Next Dispatch:
+                <span class="ms-auto">{{ sub.nextDispatchDate | date:'mediumDate' }}</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-auto pt-2 border-top">
+              <a [routerLink]="['/subscriptions', sub.id]" class="btn btn-sm btn-outline-primary flex-fill">View Details</a>
+              <button (click)="pauseSubscription(sub.id)" class="btn btn-sm btn-outline-warning">Pause</button>
+              <button (click)="cancelSubscription(sub.id)" class="btn btn-sm btn-outline-danger">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && activeSubscriptions.length === 0" class="text-center py-5">
+      <i class="bi bi-inbox text-muted display-4 mb-3 d-block"></i>
+      <h5 class="text-muted fw-semibold">No active medication subscriptions.</h5>
+      <p class="text-muted small">Subscribe once to automate your monthly chronic medication deliveries.</p>
+      <a routerLink="/subscriptions/create" class="btn btn-pharma-primary px-4 mt-2">Start a Subscription</a>
+    </div>
+  </div>
+
+  <!-- Recent Notifications -->
+  <div class="card card-pharma p-4 bg-white shadow-sm border-0" *ngIf="notifications.length > 0">
+    <h5 class="fw-bold mb-3"><i class="bi bi-bell-fill text-warning me-2"></i>Recent Notifications</h5>
+    <div class="list-group list-group-flush">
+      <div *ngFor="let notif of notifications" class="list-group-item px-0 border-bottom py-2">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="fw-bold mb-1">{{ notif.title }}</h6>
+            <p class="mb-0 text-muted small">{{ notif.message }}</p>
+          </div>
+          <span class="badge bg-light text-dark small">{{ notif.createdAt | date:'shortTime' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

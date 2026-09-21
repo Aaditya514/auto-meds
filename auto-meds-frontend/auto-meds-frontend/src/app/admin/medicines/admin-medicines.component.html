@@ -1,0 +1,140 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+      <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-capsule text-primary me-2"></i>Medicine Management</h3>
+      <p class="text-muted small mb-0">Add, edit, deactivate & manage active pharmaceutical formulations</p>
+    </div>
+    <button (click)="openAddModal()" class="btn btn-pharma-primary">
+      <i class="bi bi-plus-lg me-1"></i> Add New Medicine
+    </button>
+  </div>
+
+  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading && medicines.length > 0" class="card card-pharma p-3 bg-white shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Medicine Name</th>
+            <th>Brand</th>
+            <th>Composition</th>
+            <th>Strength</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let med of medicines">
+            <td><strong>#{{ med.id }}</strong></td>
+            <td class="fw-bold text-dark">{{ med.medicineName }}</td>
+            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ med.brandName }}</span></td>
+            <td>{{ med.composition }}</td>
+            <td><strong>{{ med.strength }}</strong></td>
+            <td class="fw-bold text-primary">₹{{ med.price }}</td>
+            <td>
+              <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'">
+                {{ med.stockQuantity }}
+              </span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <button (click)="openEditModal(med)" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i> Edit</button>
+                <button (click)="deactivate(med.id)" class="btn btn-outline-danger"><i class="bi bi-slash-circle me-1"></i> Deactivate</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MEDICINE MODAL -->
+<div *ngIf="showModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-primary text-white border-0 py-3">
+        <h5 class="modal-title fw-bold">
+          {{ editingMedicineId ? 'Edit Medicine #' + editingMedicineId : 'Add New Medicine' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+      </div>
+
+      <form [formGroup]="medicineForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Medicine Name *</label>
+              <input type="text" formControlName="medicineName" class="form-control" placeholder="Metformin 500mg">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Brand Name *</label>
+              <input type="text" formControlName="brandName" class="form-control" placeholder="ABC Pharma">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Composition (Active Ingredient) *</label>
+              <input type="text" formControlName="composition" class="form-control" placeholder="Metformin">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Strength *</label>
+              <input type="text" formControlName="strength" class="form-control" placeholder="500mg">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Price (₹) *</label>
+              <input type="number" step="0.01" formControlName="price" class="form-control" placeholder="100.00">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Stock Quantity *</label>
+              <input type="number" formControlName="stockQuantity" class="form-control" placeholder="50">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Category</label>
+              <input type="text" formControlName="category" class="form-control" placeholder="Diabetes">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Manufacturer</label>
+              <input type="text" formControlName="manufacturer" class="form-control" placeholder="ABC Pharmaceuticals">
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center mt-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" formControlName="requiresPrescription" id="reqRx">
+                <label class="form-check-label fw-semibold ms-2" for="reqRx">Requires Prescription</label>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Description</label>
+              <textarea formControlName="description" class="form-control" rows="2" placeholder="Medicine description and medical usage notes..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button [disabled]="submitting || medicineForm.invalid" class="btn btn-pharma-primary px-4">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+            Save Medicine
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>

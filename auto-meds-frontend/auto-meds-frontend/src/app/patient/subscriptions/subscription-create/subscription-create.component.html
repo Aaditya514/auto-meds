@@ -1,0 +1,56 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card card-pharma p-4 bg-white shadow-sm border-0">
+        <div class="text-center mb-4">
+          <i class="bi bi-file-earmark-medical text-primary display-4"></i>
+          <h3 class="fw-bold mt-2 brand-gradient">UPLOAD PRESCRIPTION FOR SUBSCRIPTION</h3>
+          <p class="text-muted">Upload your doctor's prescription. Our certified pharmacist will review your prescription document, match the required chronic medications, and activate your monthly auto-refill subscription.</p>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+        </div>
+
+        <form [formGroup]="subscriptionForm" (ngSubmit)="onSubmit()">
+          <!-- Prescription File Upload -->
+          <div class="card bg-light p-4 border-0 mb-4 rounded-3 text-center">
+            <label class="form-label fw-bold text-dark fs-5 mb-2">Upload Doctor Prescription Document *</label>
+            <p class="text-muted small mb-3">Upload a clear photo or PDF scan of your doctor's official prescription.</p>
+            
+            <input type="file" (change)="onFileSelected($event)" class="form-control form-control-lg w-75 mx-auto" accept=".pdf,.jpg,.jpeg,.png">
+            <div *ngIf="fileError" class="text-danger small mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ fileError }}</div>
+            <span class="text-muted small d-block mt-2">Accepted Formats: PDF, JPG, JPEG, PNG (Max 10MB)</span>
+          </div>
+
+          <!-- Doctor Visit Date -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Doctor Visit Date *</label>
+            <input type="date" formControlName="doctorVisitDate" class="form-control">
+            <span class="text-muted small">Select the date you visited the doctor for this prescription.</span>
+          </div>
+
+          <!-- Pharmacist Review Note -->
+          <div class="alert alert-info border-0 rounded-3 mb-4">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-shield-check text-info fs-3 me-3"></i>
+              <div>
+                <strong class="d-block text-dark">Pharmacist Prescription Audit</strong>
+                <span class="small text-muted">Once submitted, our pharmacist will verify your prescription details, assign the exact prescribed medication from inventory, and send you approval updates.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-3">
+            <a routerLink="/subscriptions" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+            <button [disabled]="submitting || subscriptionForm.invalid" class="btn btn-pharma-primary flex-fill py-2 fs-5">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+              Submit Prescription to Pharmacist
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card card-pharma p-4 shadow-sm border-0">
+        <div class="text-center mb-4">
+          <i class="bi bi-prescription2 text-primary display-4"></i>
+          <h2 class="fw-bold mt-2 brand-gradient">Welcome Back</h2>
+          <p class="text-muted">Sign in to manage your medications & subscriptions</p>
+        </div>
+
+
+
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white text-muted"><i class="bi bi-envelope"></i></span>
+              <input type="email" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': submitted && f['email'].errors }" placeholder="name@example.com">
+            </div>
+            <div *ngIf="submitted && f['email'].errors" class="invalid-feedback d-block">
+              <span *ngIf="f['email'].errors['required']">Email is required</span>
+              <span *ngIf="f['email'].errors['email']">Invalid email format</span>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white text-muted"><i class="bi bi-lock"></i></span>
+              <input type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': submitted && f['password'].errors }" placeholder="••••••••">
+            </div>
+            <div *ngIf="submitted && f['password'].errors" class="invalid-feedback d-block">
+              Password is required
+            </div>
+          </div>
+
+          <button [disabled]="loading" class="btn btn-pharma-primary w-100 py-2 fs-5">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            Sign In
+          </button>
+        </form>
+
+        <div class="text-center mt-4">
+          <p class="text-muted mb-2">Don't have an account? <a routerLink="/register" class="fw-bold text-decoration-none">Register as Patient</a></p>
+          <p class="text-muted small mb-0">Staff / Admin? <a routerLink="/admin/login" class="text-secondary text-decoration-none fw-semibold"><i class="bi bi-shield-lock me-1"></i>Admin Portal</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
