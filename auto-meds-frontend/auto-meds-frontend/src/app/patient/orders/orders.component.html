@@ -1,0 +1,132 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-box-seam text-primary me-2"></i>My Orders & Refill Deliveries</h3>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading && orders.length > 0" class="row g-4">
+    <div class="col-12" *ngFor="let order of orders">
+      <div class="card card-pharma p-4 bg-white shadow-sm border-0">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <span class="badge" [ngClass]="order.orderType === 'SUBSCRIPTION_REFILL' ? 'bg-teal text-success bg-opacity-10 border border-success' : 'bg-primary bg-opacity-10 text-primary border border-primary'">
+              {{ order.orderType === 'SUBSCRIPTION_REFILL' ? 'AUTOMATIC REFILL' : 'ONE-TIME PURCHASE' }}
+            </span>
+            <h5 class="fw-bold mt-2 mb-0">Order #{{ order.id }}</h5>
+            <span class="text-muted small">{{ order.orderDate | date:'medium' }}</span>
+          </div>
+
+          <div class="col-md-3 mt-2 mt-md-0">
+            <span class="text-muted small d-block">Total Amount</span>
+            <strong class="fs-4 text-primary">₹{{ order.totalAmount }}</strong>
+            <span class="d-block small text-muted">Payment: {{ order.paymentMethod }}</span>
+          </div>
+
+          <div class="col-md-3 mt-2 mt-md-0">
+            <span class="text-muted small d-block">Delivery Status</span>
+            <span class="badge" [ngClass]="{
+              'badge-active': order.orderStatus === 'DELIVERED',
+              'badge-pending': order.orderStatus === 'PENDING' || order.orderStatus === 'APPROVED' || order.orderStatus === 'PACKED',
+              'badge-approved': order.orderStatus === 'DISPATCHED' || order.orderStatus === 'OUT_FOR_DELIVERY',
+              'badge-rejected': order.orderStatus === 'CANCELLED' || order.orderStatus === 'REJECTED'
+            }">
+              {{ order.orderStatus }}
+            </span>
+            <span class="d-block small text-muted mt-1" *ngIf="order.expectedDeliveryDate">Est. Delivery: {{ order.expectedDeliveryDate | date:'mediumDate' }}</span>
+          </div>
+
+          <div class="col-md-3 mt-3 mt-md-0 text-md-end">
+            <button (click)="viewOrderDetails(order)" class="btn btn-outline-primary fw-semibold px-4">
+              View Order Timeline <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && orders.length === 0" class="text-center py-5">
+    <i class="bi bi-box-seam text-muted display-4 mb-3 d-block"></i>
+    <h5 class="text-muted">No orders found.</h5>
+    <a routerLink="/medicines" class="btn btn-pharma-primary mt-2">Start Shopping</a>
+  </div>
+</div>
+
+<!-- ORDER DETAILS & TIMELINE MODAL -->
+<div *ngIf="selectedOrder" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-primary text-white border-0 py-3">
+        <h5 class="modal-title fw-bold">
+          Order #{{ selectedOrder.id }} Timeline & Items
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Order Status Progress Bar -->
+        <h6 class="fw-bold mb-3">Delivery Timeline Progress</h6>
+        <div class="d-flex justify-content-between text-center position-relative mb-4">
+          <div class="flex-fill">
+            <div class="p-2 rounded-circle d-inline-block bg-primary text-white mb-1"><i class="bi bi-cart-check"></i></div>
+            <div class="small fw-bold">Placed</div>
+          </div>
+          <div class="flex-fill">
+            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="['APPROVED','PACKED','DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'bg-primary text-white' : 'bg-light text-muted'"><i class="bi bi-check2-circle"></i></div>
+            <div class="small">Approved</div>
+          </div>
+          <div class="flex-fill">
+            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="['PACKED','DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'bg-primary text-white' : 'bg-light text-muted'"><i class="bi bi-box"></i></div>
+            <div class="small">Packed</div>
+          </div>
+          <div class="flex-fill">
+            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="['DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'bg-primary text-white' : 'bg-light text-muted'"><i class="bi bi-truck"></i></div>
+            <div class="small">Dispatched</div>
+          </div>
+          <div class="flex-fill">
+            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="selectedOrder.orderStatus === 'DELIVERED' ? 'bg-success text-white' : 'bg-light text-muted'"><i class="bi bi-house-door"></i></div>
+            <div class="small fw-bold">Delivered</div>
+          </div>
+        </div>
+
+        <!-- Ordered Items Table -->
+        <h6 class="fw-bold mb-2">Ordered Medicines</h6>
+        <div class="table-responsive border rounded-3 mb-3">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Medicine</th>
+                <th>Brand</th>
+                <th>Composition & Strength</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedOrder.items">
+                <td class="fw-bold text-dark">{{ item.medicineName }}</td>
+                <td>{{ item.brandName }}</td>
+                <td class="small text-muted">{{ item.composition }} - {{ item.strength }}</td>
+                <td>₹{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td class="fw-bold">₹{{ item.subtotal }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="alert alert-light border small mb-0">
+          <strong>Delivery Address:</strong> {{ selectedOrder.deliveryAddress }}
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 bg-light">
+        <button type="button" class="btn btn-secondary px-4" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

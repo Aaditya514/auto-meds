@@ -1,0 +1,550 @@
+<div class="container-fluid py-4 px-lg-5">
+  <!-- Header & Toolbar -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+    <div>
+      <h3 class="fw-bold mb-1 text-dark">
+        <i class="bi bi-file-earmark-medical text-primary me-2"></i>Subscription & Prescription Requests
+      </h3>
+      <p class="text-muted small mb-0">
+        Audit patient prescription documents, search & assign multiple chronic medicines, and approve auto-refill subscriptions seamlessly.
+      </p>
+    </div>
+    
+    <!-- Controls: Search & View Mode -->
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="input-group input-group-sm" style="min-width: 250px;">
+        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+        <input type="text" 
+               class="form-control border-start-0 ps-0" 
+               placeholder="Search patient, ID, dosage..." 
+               [(ngModel)]="globalSearchQuery">
+        <button *ngIf="globalSearchQuery" (click)="globalSearchQuery = ''" class="btn btn-outline-secondary" type="button">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+
+      <div class="btn-group btn-group-sm shadow-sm" role="group">
+        <button type="button" 
+                class="btn" 
+                [class.btn-primary]="viewMode === 'cards'" 
+                [class.btn-outline-primary]="viewMode !== 'cards'"
+                (click)="viewMode = 'cards'"
+                title="Responsive Cards View">
+          <i class="bi bi-grid-fill me-1"></i> Cards
+        </button>
+        <button type="button" 
+                class="btn" 
+                [class.btn-primary]="viewMode === 'table'" 
+                [class.btn-outline-primary]="viewMode !== 'table'"
+                (click)="viewMode = 'table'"
+                title="Compact Table View">
+          <i class="bi bi-table me-1"></i> Table
+        </button>
+      </div>
+
+      <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
+        <i class="bi bi-clock-history me-1"></i>{{ filteredRequests.length }} Pending
+      </span>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm border-0">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+    <button type="button" class="btn-close" (click)="message = ''"></button>
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm border-0">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <p class="text-muted mt-2 fw-semibold">Loading pending prescription requests...</p>
+  </div>
+
+  <!-- RESPONSIVE CARDS VIEW (DEFAULT) -->
+  <div *ngIf="viewMode === 'cards' && !loading && filteredRequests.length > 0" class="row g-4">
+    <div *ngFor="let req of filteredRequests" class="col-12">
+      <div class="card card-request-audit shadow-sm">
+        <!-- Card Header -->
+        <div class="card-header-bar d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-dark px-3 py-2 rounded-3 fs-6 fw-bold">#{{ req.id }}</span>
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">{{ req.patientName || 'Patient Request' }}</h5>
+              <span class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ req.patientEmail || 'No email' }}</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 rounded-pill fw-semibold">
+              <i class="bi bi-hourglass-split me-1"></i>Pending Audit
+            </span>
+            <button (click)="openAuditModal(req)" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-xs">
+              <i class="bi bi-arrows-fullscreen me-1"></i> Full Auditor Modal
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <!-- Left Side: Prescription Document & Patient Dosage -->
+            <div class="col-lg-4 col-md-5">
+              <div class="p-3 bg-light rounded-3 border mb-3">
+                <h6 class="fw-bold text-secondary mb-2 border-bottom pb-2">
+                  <i class="bi bi-capsule me-1 text-primary"></i> Requested Dosage Info
+                </h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="text-muted small">Dosage:</span>
+                  <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2 py-1">{{ req.dosage }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="text-muted small">Frequency:</span>
+                  <span class="fw-semibold text-dark small">{{ req.frequency }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-muted small">Refill Qty:</span>
+                  <span class="fw-bold text-primary small">{{ req.quantity }} units / cycle</span>
+                </div>
+              </div>
+
+              <!-- Prescription File Box -->
+              <div class="prescription-preview-box text-center">
+                <i class="bi bi-file-earmark-pdf-fill text-primary display-5 mb-2 d-block"></i>
+                <h6 class="fw-bold text-dark mb-1">Patient Prescription</h6>
+                <p class="text-muted small mb-3" style="font-size: 12px;">
+                  Uploaded medical document for verification
+                </p>
+                <button *ngIf="req.prescriptionId" (click)="viewPrescription(req.prescriptionId)" class="btn btn-sm btn-primary w-100 fw-semibold rounded-2 shadow-sm">
+                  <i class="bi bi-box-arrow-up-right me-1"></i> View Prescription Document
+                </button>
+                <span *ngIf="!req.prescriptionId" class="badge bg-secondary bg-opacity-10 text-secondary w-100 py-2">
+                  No Prescription File Attached
+                </span>
+              </div>
+            </div>
+
+            <!-- Right Side: Responsive Multi-Select Medicine Assignment Panel -->
+            <div class="col-lg-8 col-md-7">
+              <div class="med-selector-box h-100 d-flex flex-direction-column justify-content-between">
+                <div>
+                  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2">
+                    <label class="fw-bold text-dark small mb-0">
+                      <i class="bi bi-check2-square text-primary me-1"></i> Select Prescribed Medicines (Multi-Select Audit) *
+                    </label>
+                    <div class="d-flex gap-1">
+                      <button (click)="selectAllFiltered(req)" class="btn btn-xs btn-link text-decoration-none text-primary p-0 me-2" style="font-size: 12px;">
+                        <i class="bi bi-check-all me-1"></i>Select Filtered
+                      </button>
+                      <button *ngIf="req.selectedMedicineIds && req.selectedMedicineIds.length > 0" (click)="clearAllSelected(req)" class="btn btn-xs btn-link text-decoration-none text-danger p-0" style="font-size: 12px;">
+                        <i class="bi bi-x-circle me-1"></i>Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Selected Medicines Form Fields -->
+                  <div class="mb-3 border rounded-3 p-3 bg-light shadow-xs" *ngIf="req.selectedMedicineIds && req.selectedMedicineIds.length > 0">
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                      <i class="bi bi-gear-fill text-primary me-1"></i>Configure Assigned Medicines
+                    </h6>
+                    <div class="row g-2 mb-3 border-bottom pb-3" *ngFor="let mId of req.selectedMedicineIds">
+                      <ng-container *ngIf="getMedicineById(mId) as m">
+                        <div class="col-12 d-flex justify-content-between align-items-center mb-1">
+                          <strong class="text-primary small">
+                            <i class="bi bi-capsule me-1"></i>{{ m.medicineName }} 
+                            <span class="text-muted" style="font-size: 11px;">({{ m.brandName }})</span>
+                          </strong>
+                          <button type="button" class="btn btn-xs btn-outline-danger border-0 p-0" (click)="removeMedicine(req, mId)" title="Remove">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                        
+                        <!-- Dosage -->
+                        <div class="col-md-4">
+                          <label class="form-label mb-1" style="font-size: 11px; font-weight: 600;">Dosage *</label>
+                          <input type="text" class="form-control form-control-sm" placeholder="e.g. 1 tablet/day" [(ngModel)]="req.medicineDetails![mId].dosage">
+                        </div>
+                        
+                        <!-- Frequency -->
+                        <div class="col-md-4">
+                          <label class="form-label mb-1" style="font-size: 11px; font-weight: 600;">Frequency *</label>
+                          <select class="form-select form-select-sm" [(ngModel)]="req.medicineDetails![mId].frequency">
+                            <option value="Once Daily">Once Daily</option>
+                            <option value="Twice Daily">Twice Daily</option>
+                            <option value="Every 12 Hours">Every 12 Hours</option>
+                            <option value="As Directed by Physician">As Directed by Physician</option>
+                          </select>
+                        </div>
+                        
+                        <!-- Quantity -->
+                        <div class="col-md-4">
+                          <label class="form-label mb-1" style="font-size: 11px; font-weight: 600;">Quantity *</label>
+                          <input type="number" class="form-control form-control-sm" placeholder="30" [(ngModel)]="req.medicineDetails![mId].quantity">
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+
+                  <!-- Empty assigned fallback -->
+                  <div *ngIf="!req.selectedMedicineIds || req.selectedMedicineIds.length === 0" class="alert alert-light border text-muted py-2 px-3 small mb-3 italic">
+                    <i class="bi bi-info-circle me-1 text-primary"></i>No medicines assigned yet. Search and check items below.
+                  </div>
+
+                  <!-- Medicine Live Search Bar -->
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" 
+                           class="form-control border-start-0 ps-0" 
+                           placeholder="Filter medicines by name, brand, composition..." 
+                           [(ngModel)]="req.searchTerm">
+                    <button *ngIf="req.searchTerm" (click)="req.searchTerm = ''" class="btn btn-outline-secondary" type="button">
+                      Clear Filter
+                    </button>
+                  </div>
+
+                  <!-- Checkable Medicines Scrollable Grid -->
+                  <div class="med-scroll-grid">
+                    <div class="row row-cols-1 row-cols-sm-2 g-2">
+                      <div *ngFor="let m of getFilteredMedicines(req)" class="col">
+                        <div class="med-item-card d-flex align-items-start gap-2" 
+                             [class.is-selected]="isMedicineSelected(req, m.id)" 
+                             (click)="toggleMedicineSelection(req, m.id)">
+                          <input class="form-check-input mt-1 flex-shrink-0" 
+                                 type="checkbox" 
+                                 [id]="'cardMedCheck_' + req.id + '_' + m.id" 
+                                 [checked]="isMedicineSelected(req, m.id)" 
+                                 (click)="$event.stopPropagation()"
+                                 (change)="toggleMedicineSelection(req, m.id)">
+                          <div class="w-100 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-start gap-1">
+                              <strong class="text-dark text-truncate small" [title]="m.medicineName">{{ m.medicineName }}</strong>
+                              <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25" style="font-size: 10px;">₹{{ m.price }}</span>
+                            </div>
+                            <div class="text-muted" style="font-size: 11px;">
+                              <span class="fw-semibold">{{ m.brandName }}</span> • {{ m.strength }}
+                            </div>
+                            <div *ngIf="m.composition" class="text-muted text-truncate" style="font-size: 10px;">
+                              {{ m.composition }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div *ngIf="getFilteredMedicines(req).length === 0" class="col-12 text-center py-3 text-muted small">
+                        No medicines match "{{ req.searchTerm }}".
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Footer Actions -->
+        <div class="card-footer bg-light px-4 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 border-top">
+          <div class="text-muted small">
+            <i class="bi bi-info-circle text-primary me-1"></i>
+            Assigned: <strong class="text-dark">{{ req.selectedMedicineIds ? req.selectedMedicineIds.length : 0 }} medicine(s)</strong>
+          </div>
+          <div class="d-flex flex-wrap gap-2 w-100 w-sm-auto justify-content-end">
+            <button type="button" 
+                    (click)="openClarificationDialog(req.id)" 
+                    class="btn btn-sm btn-outline-warning fw-semibold px-3 shadow-xs">
+              <i class="bi bi-question-circle me-1"></i> Request Clarification
+            </button>
+            <button type="button" 
+                    (click)="openRejectDialog(req.id)" 
+                    class="btn btn-sm btn-outline-danger fw-semibold px-3 shadow-xs">
+              <i class="bi bi-x-lg me-1"></i> Reject Request
+            </button>
+            <button type="button" 
+                    (click)="approve(req)" 
+                    class="btn btn-sm btn-success fw-bold px-4 shadow-sm" 
+                    [disabled]="!req.selectedMedicineIds || req.selectedMedicineIds.length === 0">
+              <i class="bi bi-check-circle-fill me-1"></i> APPROVE ({{ req.selectedMedicineIds ? req.selectedMedicineIds.length : 0 }})
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPACT TABLE VIEW (ALTERNATIVE MODE) -->
+  <div *ngIf="viewMode === 'table' && !loading && filteredRequests.length > 0" class="card p-3 bg-white shadow-sm border-0 rounded-4">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Request #</th>
+            <th>Patient Details</th>
+            <th>Prescription</th>
+            <th>Dosage</th>
+            <th>Assigned Medicines (Multi-Select)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of filteredRequests">
+            <td><strong>#{{ req.id }}</strong></td>
+            <td>
+              <div class="fw-bold text-dark">{{ req.patientName }}</div>
+              <span class="text-muted small">{{ req.patientEmail }}</span>
+            </td>
+            <td>
+              <button *ngIf="req.prescriptionId" (click)="viewPrescription(req.prescriptionId)" class="btn btn-sm btn-outline-info">
+                <i class="bi bi-file-earmark-pdf me-1"></i> View File
+              </button>
+              <span *ngIf="!req.prescriptionId" class="text-muted small">No file</span>
+            </td>
+            <td>
+              <div><span class="badge bg-success bg-opacity-10 text-success fw-bold me-1">{{ req.dosage }}</span> {{ req.frequency }}</div>
+              <span class="small text-muted">{{ req.quantity }} units</span>
+            </td>
+            <td style="min-width: 320px;">
+              <div class="p-2 border rounded-3 bg-light">
+                <div class="input-group input-group-sm mb-2">
+                  <input type="text" class="form-control" placeholder="Search med..." [(ngModel)]="req.searchTerm">
+                  <button (click)="selectAllFiltered(req)" class="btn btn-outline-primary" type="button" title="Select Filtered">All</button>
+                </div>
+                <div class="med-chips-container mb-2 d-flex flex-wrap gap-1" style="max-height: 60px; overflow-y: auto;">
+                  <span *ngFor="let mId of req.selectedMedicineIds" class="badge bg-primary bg-opacity-10 text-primary small">
+                    <ng-container *ngIf="getMedicineById(mId) as m">{{ m.medicineName }}</ng-container>
+                    <i (click)="removeMedicine(req, mId)" class="bi bi-x ms-1 cursor-pointer"></i>
+                  </span>
+                </div>
+                <div class="med-scroll-grid" style="max-height: 140px;">
+                  <div *ngFor="let m of getFilteredMedicines(req)" class="form-check py-1 px-2 border-bottom">
+                    <input class="form-check-input" type="checkbox" [id]="'tblCheck_' + req.id + '_' + m.id" [checked]="isMedicineSelected(req, m.id)" (change)="toggleMedicineSelection(req, m.id)">
+                    <label class="form-check-label small" [for]="'tblCheck_' + req.id + '_' + m.id">
+                      <strong>{{ m.medicineName }}</strong> <span class="text-muted">({{ m.brandName }})</span> [₹{{ m.price }}]
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1">
+                <button type="button" (click)="approve(req); $event.stopPropagation()" class="btn btn-sm btn-success fw-bold">
+                  APPROVE ({{ req.selectedMedicineIds.length }})
+                </button>
+                <button type="button" (click)="openClarificationDialog(req.id); $event.stopPropagation()" class="btn btn-sm btn-outline-warning">Clarify</button>
+                <button type="button" (click)="openRejectDialog(req.id); $event.stopPropagation()" class="btn btn-sm btn-outline-danger">Reject</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!loading && filteredRequests.length === 0" class="text-center py-5 bg-white rounded-4 shadow-sm border p-4">
+    <i class="bi bi-check2-all text-success display-3 mb-3 d-block"></i>
+    <h5 class="fw-bold text-dark">No pending subscription requests found.</h5>
+    <p class="text-muted small">All patient prescription subscription requests have been audited and processed.</p>
+  </div>
+</div>
+
+<!-- SIDE-BY-SIDE AUDITOR MODAL OVERLAY -->
+<div *ngIf="auditModalOpen && activeModalReq" class="auditor-modal-backdrop" (click)="closeAuditModal()">
+  <div class="auditor-modal-dialog" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="auditor-modal-header">
+      <div>
+        <h5 class="fw-bold mb-0 text-white">
+          <i class="bi bi-shield-check text-primary me-2"></i>Side-by-Side Prescription Auditor
+        </h5>
+        <span class="text-light opacity-75 small">
+          Request #{{ activeModalReq.id }} — {{ activeModalReq.patientName }} ({{ activeModalReq.patientEmail }})
+        </span>
+      </div>
+      <button type="button" class="btn-close btn-close-white" (click)="closeAuditModal()"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="auditor-modal-body">
+      <div class="row g-4">
+        <!-- Left Column: Prescription Document Preview -->
+        <div class="col-lg-5 border-end">
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <h6 class="fw-bold text-dark mb-2">Prescription Request Summary</h6>
+            <div class="mb-2"><span class="text-muted small">Patient:</span> <strong>{{ activeModalReq.patientName }}</strong></div>
+            <div class="mb-2"><span class="text-muted small">Email:</span> <span>{{ activeModalReq.patientEmail }}</span></div>
+            <div class="mb-2"><span class="text-muted small">Dosage:</span> <span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ activeModalReq.dosage }}</span></div>
+            <div class="mb-2"><span class="text-muted small">Frequency:</span> <strong>{{ activeModalReq.frequency }}</strong></div>
+            <div><span class="text-muted small">Quantity:</span> <strong>{{ activeModalReq.quantity }} units / refill</strong></div>
+          </div>
+
+          <div class="p-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 text-center">
+            <i class="bi bi-file-earmark-pdf text-primary display-4 mb-2 d-block"></i>
+            <h6 class="fw-bold text-dark">Prescription Document</h6>
+            <p class="text-muted small mb-3">Verify patient uploaded doctor prescription document</p>
+            <button *ngIf="activeModalReq.prescriptionId" (click)="viewPrescription(activeModalReq.prescriptionId)" class="btn btn-primary w-100 fw-bold">
+              <i class="bi bi-box-arrow-up-right me-2"></i>Open Full Document PDF
+            </button>
+            <span *ngIf="!activeModalReq.prescriptionId" class="text-muted small">No file uploaded</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Medicine Checklist Auditor -->
+        <div class="col-lg-7">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-capsule text-primary me-1"></i> Select Prescribed Inventory Medicines</h6>
+            <button (click)="selectAllFiltered(activeModalReq, modalSearchTerm)" class="btn btn-sm btn-link text-primary text-decoration-none">
+              Select All Filtered
+            </button>
+          </div>
+
+          <!-- Selected Tags -->
+          <div class="med-chips-container mb-3 d-flex flex-wrap gap-2">
+            <span *ngIf="!activeModalReq.selectedMedicineIds || activeModalReq.selectedMedicineIds.length === 0" class="text-muted small italic">
+              No medicines selected yet.
+            </span>
+            <ng-container *ngFor="let mId of activeModalReq.selectedMedicineIds">
+              <span *ngIf="getMedicineById(mId) as m" class="med-chip">
+                <span>{{ m.medicineName }}</span>
+                <i (click)="removeMedicine(activeModalReq, mId)" class="bi bi-x-lg btn-close-chip"></i>
+              </span>
+            </ng-container>
+          </div>
+
+          <!-- Search filter -->
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search medicines catalog..." [(ngModel)]="modalSearchTerm">
+          </div>
+
+          <!-- Checkbox List -->
+          <div class="med-scroll-grid" style="max-height: 300px;">
+            <div class="row row-cols-1 row-cols-sm-2 g-2">
+              <div *ngFor="let m of getFilteredMedicines(activeModalReq, modalSearchTerm)" class="col">
+                <div class="med-item-card d-flex align-items-start gap-2" 
+                     [class.is-selected]="isMedicineSelected(activeModalReq, m.id)" 
+                     (click)="toggleMedicineSelection(activeModalReq, m.id)">
+                  <input class="form-check-input mt-1 flex-shrink-0" 
+                         type="checkbox" 
+                         [checked]="isMedicineSelected(activeModalReq, m.id)" 
+                         (click)="$event.stopPropagation()"
+                         (change)="toggleMedicineSelection(activeModalReq, m.id)">
+                  <div>
+                    <strong class="text-dark small d-block">{{ m.medicineName }}</strong>
+                    <span class="text-muted d-block" style="font-size: 11px;">{{ m.brandName }} • {{ m.strength }}</span>
+                    <span class="badge bg-success bg-opacity-10 text-success" style="font-size: 10px;">₹{{ m.price }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="auditor-modal-footer">
+      <button type="button" (click)="closeAuditModal()" class="btn btn-outline-secondary fw-semibold">Cancel</button>
+      <button type="button" (click)="openClarificationDialog(activeModalReq.id); $event.stopPropagation()" class="btn btn-outline-warning fw-semibold">Request Clarification</button>
+      <button type="button" (click)="openRejectDialog(activeModalReq.id); $event.stopPropagation()" class="btn btn-outline-danger fw-semibold">Reject</button>
+      <button type="button" (click)="approve(activeModalReq)" 
+              class="btn btn-success fw-bold px-4 shadow-sm" 
+              [disabled]="!activeModalReq.selectedMedicineIds || activeModalReq.selectedMedicineIds.length === 0">
+        <i class="bi bi-check-circle-fill me-1"></i> Approve Request ({{ activeModalReq.selectedMedicineIds.length }})
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HANDSOME CENTERED ACTION DIALOG (CLARIFICATION & REJECT) -->
+<div *ngIf="activeDialogType" class="action-modal-backdrop" (click)="closeActionDialog()">
+  <div class="action-modal-card" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="action-modal-header" [class.bg-clarify]="activeDialogType === 'CLARIFICATION'" [class.bg-reject]="activeDialogType === 'REJECT'">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-circle shadow-sm">
+          <i *ngIf="activeDialogType === 'CLARIFICATION'" class="bi bi-question-lg fs-3 text-warning"></i>
+          <i *ngIf="activeDialogType === 'REJECT'" class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+        </div>
+        <div>
+          <h5 class="fw-bold text-white mb-0">
+            {{ activeDialogType === 'CLARIFICATION' ? 'Request Clarification from Patient' : 'Reject Subscription Request' }}
+          </h5>
+          <span class="text-white-50 small">Request #{{ activeDialogReqId }}</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close btn-close-white" (click)="closeActionDialog()"></button>
+    </div>
+
+    <!-- Body -->
+    <div class="action-modal-body p-4">
+      <p class="text-muted small mb-3">
+        <span *ngIf="activeDialogType === 'CLARIFICATION'">
+          Specify what clarification or updated document the patient needs to provide to proceed with their subscription.
+        </span>
+        <span *ngIf="activeDialogType === 'REJECT'">
+          Provide a clear reason explaining why this prescription subscription request cannot be approved at this time.
+        </span>
+      </p>
+
+      <!-- Input Field -->
+      <div class="mb-3">
+        <label class="form-label fw-bold text-dark small">
+          {{ activeDialogType === 'CLARIFICATION' ? 'Message for Patient *' : 'Rejection Reason *' }}
+        </label>
+        <textarea class="form-control action-textarea shadow-xs" 
+                  rows="3" 
+                  [placeholder]="activeDialogType === 'CLARIFICATION' ? 'e.g. Please upload a clearer photo showing doctor signature...' : 'e.g. Prescription document expired or unreadable...'"
+                  [(ngModel)]="dialogInputText"
+                  [disabled]="dialogSubmitting"
+                  autofocus>
+        </textarea>
+      </div>
+
+      <!-- Quick Suggestion Chips -->
+      <div>
+        <label class="form-label text-muted small fw-semibold mb-2">
+          <i class="bi bi-magic me-1"></i> Quick Suggestions (Click to insert):
+        </label>
+        <div class="d-flex flex-wrap gap-2">
+          <ng-container *ngIf="activeDialogType === 'CLARIFICATION'">
+            <button *ngFor="let suggestion of clarificationSuggestions" 
+                    (click)="useSuggestion(suggestion)" 
+                    type="button" 
+                    class="btn btn-xs btn-outline-secondary suggestion-chip">
+              {{ suggestion }}
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="activeDialogType === 'REJECT'">
+            <button *ngFor="let suggestion of rejectionSuggestions" 
+                    (click)="useSuggestion(suggestion)" 
+                    type="button" 
+                    class="btn btn-xs btn-outline-secondary suggestion-chip">
+              {{ suggestion }}
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="action-modal-footer p-3 bg-light border-top d-flex justify-content-end gap-2">
+      <button (click)="closeActionDialog()" [disabled]="dialogSubmitting" type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">
+        Cancel
+      </button>
+      <button (click)="submitActionDialog()" 
+              [disabled]="dialogSubmitting || !dialogInputText || !dialogInputText.trim()" 
+              type="button" 
+              class="btn rounded-pill px-4 fw-bold shadow-sm"
+              [class.btn-warning]="activeDialogType === 'CLARIFICATION'"
+              [class.btn-danger]="activeDialogType === 'REJECT'">
+        <span *ngIf="dialogSubmitting" class="spinner-border spinner-border-sm me-1" role="status"></span>
+        <i *ngIf="!dialogSubmitting && activeDialogType === 'CLARIFICATION'" class="bi bi-send-fill me-1"></i>
+        <i *ngIf="!dialogSubmitting && activeDialogType === 'REJECT'" class="bi bi-x-circle-fill me-1"></i>
+        {{ activeDialogType === 'CLARIFICATION' ? 'Send Request' : 'Confirm Rejection' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+

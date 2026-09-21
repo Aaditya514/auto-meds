@@ -1,0 +1,199 @@
+<div class="container py-4">
+  <!-- Search & Title Header -->
+  <div class="card card-pharma p-4 mb-4 bg-white shadow-sm border-0">
+    <div class="row align-items-center g-3">
+      <div class="col-md-6">
+        <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-capsule text-primary me-2"></i>Medicine Catalog</h3>
+        <p class="text-muted small mb-0">Browse medicines, search active formulations & resolve out-of-stock alternatives</p>
+      </div>
+      <div class="col-md-6">
+        <form (submit)="onSearch()" class="input-group">
+          <input type="text" [(ngModel)]="searchQuery" name="searchQuery" class="form-control form-control-lg rounded-start-pill ps-4" placeholder="Search by name, brand, composition, strength...">
+          <button class="btn btn-pharma-primary rounded-end-pill px-4" type="submit">
+            <i class="bi bi-search me-1"></i> Search
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="message" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2">Loading medicine catalog...</p>
+  </div>
+
+  <!-- Medicine Cards Grid -->
+  <div *ngIf="!loading && medicines.length > 0" class="row g-4">
+    <div class="col-md-6 col-lg-4" *ngFor="let med of medicines">
+      <div class="card card-pharma h-100 bg-white shadow-sm border-0 d-flex flex-column">
+        <div class="card-body p-4 d-flex flex-column">
+          <!-- Top Row: Title & Stock Status -->
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h5 class="fw-bold text-dark mb-1">{{ med.medicineName }}</h5>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold">{{ med.brandName }}</span>
+            </div>
+            <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'">
+              <i [ngClass]="med.stockQuantity > 0 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'" class="me-1"></i>
+              {{ med.stockQuantity > 0 ? 'IN STOCK' : 'OUT OF STOCK' }}
+            </span>
+          </div>
+
+          <!-- Formula Details Box -->
+          <div class="bg-light p-3 rounded-3 my-3 border small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Composition:</span>
+              <strong class="text-dark">{{ med.composition }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Strength:</span>
+              <strong class="text-dark">{{ med.strength }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Manufacturer:</span>
+              <span class="text-muted">{{ med.manufacturer || 'Standard Pharma' }}</span>
+            </div>
+          </div>
+
+          <!-- Price & Stock Count -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="text-muted small">Price: </span>
+              <span class="fs-4 fw-bold text-primary">₹{{ med.price }}</span>
+            </div>
+            <div class="text-muted small">
+              Stock: <strong>{{ med.stockQuantity }}</strong>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-auto pt-3 border-top d-flex flex-column gap-2">
+            <!-- IN STOCK Actions -->
+            <ng-container *ngIf="med.stockQuantity > 0">
+              <button (click)="addToCart(med)" class="btn btn-outline-primary w-100 fw-semibold">
+                <i class="bi bi-cart-plus me-1"></i> Add to Cart
+              </button>
+              <button (click)="navigateToSubscribe(med.id)" class="btn btn-pharma-primary w-100">
+                <i class="bi bi-arrow-repeat me-1"></i> Subscribe
+              </button>
+            </ng-container>
+
+            <!-- OUT OF STOCK Actions -->
+            <ng-container *ngIf="med.stockQuantity <= 0">
+              <button disabled class="btn btn-secondary w-100 text-muted" title="Item is currently out of stock">
+                <i class="bi bi-cart-x me-1"></i> Add to Cart - Disabled
+              </button>
+              <button (click)="openAlternativesModal(med)" class="btn btn-warning text-dark w-100 fw-bold">
+                <i class="bi bi-search me-1"></i> Find Alternatives
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty Search Results -->
+  <div *ngIf="!loading && medicines.length === 0" class="text-center py-5">
+    <i class="bi bi-search text-muted display-4 mb-3 d-block"></i>
+    <h5 class="text-muted">No medicines found matching "{{ searchQuery }}".</h5>
+    <button (click)="searchQuery = ''; onSearch()" class="btn btn-outline-primary mt-2">Reset Search</button>
+  </div>
+</div>
+
+<!-- SAME COMPOSITION + SAME STRENGTH ALTERNATIVE MODAL -->
+<div *ngIf="selectedOutMedicine" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      
+      <!-- Modal Header -->
+      <div class="modal-header bg-danger text-white border-0 py-3">
+        <h5 class="modal-title fw-bold d-flex align-items-center">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ selectedOutMedicine.medicineName }} — OUT OF STOCK
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeAlternativesModal()"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4">
+        <!-- Selected Medicine Summary -->
+        <div class="alert alert-light border mb-4">
+          <div class="row text-muted small">
+            <div class="col-md-4">Requested: <strong>{{ selectedOutMedicine.medicineName }}</strong></div>
+            <div class="col-md-4">Brand: <strong>{{ selectedOutMedicine.brandName }}</strong></div>
+            <div class="col-md-4 text-danger fw-bold"><i class="bi bi-circle-fill me-1 fs-6"></i> OUT OF STOCK</div>
+          </div>
+        </div>
+
+        <!-- Section Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0">Available Alternatives</h5>
+          <span class="badge bg-teal text-success bg-opacity-10 border border-success px-3 py-2 rounded-pill">
+            Same composition + same strength
+          </span>
+        </div>
+
+        <p class="text-muted small mb-3">
+          The following alternative brands share the <strong>exact same active composition ({{ selectedOutMedicine.composition }})</strong> and <strong>exact strength ({{ selectedOutMedicine.strength }})</strong>:
+        </p>
+
+        <!-- Loading Alternatives -->
+        <div *ngIf="loadingAlternatives" class="text-center py-4">
+          <div class="spinner-border text-teal" role="status"></div>
+          <p class="text-muted small mt-2">Searching available brands...</p>
+        </div>
+
+        <!-- Available Alternatives List -->
+        <div *ngIf="!loadingAlternatives && alternativeMedicines.length > 0" class="row g-3">
+          <div class="col-md-6" *ngFor="let alt of alternativeMedicines">
+            <div class="card alternative-match-card h-100">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold text-dark mb-0">{{ alt.medicineName }}</h6>
+                <span class="badge badge-in-stock">IN STOCK ({{ alt.stockQuantity }})</span>
+              </div>
+              <p class="text-secondary small mb-2">Brand: <strong class="text-dark">{{ alt.brandName }}</strong></p>
+
+              <div class="small mb-3">
+                <div>Composition: <strong>{{ alt.composition }}</strong></div>
+                <div>Strength: <strong>{{ alt.strength }}</strong></div>
+                <div class="mt-1">Price: <strong class="text-primary fs-5">₹{{ alt.price }}</strong></div>
+              </div>
+
+              <div class="d-flex gap-2 mt-auto">
+                <button (click)="addToCart(alt); closeAlternativesModal()" class="btn btn-sm btn-outline-primary flex-fill">
+                  <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                </button>
+                <button (click)="navigateToSubscribe(alt.id)" class="btn btn-sm btn-pharma-primary flex-fill">
+                  <i class="bi bi-arrow-repeat me-1"></i> Subscribe
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NO ALTERNATIVE AVAILABLE -->
+        <div *ngIf="!loadingAlternatives && alternativeMedicines.length === 0" class="text-center py-4 bg-light rounded-3 border">
+          <i class="bi bi-shield-x text-secondary display-5 mb-2 d-block"></i>
+          <h5 class="fw-bold text-secondary">Currently unavailable.</h5>
+          <p class="text-muted mb-0 small">No alternative brand with the same composition and strength is currently available in stock.</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer border-0 bg-light">
+        <button type="button" class="btn btn-secondary px-4" (click)="closeAlternativesModal()">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
