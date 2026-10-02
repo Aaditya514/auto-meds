@@ -18,6 +18,7 @@ export class HomeComponent implements OnInit {
   recentOrders: Order[] = [];
   notifications: Notification[] = [];
   loading = true;
+  selectedSubscription: Subscription | null = null;
 
   constructor(
     private subscriptionService: SubscriptionService,
@@ -55,23 +56,40 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  viewDetails(sub: Subscription): void {
+    this.selectedSubscription = sub;
+  }
+
+  closeDetailsModal(): void {
+    this.selectedSubscription = null;
+  }
+
   cancelSubscription(id: number): void {
     if (confirm('Are you sure you want to cancel this medication subscription?')) {
       this.subscriptionService.cancelSubscription(id).subscribe({
-        next: () => this.loadDashboardData()
+        next: () => {
+          this.closeDetailsModal();
+          this.loadDashboardData();
+        }
       });
     }
   }
 
   pauseSubscription(id: number): void {
     this.subscriptionService.pauseSubscription(id).subscribe({
-      next: () => this.loadDashboardData()
+      next: () => {
+        this.closeDetailsModal();
+        this.loadDashboardData();
+      }
     });
   }
 
   resumeSubscription(id: number): void {
     this.subscriptionService.resumeSubscription(id).subscribe({
-      next: () => this.loadDashboardData()
+      next: () => {
+        this.closeDetailsModal();
+        this.loadDashboardData();
+      }
     });
   }
 }

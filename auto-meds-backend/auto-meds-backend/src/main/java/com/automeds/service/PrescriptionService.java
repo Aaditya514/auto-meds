@@ -1,5 +1,6 @@
 package com.automeds.service;
 
+import com.automeds.dto.PrescriptionOcrDTO;
 import com.automeds.entity.Prescription;
 import com.automeds.entity.User;
 import com.automeds.exception.ResourceNotFoundException;
@@ -24,11 +25,16 @@ public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final UserRepository userRepository;
     private final FileStorageUtil fileStorageUtil;
+    private final PrescriptionOcrService prescriptionOcrService;
 
-    public PrescriptionService(PrescriptionRepository prescriptionRepository, UserRepository userRepository, FileStorageUtil fileStorageUtil) {
+    public PrescriptionService(PrescriptionRepository prescriptionRepository, 
+                               UserRepository userRepository, 
+                               FileStorageUtil fileStorageUtil,
+                               PrescriptionOcrService prescriptionOcrService) {
         this.prescriptionRepository = prescriptionRepository;
         this.userRepository = userRepository;
         this.fileStorageUtil = fileStorageUtil;
+        this.prescriptionOcrService = prescriptionOcrService;
     }
 
     // Wraps execution inside a database transaction
@@ -46,6 +52,15 @@ public class PrescriptionService {
         prescription.setUploadDate(LocalDateTime.now());
         prescription.setDoctorVisitDate(doctorVisitDate);
         
+        // Execute OCR text extraction and catalog matching
+        try {
+            PrescriptionOcrDTO ocrResult = prescriptionOcrService.processPrescription(file);
+            prescription.setOcrData(prescriptionOcrService.toJson(ocrResult));
+        } catch (Exception e) {
+            // Safe fallback if OCR encountered unexpected parsing exception
+            prescription.setOcrData(null);
+        }
+
         // Default prescription validity: 6 months or provided expiryMonths
         int months = (expiryMonths != null && expiryMonths > 0) ? expiryMonths : 6;
         LocalDateTime baseDate = (doctorVisitDate != null) ? doctorVisitDate : LocalDateTime.now();
@@ -53,6 +68,18 @@ public class PrescriptionService {
         prescription.setStatus("PENDING");
 
         return prescriptionRepository.save(prescription);
+    }
+
+    // Direct scan without saving to database (useful for instant UI preview)
+    public PrescriptionOcrDTO scanPrescriptionFile(MultipartFile file) {
+        return prescriptionOcrService.processPrescription(file);
+    }
+
+    // Get parsed OCR data for existing prescription
+    @Transactional(readOnly = true)
+    public PrescriptionOcrDTO getPrescriptionOcr(Long prescriptionId) {
+        Prescription prescription = getPrescriptionById(prescriptionId);
+        return prescriptionOcrService.fromJson(prescription.getOcrData());
     }
 
     // Wraps execution inside a database transaction

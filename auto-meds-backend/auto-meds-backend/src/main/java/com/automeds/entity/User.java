@@ -17,9 +17,8 @@ public class User {
     // Define the Primary Key field
     // Primary Key identifier field
     @Id
-    // Configure database sequence generation (Oracle specific SEQUENCE generator)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_users")
-    @SequenceGenerator(name = "seq_users", sequenceName = "SEQ_USERS", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Full name of the user, maximum 100 characters, cannot be null in database
@@ -67,6 +66,14 @@ public class User {
     @Column(length = 20)
     private String pincode;
 
+    // Optional known drug/substance allergies (e.g. "Penicillin, Sulfa")
+    @Column(name = "allergies", length = 255)
+    private String allergies;
+
+    // Optional diagnosed chronic conditions (e.g. "Asthma, Hypertension, Diabetes")
+    @Column(name = "chronic_conditions", length = 255)
+    private String chronicConditions;
+
     // Timestamp when this user account was created, cannot be updated after insertion
     // Maps this field to a database table column
     @Column(name = "created_at", updatable = false)
@@ -111,6 +118,10 @@ public class User {
     }
 
     public String getName() {
+        return name;
+    }
+
+    public String getFullName() {
         return name;
     }
 
@@ -188,6 +199,22 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(String allergies) {
+        this.allergies = allergies;
+    }
+
+    public String getChronicConditions() {
+        return chronicConditions;
+    }
+
+    public void setChronicConditions(String chronicConditions) {
+        this.chronicConditions = chronicConditions;
     }
 
     @Override

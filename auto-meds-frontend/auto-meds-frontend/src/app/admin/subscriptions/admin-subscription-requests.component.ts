@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminService } from '../../core/services/admin.service';
 import { MedicineService } from '../../core/services/medicine.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
 import { Subscription } from '../../core/models/subscription.model';
 import { Medicine } from '../../core/models/medicine.model';
+import { PrescriptionOcrResult, PrescriptionOcrCandidate } from '../../core/models/prescription-ocr.model';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 export interface AdminSubscriptionRequestItem extends Subscription {
   selectedMedicineIds: number[];
@@ -37,10 +40,17 @@ export class AdminSubscriptionRequestsComponent implements OnInit {
   auditModalOpen = false;
   activeModalReq: AdminSubscriptionRequestItem | null = null;
   modalSearchTerm = '';
+  modalOcrResult: PrescriptionOcrResult | null = null;
+  modalOcrLoading = false;
+  prescriptionPreviewUrl: SafeResourceUrl | null = null;
+  prescriptionZoom = 1.0;
+  prescriptionRotation = 0;
 
   constructor(
     private adminService: AdminService,
-    private medicineService: MedicineService
+    private medicineService: MedicineService,
+    private subscriptionService: SubscriptionService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
@@ -180,12 +190,84 @@ export class AdminSubscriptionRequestsComponent implements OnInit {
   openAuditModal(req: AdminSubscriptionRequestItem): void {
     this.activeModalReq = req;
     this.modalSearchTerm = '';
+    this.modalOcrResult = null;
+    this.prescriptionPreviewUrl = null;
+    this.prescriptionZoom = 1.0;
+    this.prescriptionRotation = 0;
     this.auditModalOpen = true;
+
+    if (req.prescriptionId) {
+      this.modalOcrLoading = true;
+      // Fetch OCR structured data
+      this.subscriptionService.getPrescriptionOcr(req.prescriptionId).subscribe({
+        next: (ocr) => {
+          this.modalOcrResult = ocr;
+          this.modalOcrLoading = false;
+        },
+        error: () => {
+          this.modalOcrLoading = false;
+        }
+      });
+
+      // Fetch document preview blob
+      this.adminService.downloadPrescription(req.prescriptionId).subscribe({
+        next: (blob: Blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          this.prescriptionPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+        },
+        error: (err) => {
+          console.warn('Could not load in-modal prescription preview:', err);
+        }
+      });
+    }
   }
 
   closeAuditModal(): void {
     this.auditModalOpen = false;
     this.activeModalReq = null;
+    this.modalOcrResult = null;
+    this.prescriptionPreviewUrl = null;
+  }
+
+  // Split-Screen Viewer Zoom & Rotate Controls
+  zoomIn(): void {
+    this.prescriptionZoom = Math.min(this.prescriptionZoom + 0.25, 2.5);
+  }
+
+  zoomOut(): void {
+    this.prescriptionZoom = Math.max(this.prescriptionZoom - 0.25, 0.5);
+  }
+
+  rotatePrescription(): void {
+    this.prescriptionRotation = (this.prescriptionRotation + 90) % 360;
+  }
+
+  resetPrescriptionView(): void {
+    this.prescriptionZoom = 1.0;
+    this.prescriptionRotation = 0;
+  }
+
+  // 1-Click Accept Single OCR Candidate
+  acceptSingleOcrCandidate(req: AdminSubscriptionRequestItem, cand: PrescriptionOcrCandidate): void {
+    if (!cand.medicineId) return;
+    if (!req.selectedMedicineIds) req.selectedMedicineIds = [];
+    if (!req.selectedMedicineIds.includes(cand.medicineId)) {
+      req.selectedMedicineIds.push(cand.medicineId);
+    }
+    if (!req.medicineDetails) req.medicineDetails = {};
+    req.medicineDetails[cand.medicineId] = {
+      dosage: cand.dosage || '1 tablet/day',
+      frequency: cand.frequency || 'Once Daily',
+      quantity: cand.quantity || 30
+    };
+  }
+
+  // 1-Click Accept All Detected OCR Matches
+  acceptAllOcrMatches(req: AdminSubscriptionRequestItem): void {
+    if (!this.modalOcrResult || !this.modalOcrResult.candidates) return;
+    this.modalOcrResult.candidates.forEach(cand => {
+      this.acceptSingleOcrCandidate(req, cand);
+    });
   }
 
   // Action Dialog (Clarification & Rejection) State

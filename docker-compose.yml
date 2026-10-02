@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # 1. PostgreSQL Relational Database Service (Public Schema V1..V5 Migrations)
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: automeds-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: automeds
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - automeds-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d automeds"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - automeds-net
+
+  # ============================================================================
+  # 2. Spring Boot 3 Backend API with Native Linux Tesseract OCR Engine
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: automeds-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/automeds
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      APP_JWT_SECRET: REDACTED_JWT_SECRET
+      APP_JWT_EXPIRATION_MS: "86400000"
+      APP_UPLOAD_DIR: /app/uploads/prescriptions
+      APP_TESSERACT_DATA_PATH: /usr/share/tesseract-ocr/4.00/tessdata
+      SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      - automeds-uploads:/app/uploads/prescriptions
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    networks:
+      - automeds-net
+
+  # ============================================================================
+  # 3. Angular 16 Production Frontend with Nginx Reverse Proxy
+  # ============================================================================
+  frontend:
+    build:
+      context: ./auto-meds-frontend/auto-meds-frontend
+      dockerfile: Dockerfile
+    container_name: automeds-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "4200:80"
+    networks:
+      - automeds-net
+
+# ==============================================================================
+# Persistent Named Volumes & Network Definition
+# ==============================================================================
+volumes:
+  automeds-pgdata:
+    driver: local
+  automeds-uploads:
+    driver: local
+
+networks:
+  automeds-net:
+    driver: bridge

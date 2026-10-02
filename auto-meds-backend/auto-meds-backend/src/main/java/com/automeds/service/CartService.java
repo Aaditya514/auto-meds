@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,7 +77,10 @@ public class CartService {
             throw new BadRequestException("Medicine is currently inactive and cannot be added to cart.");
         }
 
-        if (medicine.getStockQuantity() <= 0) {
+        if (medicine.getAvailableQuantity() <= 0) {
+            if (medicine.getReservedQuantity() > 0) {
+                throw new InsufficientStockException("All current stock of '" + medicine.getMedicineName() + "' is locked and reserved for ongoing patient auto-refill subscriptions.");
+            }
             throw new InsufficientStockException("Medicine is currently OUT OF STOCK.");
         }
 
@@ -90,8 +94,9 @@ public class CartService {
             throw new BadRequestException("Maximum allowed limit is " + MAX_QUANTITY_PER_ITEM + " units per medicine item per order.");
         }
 
-        if (totalRequestedQuantity > medicine.getStockQuantity()) {
-            throw new InsufficientStockException("Only " + medicine.getStockQuantity() + " units are currently available.");
+        if (totalRequestedQuantity > medicine.getAvailableQuantity()) {
+            throw new InsufficientStockException("Only " + medicine.getAvailableQuantity() + " units available for purchase (" 
+                    + medicine.getReservedQuantity() + " units are reserved for ongoing patient subscriptions).");
         }
 
         if (existingItemOpt.isEmpty() && cart.getItems() != null && cart.getItems().size() >= MAX_CART_ITEMS) {
@@ -110,6 +115,9 @@ public class CartService {
             newItem.setQuantity(request.getQuantity());
             newItem.setPriceAtAddition(medicine.getPrice());
             cartItemRepository.save(newItem);
+            if (cart.getItems() != null) {
+                cart.getItems().add(newItem);
+            }
         }
 
         return getCartByPatientId(patientId);
@@ -135,8 +143,9 @@ public class CartService {
         }
 
         Medicine medicine = cartItem.getMedicine();
-        if (request.getQuantity() > medicine.getStockQuantity()) {
-            throw new InsufficientStockException("Only " + medicine.getStockQuantity() + " units are currently available.");
+        if (request.getQuantity() > medicine.getAvailableQuantity()) {
+            throw new InsufficientStockException("Only " + medicine.getAvailableQuantity() + " units available for purchase (" 
+                    + medicine.getReservedQuantity() + " units are reserved for ongoing patient subscriptions).");
         }
 
         cartItem.setQuantity(request.getQuantity());
@@ -168,11 +177,14 @@ public class CartService {
     }
 
     public CartDTO convertToDTO(Cart cart) {
+        List<CartItem> items = (cart.getItems() != null && !cart.getItems().isEmpty())
+                ? cart.getItems()
+                : (cart.getId() != null ? cartItemRepository.findByCartId(cart.getId()) : Collections.emptyList());
         List<CartItemDTO> itemDTOs = new ArrayList<>();
         int totalItemsCount = 0;
         BigDecimal subtotalSum = BigDecimal.ZERO;
 
-        for (CartItem item : cart.getItems()) {
+        for (CartItem item : items) {
             Medicine m = item.getMedicine();
             BigDecimal itemSubtotal = m.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
             subtotalSum = subtotalSum.add(itemSubtotal);

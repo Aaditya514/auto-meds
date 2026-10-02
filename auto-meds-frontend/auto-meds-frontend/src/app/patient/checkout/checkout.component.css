@@ -1,1 +1,24 @@
-/* Styles for checkout component */
+.cursor-pointer {
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.cursor-pointer:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+}
+
+.letter-spacing-2 {
+  letter-spacing: 6px;
+}

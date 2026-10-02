@@ -1,97 +1,360 @@
 <div class="container py-4">
-  <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-credit-card text-primary me-2"></i>CHECKOUT</h3>
+  
+  <!-- Success / Order Confirmation State -->
+  <div *ngIf="placedOrder" class="row justify-content-center py-4">
+    <div class="col-lg-8">
+      <div class="card card-pharma p-4 p-md-5 bg-white shadow-sm border-0 text-center">
+        <div class="mb-3">
+          <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">Order Placed Successfully!</h3>
+        <p class="text-muted mb-4">
+          Order <strong>#{{ placedOrder.id }}</strong> has been confirmed. Your medications are being prepared according to Four-Eyes pharmacy protocols.
+        </p>
 
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
-  </div>
-
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status"></div>
-  </div>
-
-  <div *ngIf="!loading && cart" class="row g-4">
-    <!-- Left Column: Form -->
-    <div class="col-lg-7">
-      <form [formGroup]="checkoutForm" (ngSubmit)="onPlaceOrder()">
-        
-        <!-- Delivery Address Section -->
-        <div class="card card-pharma p-4 bg-white shadow-sm border-0 mb-4">
-          <h5 class="fw-bold border-bottom pb-2 mb-3 text-dark">
-            <i class="bi bi-geo-alt text-danger me-2"></i>DELIVERY ADDRESS
-          </h5>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Shipping Address *</label>
-            <textarea formControlName="deliveryAddress" class="form-control" rows="3" placeholder="Enter complete address, city, state, pincode"></textarea>
-            <div *ngIf="checkoutForm.get('deliveryAddress')?.invalid && checkoutForm.get('deliveryAddress')?.touched" class="text-danger small mt-1">
-              Delivery address is required.
+        <!-- Payment & Dispensing Summary Badge -->
+        <div class="card bg-light border-0 p-3 mb-4 text-start">
+          <div class="row g-2 small">
+            <div class="col-sm-6">
+              <span class="text-muted d-block">Payment Status</span>
+              <span class="badge" [ngClass]="placedOrder.paymentStatus === 'PAID' ? 'bg-success' : 'bg-warning text-dark'">
+                {{ placedOrder.paymentStatus }} ({{ placedOrder.paymentMethod }})
+              </span>
+            </div>
+            <div class="col-sm-6" *ngIf="placedOrder.transactionId">
+              <span class="text-muted d-block">Transaction Reference</span>
+              <strong class="font-monospace text-dark">{{ placedOrder.transactionId }}</strong>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted d-block">Total Paid</span>
+              <strong class="text-primary fs-6">₹{{ placedOrder.totalAmount }}</strong>
+            </div>
+            <div class="col-sm-6" *ngIf="placedOrder.dispensingSlipCode">
+              <span class="text-muted d-block">Dispensing Slip Code</span>
+              <span class="font-monospace text-dark fw-bold">{{ placedOrder.dispensingSlipCode }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Payment Method Section -->
-        <div class="card card-pharma p-4 bg-white shadow-sm border-0 mb-4">
-          <h5 class="fw-bold border-bottom pb-2 mb-3 text-dark">
-            <i class="bi bi-wallet2 text-success me-2"></i>PAYMENT METHOD
-          </h5>
-
-          <div class="form-check mb-3 p-3 border rounded-3 bg-light">
-            <input class="form-check-input" type="radio" formControlName="paymentMethod" id="cod" value="CASH_ON_DELIVERY">
-            <label class="form-check-input-label fw-semibold ms-2" for="cod">
-              <i class="bi bi-cash-coin me-1 text-success"></i> Cash on Delivery (COD)
-            </label>
-            <p class="text-muted small mb-0 ms-4">Pay in cash when your medicine order is delivered to your doorstep.</p>
-          </div>
-
-          <div class="form-check p-3 border rounded-3 bg-light">
-            <input class="form-check-input" type="radio" formControlName="paymentMethod" id="online" value="MOCK_ONLINE">
-            <label class="form-check-input-label fw-semibold ms-2" for="online">
-              <i class="bi bi-credit-card-2-front me-1 text-primary"></i> Mock / Simulated Online Payment
-            </label>
-            <p class="text-muted small mb-0 ms-4">Simulate instant UPI / Card payment verification.</p>
-          </div>
-        </div>
-
-        <button [disabled]="submitting || checkoutForm.invalid" class="btn btn-pharma-primary w-100 py-3 fs-5 shadow-sm">
-          <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
-          <i *ngIf="!submitting" class="bi bi-check-circle me-1"></i> PLACE ORDER
-        </button>
-      </form>
-    </div>
-
-    <!-- Right Column: Order Summary -->
-    <div class="col-lg-5">
-      <div class="card card-pharma p-4 bg-white shadow-sm border-0 sticky-top" style="top: 90px;">
-        <h5 class="fw-bold border-bottom pb-2 mb-3">ORDER SUMMARY</h5>
-
-        <div class="list-group list-group-flush mb-3">
-          <div *ngFor="let item of cart.items" class="list-group-item px-0 py-2 border-bottom">
-            <div class="d-flex justify-content-between">
-              <div>
-                <h6 class="fw-bold mb-0 text-dark">{{ item.medicineName }}</h6>
-                <span class="text-muted small">Brand: {{ item.brandName }} | Qty: {{ item.quantity }}</span>
-              </div>
-              <span class="fw-bold text-primary">₹{{ item.subtotal }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-between mb-2">
-          <span class="text-muted">Subtotal</span>
-          <span class="fw-semibold">₹{{ cart.subtotal }}</span>
-        </div>
-
-        <div class="d-flex justify-content-between mb-2">
-          <span class="text-muted">Delivery Fee</span>
-          <span class="fw-semibold">₹{{ cart.deliveryCharge }}</span>
-        </div>
-
-        <hr>
-
-        <div class="d-flex justify-content-between">
-          <span class="fs-5 fw-bold text-dark">TOTAL</span>
-          <span class="fs-4 fw-bold text-primary">₹{{ cart.totalAmount }}</span>
+        <!-- Action Buttons -->
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+          <button (click)="openDispensingModal()" class="btn btn-pharma-primary px-4 py-2 fw-bold shadow-sm">
+            <i class="bi bi-receipt me-1"></i> View Official Dispensing Slip & QR
+          </button>
+          <a routerLink="/orders" class="btn btn-outline-secondary px-4 py-2 fw-semibold">
+            <i class="bi bi-box-seam me-1"></i> Go to My Orders
+          </a>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Standard Checkout Flow -->
+  <div *ngIf="!placedOrder">
+    <div class="d-flex align-items-center mb-4">
+      <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-credit-card text-primary me-2"></i>SECURE CHECKOUT</h3>
+      <span class="badge bg-success bg-opacity-10 text-success border border-success ms-3">
+        <i class="bi bi-shield-lock-fill me-1"></i>256-Bit Encrypted
+      </span>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2">Preparing secure checkout & clinical safety check...</p>
+    </div>
+
+    <!-- Clinical Safety & DDI Warning Banner (Phase 5) -->
+    <div *ngIf="!loading && clinicalAlerts.length > 0" class="mb-4">
+      <div class="card border-0 shadow-sm" [ngClass]="hasCriticalAlerts() ? 'border-start border-danger border-4' : 'border-start border-warning border-4'">
+        <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <i class="bi fs-4 me-2" [ngClass]="hasCriticalAlerts() ? 'bi-exclamation-octagon-fill text-danger' : 'bi-exclamation-triangle-fill text-warning'"></i>
+            <div>
+              <h6 class="fw-bold mb-0" [ngClass]="hasCriticalAlerts() ? 'text-danger' : 'text-dark'">
+                Clinical Safety & Drug Interaction Alert (DDI Interceptor)
+              </h6>
+              <small class="text-muted">Detected {{ clinicalAlerts.length }} potential pharmacological conflict(s) with your cart or profile</small>
+            </div>
+          </div>
+          <span class="badge" [ngClass]="hasCriticalAlerts() ? 'bg-danger' : 'bg-warning text-dark'">
+            {{ hasCriticalAlerts() ? 'HIGH CLINICAL RISK' : 'MODERATE PRECAUTION' }}
+          </span>
+        </div>
+
+        <div class="card-body bg-light">
+          <div *ngFor="let alert of clinicalAlerts" class="p-3 mb-2 bg-white rounded border">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <strong class="text-dark">
+                <i class="bi bi-capsule-pill text-danger me-1"></i>{{ alert.drug1 }} 
+                <span *ngIf="alert.drug2">&plus; {{ alert.drug2 }}</span>
+              </strong>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 11px;">
+                {{ alert.type }}
+              </span>
+            </div>
+            <p class="mb-1 text-danger small fw-semibold">{{ alert.alertMessage }}</p>
+            <div class="text-muted small">
+              <strong>Clinical Guidance:</strong> {{ alert.clinicalRecommendation }}
+            </div>
+          </div>
+
+          <!-- Acknowledgment Checkbox -->
+          <div class="form-check mt-3 pt-2 border-top" *ngIf="hasCriticalAlerts()">
+            <input class="form-check-input" type="checkbox" id="ackSafety" [(ngModel)]="safetyAcknowledged">
+            <label class="form-check-label small fw-semibold text-dark" for="ackSafety">
+              I acknowledge the clinical risk warnings above and confirm I have consulted or will consult my physician/pharmacist regarding dosage intervals.
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Checkout Grid -->
+    <div *ngIf="!loading && cart" class="row g-4">
+      
+      <!-- Left Column: Delivery Address & Payment Method -->
+      <div class="col-lg-7">
+        <form [formGroup]="checkoutForm" (ngSubmit)="onInitiateOrder()">
+          
+          <!-- Delivery Address Section -->
+          <div class="card card-pharma p-4 bg-white shadow-sm border-0 mb-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3 text-dark">
+              <i class="bi bi-geo-alt text-danger me-2"></i>1. DELIVERY ADDRESS
+            </h5>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Shipping Destination *</label>
+              <textarea formControlName="deliveryAddress" class="form-control" rows="3" placeholder="Enter complete address, street, city, state, pincode"></textarea>
+              <div *ngIf="checkoutForm.get('deliveryAddress')?.invalid && checkoutForm.get('deliveryAddress')?.touched" class="text-danger small mt-1">
+                Delivery address is required for doorstep fulfillment.
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Multi-Method Payment Gateway Section (Phase 5) -->
+          <div class="card card-pharma p-4 bg-white shadow-sm border-0 mb-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+              <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-wallet2 text-success me-2"></i>2. PAYMENT METHOD
+              </h5>
+              <span class="badge bg-primary bg-opacity-10 text-primary">Instant Verification</span>
+            </div>
+
+            <!-- Tab Navigation for Payment Methods -->
+            <ul class="nav nav-pills nav-fill mb-3 bg-light p-1 rounded-3">
+              <li class="nav-item">
+                <button
+                  type="button"
+                  class="nav-link fw-semibold"
+                  [class.active]="selectedPaymentTab === 'UPI'"
+                  (click)="selectPaymentMethod('UPI')"
+                >
+                  <i class="bi bi-qr-code-scan me-1"></i> UPI (Instant &amp; Free)
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  type="button"
+                  class="nav-link fw-semibold"
+                  [class.active]="selectedPaymentTab === 'CARD'"
+                  (click)="selectPaymentMethod('CARD')"
+                >
+                  <i class="bi bi-credit-card-2-front me-1"></i> Card (3D Secure)
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  type="button"
+                  class="nav-link fw-semibold"
+                  [class.active]="selectedPaymentTab === 'CASH_ON_DELIVERY'"
+                  (click)="selectPaymentMethod('CASH_ON_DELIVERY')"
+                >
+                  <i class="bi bi-cash-coin me-1"></i> Cash on Delivery
+                </button>
+              </li>
+            </ul>
+
+            <!-- Tab 1: UPI Gateway View -->
+            <div *ngIf="selectedPaymentTab === 'UPI'" class="p-3 border rounded-3 bg-light">
+              <div class="row align-items-center g-3">
+                <div class="col-sm-5 text-center border-sm-end pe-sm-3">
+                  <div class="p-2 bg-white d-inline-block rounded shadow-sm border">
+                    <img [src]="upiQrDataUrl" alt="UPI Payment QR" width="150" height="150" class="d-block mx-auto" />
+                  </div>
+                  <div class="small fw-semibold text-muted mt-2">Scan with GPay, PhonePe, Paytm</div>
+                  <div class="text-primary fw-bold font-monospace" style="font-size: 11px;">automeds.billing@icici</div>
+                </div>
+
+                <div class="col-sm-7">
+                  <label class="form-label fw-semibold small mb-1">Or Enter Virtual Payment Address (VPA / UPI ID)</label>
+                  <div class="input-group mb-2">
+                    <span class="input-group-text bg-white"><i class="bi bi-at"></i></span>
+                    <input type="text" class="form-control" [(ngModel)]="upiId" [ngModelOptions]="{standalone: true}" placeholder="e.g. yourname@upi" />
+                  </div>
+                  <div class="d-flex gap-1 flex-wrap mb-3">
+                    <span class="badge bg-white text-secondary border cursor-pointer" (click)="setUpiSuggestion('@okhdfcbank')">@okhdfcbank</span>
+                    <span class="badge bg-white text-secondary border cursor-pointer" (click)="setUpiSuggestion('@oksbi')">@oksbi</span>
+                    <span class="badge bg-white text-secondary border cursor-pointer" (click)="setUpiSuggestion('@paytm')">@paytm</span>
+                    <span class="badge bg-white text-secondary border cursor-pointer" (click)="setUpiSuggestion('@ybl')">@ybl</span>
+                  </div>
+                  <div class="alert alert-success py-2 px-3 small mb-0">
+                    <i class="bi bi-lightning-charge-fill me-1"></i> Auto-verified immediately upon checkout.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Credit / Debit Card 3D-Secure View -->
+            <div *ngIf="selectedPaymentTab === 'CARD'" class="p-3 border rounded-3 bg-light" [formGroup]="cardForm">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label fw-semibold small">Card Number</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-credit-card"></i></span>
+                    <input type="text" formControlName="cardNumber" class="form-control font-monospace" placeholder="4532 8901 2345 6789" maxlength="19">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Cardholder Name</label>
+                  <input type="text" formControlName="cardHolder" class="form-control" placeholder="Name as printed on card">
+                </div>
+                <div class="col-md-3 col-6">
+                  <label class="form-label fw-semibold small">Expiry (MM/YY)</label>
+                  <input type="text" formControlName="expiryDate" class="form-control font-monospace" placeholder="12/28" maxlength="5">
+                </div>
+                <div class="col-md-3 col-6">
+                  <label class="form-label fw-semibold small">CVV / CVC</label>
+                  <input type="password" formControlName="cvv" class="form-control font-monospace" placeholder="789" maxlength="4">
+                </div>
+              </div>
+              <div class="text-muted small mt-2 d-flex align-items-center">
+                <i class="bi bi-shield-check text-success me-1"></i> Protected by simulated 3D Secure 2.0 with Bank One-Time Password.
+              </div>
+            </div>
+
+            <!-- Tab 3: Cash on Delivery View -->
+            <div *ngIf="selectedPaymentTab === 'CASH_ON_DELIVERY'" class="p-3 border rounded-3 bg-light">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-cash-stack text-success fs-2 me-3"></i>
+                <div>
+                  <h6 class="fw-bold mb-0 text-dark">Pay Cash at Doorstep</h6>
+                  <p class="text-muted small mb-0">Pay directly to our certified delivery agent upon inspecting the physical dispensing slip &amp; sealed medication packaging.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Checkout Button -->
+          <button [disabled]="submitting || checkoutForm.invalid || (hasCriticalAlerts() && !safetyAcknowledged)" class="btn btn-pharma-primary w-100 py-3 fs-5 shadow-sm">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!submitting" class="bi bi-lock-fill me-1"></i>
+            {{ selectedPaymentTab === 'CARD' ? 'PROCEED TO 3D SECURE PAY ₹' + cart.totalAmount : 'PAY & PLACE ORDER (₹' + cart.totalAmount + ')' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Order Summary & Clinical Safety Verification -->
+      <div class="col-lg-5">
+        <div class="card card-pharma p-4 bg-white shadow-sm border-0 sticky-top" style="top: 90px;">
+          <h5 class="fw-bold border-bottom pb-2 mb-3">ORDER SUMMARY</h5>
+
+          <div class="list-group list-group-flush mb-3">
+            <div *ngFor="let item of cart.items" class="list-group-item px-0 py-2 border-bottom">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="fw-bold mb-0 text-dark">{{ item.medicineName }}</h6>
+                  <span class="text-muted small">Brand: {{ item.brandName }} | Qty: {{ item.quantity }}</span>
+                </div>
+                <span class="fw-bold text-primary">₹{{ item.subtotal }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Subtotal</span>
+            <span class="fw-semibold">₹{{ cart.subtotal }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Prescription Verification Fee</span>
+            <span class="text-success fw-semibold">FREE (Covered)</span>
+          </div>
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Doorstep Delivery Fee</span>
+            <span class="fw-semibold">₹{{ cart.deliveryCharge }}</span>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between mb-3">
+            <span class="fs-5 fw-bold text-dark">TOTAL PAYABLE</span>
+            <span class="fs-4 fw-bold text-primary">₹{{ cart.totalAmount }}</span>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="p-3 bg-light rounded text-muted small">
+            <div class="d-flex align-items-center mb-1">
+              <i class="bi bi-patch-check-fill text-primary me-2"></i>
+              <span>Pharmacist Four-Eyes Verified packaging</span>
+            </div>
+            <div class="d-flex align-items-center mb-1">
+              <i class="bi bi-qr-code text-primary me-2"></i>
+              <span>Physical Dispensing Slip with Scannable QR</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-shield-shaded text-primary me-2"></i>
+              <span>HIPAA / CDSCO Compliance Audit Logged</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
+
+<!-- 3D Secure Bank OTP Modal (Phase 5) -->
+<div *ngIf="showOtpModal" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3">
+  <div class="modal-dialog-custom bg-white rounded-3 shadow-lg border p-4 p-md-5" style="max-width: 480px; width: 100%;">
+    <div class="text-center mb-3">
+      <i class="bi bi-shield-lock text-primary" style="font-size: 3rem;"></i>
+      <h4 class="fw-bold text-dark mt-2 mb-1">3D Secure 2.0 Authorization</h4>
+      <p class="text-muted small mb-0">HDFC / ICICI Verified by Visa / Mastercard ID Check</p>
+    </div>
+
+    <div class="alert alert-info py-2 px-3 small text-center mb-3">
+      Simulated Bank OTP sent to registered mobile number: <strong>123456</strong>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold small">Enter 6-Digit Bank One-Time Password (OTP)</label>
+      <input type="text" class="form-control text-center fs-4 font-monospace letter-spacing-2" [(ngModel)]="cardOtp" maxlength="6" autofocus />
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary w-50 py-2" (click)="cancelOtp()" [disabled]="processingPayment">
+        Cancel
+      </button>
+      <button class="btn btn-pharma-primary w-50 py-2 fw-bold" (click)="confirmCardOtp()" [disabled]="processingPayment || !cardOtp">
+        <span *ngIf="processingPayment" class="spinner-border spinner-border-sm me-1"></span>
+        Confirm &amp; Authorize
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Dispensing Slip Modal Component -->
+<app-dispensing-slip-modal
+  [slip]="dispensingSlip"
+  [isOpen]="showDispensingModal"
+  (close)="closeDispensingModal()"
+></app-dispensing-slip-modal>

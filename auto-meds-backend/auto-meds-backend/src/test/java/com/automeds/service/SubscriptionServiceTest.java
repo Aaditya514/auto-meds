@@ -31,6 +31,7 @@ class SubscriptionServiceTest {
     private UserRepository userRepository;
     private PrescriptionService prescriptionService;
     private NotificationService notificationService;
+    private com.automeds.repository.OrderRepository orderRepository;
     private SubscriptionService subscriptionService;
 
     @BeforeEach
@@ -40,8 +41,9 @@ class SubscriptionServiceTest {
         userRepository = Mockito.mock(UserRepository.class);
         prescriptionService = Mockito.mock(PrescriptionService.class);
         notificationService = Mockito.mock(NotificationService.class);
+        orderRepository = Mockito.mock(com.automeds.repository.OrderRepository.class);
 
-        subscriptionService = new SubscriptionService(subscriptionRepository, medicineRepository, userRepository, prescriptionService, notificationService);
+        subscriptionService = new SubscriptionService(subscriptionRepository, medicineRepository, userRepository, prescriptionService, notificationService, orderRepository);
     }
 
     @Test

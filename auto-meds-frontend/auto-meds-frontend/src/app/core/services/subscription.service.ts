@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Subscription } from '../models/subscription.model';
+import { PrescriptionOcrResult } from '../models/prescription-ocr.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubscriptionService {
   private apiUrl = 'http://localhost:8080/api/subscriptions';
+  private rxUrl = 'http://localhost:8080/api/prescriptions';
 
   constructor(private http: HttpClient) {}
 
@@ -31,6 +33,33 @@ export class SubscriptionService {
     }
 
     return this.http.post<Subscription>(this.apiUrl, formData);
+  }
+
+  // Phase 4 OCR Scan: Extracts candidate medicines & doctor details on the fly
+  scanPrescription(file: File): Observable<PrescriptionOcrResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<PrescriptionOcrResult>(`${this.rxUrl}/scan`, formData);
+  }
+
+  // Phase 4 OCR Audit: Retrieves stored OCR data for a prescription
+  getPrescriptionOcr(prescriptionId: number): Observable<PrescriptionOcrResult> {
+    return this.http.get<PrescriptionOcrResult>(`${this.rxUrl}/${prescriptionId}/ocr`);
+  }
+
+  // Phase 4 Chronic Care: Emergency 5-Day Bridge Supply
+  requestBridgeSupply(id: number): Observable<Subscription> {
+    return this.http.post<Subscription>(`${this.apiUrl}/${id}/bridge-supply`, {});
+  }
+
+  // Phase 4 Chronic Care: Vacation Snooze (7 or 14 days)
+  snoozeSubscription(id: number, days: number = 7): Observable<Subscription> {
+    return this.http.post<Subscription>(`${this.apiUrl}/${id}/snooze?days=${days}`, {});
+  }
+
+  // Phase 4 Chronic Care: Refill Synchronization ("Pillbox Day")
+  syncRefills(targetDay: number = 1): Observable<Subscription[]> {
+    return this.http.post<Subscription[]>(`${this.apiUrl}/sync-refills?targetDay=${targetDay}`, {});
   }
 
   getMySubscriptions(): Observable<Subscription[]> {

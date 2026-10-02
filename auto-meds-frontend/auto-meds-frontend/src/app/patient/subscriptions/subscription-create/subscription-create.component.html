@@ -14,13 +14,123 @@
 
         <form [formGroup]="subscriptionForm" (ngSubmit)="onSubmit()">
           <!-- Prescription File Upload -->
-          <div class="card bg-light p-4 border-0 mb-4 rounded-3 text-center">
-            <label class="form-label fw-bold text-dark fs-5 mb-2">Upload Doctor Prescription Document *</label>
-            <p class="text-muted small mb-3">Upload a clear photo or PDF scan of your doctor's official prescription.</p>
-            
-            <input type="file" (change)="onFileSelected($event)" class="form-control form-control-lg w-75 mx-auto" accept=".pdf,.jpg,.jpeg,.png">
+          <div class="card bg-light p-4 border-0 mb-4 rounded-3 text-center position-relative">
+            <label class="form-label fw-bold text-dark fs-5 mb-1">Upload Doctor Prescription Document *</label>
+            <p class="text-muted small mb-3">Snap a clear photo with your phone camera or upload a scanned PDF/image.</p>
+
+            <!-- Hidden File Inputs -->
+            <input #cameraInput type="file" (change)="onFileSelected($event)" accept="image/*" capture="environment" style="display: none;">
+            <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display: none;">
+
+            <!-- Dual Upload Action Buttons (Shown when no file is selected) -->
+            <div *ngIf="!selectedFile" class="d-flex flex-column flex-sm-row justify-content-center gap-3 my-3">
+              <button type="button" (click)="cameraInput.click()" class="btn btn-outline-primary px-4 py-3 rounded-3 shadow-xs d-flex align-items-center justify-content-center gap-2 bg-white">
+                <i class="bi bi-camera-fill fs-4 text-primary"></i>
+                <div class="text-start">
+                  <div class="fw-bold">Take Photo</div>
+                  <div class="small text-muted" style="font-size: 11px;">Mobile camera direct snap</div>
+                </div>
+              </button>
+
+              <button type="button" (click)="fileInput.click()" class="btn btn-outline-secondary px-4 py-3 rounded-3 shadow-xs d-flex align-items-center justify-content-center gap-2 bg-white">
+                <i class="bi bi-file-earmark-arrow-up-fill fs-4 text-success"></i>
+                <div class="text-start">
+                  <div class="fw-bold text-dark">Upload Document</div>
+                  <div class="small text-muted" style="font-size: 11px;">PDF, JPG, PNG from device</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Selected File Badge / Preview Card -->
+            <div *ngIf="selectedFile" class="p-3 bg-white rounded-3 border border-primary border-opacity-25 d-flex align-items-center justify-content-between my-2 text-start shadow-xs">
+              <div class="d-flex align-items-center gap-3">
+                <div *ngIf="isImage() && filePreviewUrl" class="rounded overflow-hidden border" style="width: 52px; height: 52px;">
+                  <img [src]="filePreviewUrl" alt="Prescription preview" class="w-100 h-100 object-fit-cover">
+                </div>
+                <div *ngIf="!isImage() || !filePreviewUrl" class="bg-primary bg-opacity-10 text-primary rounded d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                  <i class="bi bi-file-earmark-pdf fs-3"></i>
+                </div>
+                <div>
+                  <div class="fw-bold text-dark text-truncate" style="max-width: 280px;">{{ selectedFile.name }}</div>
+                  <div class="text-muted small" style="font-size: 11px;">
+                    <span class="badge bg-light text-dark border me-1">{{ getFileSize() }}</span>
+                    <span>Ready for clinical audit</span>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" (click)="fileInput.click()" class="btn btn-sm btn-outline-secondary" title="Change document">
+                  <i class="bi bi-arrow-repeat me-1"></i> Replace
+                </button>
+                <button type="button" (click)="clearSelectedFile()" class="btn btn-sm btn-outline-danger" title="Remove document">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+
             <div *ngIf="fileError" class="text-danger small mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ fileError }}</div>
-            <span class="text-muted small d-block mt-2">Accepted Formats: PDF, JPG, JPEG, PNG (Max 10MB)</span>
+            <span class="text-muted small d-block mt-2">Accepted Formats: PDF, JPG, JPEG, PNG, WEBP (Max 10MB)</span>
+
+            <!-- Scanning State Animation -->
+            <div *ngIf="scanningOcr" class="mt-3 p-3 bg-white rounded-3 shadow-xs border border-primary border-opacity-25">
+              <div class="d-flex align-items-center justify-content-center gap-2 text-primary fw-semibold mb-2">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <span>AI Optical Scanner reading prescription handwriting & doctor stamp...</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary w-100"></div>
+              </div>
+            </div>
+
+            <!-- OCR Extraction Results Card -->
+            <div *ngIf="ocrResult && !scanningOcr" class="mt-3 p-3 bg-white rounded-3 text-start shadow-xs border" [ngClass]="ocrResult.candidates && ocrResult.candidates.length > 0 ? 'border-success border-opacity-25' : 'border-warning border-opacity-50'">
+              <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                <span class="badge fw-bold px-3 py-1" [ngClass]="ocrResult.candidates && ocrResult.candidates.length > 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-dark'">
+                  <i class="bi me-1" [ngClass]="ocrResult.candidates && ocrResult.candidates.length > 0 ? 'bi-robot' : 'bi-shield-exclamation'"></i>
+                  {{ ocrResult.candidates && ocrResult.candidates.length > 0 ? ('AI Prescription Scan: ' + (ocrResult.confidenceOverall * 100 | number:'1.0-0') + '% Match') : 'Pharmacist Manual Review Needed' }}
+                </span>
+                <span class="text-muted small">Doctor: <strong>{{ ocrResult.doctorName }}</strong> <span *ngIf="ocrResult.doctorRegNumber && ocrResult.doctorRegNumber !== 'Not detected in scan'">({{ ocrResult.doctorRegNumber }})</span></span>
+              </div>
+
+              <div class="small text-muted mb-2">
+                <i class="bi bi-hospital me-1 text-primary"></i>{{ ocrResult.clinicOrHospital }}
+              </div>
+
+              <!-- Detected Medications -->
+              <div *ngIf="ocrResult.candidates && ocrResult.candidates.length > 0; else noMedsDetected">
+                <h6 class="fw-bold text-dark small mb-2"><i class="bi bi-capsule text-primary me-1"></i> Detected Medications:</h6>
+                <div class="row g-2 mb-2">
+                  <div *ngFor="let cand of ocrResult.candidates" class="col-12 col-md-6">
+                    <div class="p-2 border rounded bg-light small">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <strong class="text-dark">{{ cand.medicineName }}</strong>
+                        <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 10px;">{{ cand.strength }}</span>
+                      </div>
+                      <div class="text-muted" style="font-size: 11px;">
+                        {{ cand.dosage }} • {{ cand.frequency }} ({{ cand.quantity }} units)
+                      </div>
+                      <!-- Generic Cost Savings -->
+                      <div *ngIf="cand.savingsPercentage && cand.savingsPercentage > 0" class="mt-1">
+                        <span class="badge bg-success text-white" style="font-size: 10px;">
+                          <i class="bi bi-piggy-bank me-1"></i> Save {{ cand.savingsPercentage }}% with Generic ({{ cand.genericAlternative }})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ng-template #noMedsDetected>
+                <div class="alert alert-light border small text-muted mb-2 py-2">
+                  <i class="bi bi-info-circle me-1 text-primary"></i>
+                  No catalog medications matched automatically from this scan (e.g. handwritten Rx). Our licensed pharmacist will review the uploaded prescription and assign your prescribed medications.
+                </div>
+              </ng-template>
+
+              <div class="text-muted small fst-italic" style="font-size: 11px;">
+                <i class="bi bi-shield-check text-success me-1"></i> Our licensed pharmacist will review this scan and confirm assignments upon submission.
+              </div>
+            </div>
           </div>
 
           <!-- Doctor Visit Date -->

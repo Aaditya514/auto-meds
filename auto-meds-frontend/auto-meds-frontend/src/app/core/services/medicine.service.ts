@@ -26,4 +26,8 @@ export class MedicineService {
   getAlternativeMedicines(medicineId: number): Observable<Medicine[]> {
     return this.http.get<Medicine[]>(`${this.apiUrl}/${medicineId}/alternatives`);
   }
+
+  getMedicinesBySymptom(symptom: string): Observable<Medicine[]> {
+    return this.http.get<Medicine[]>(`${this.apiUrl}/symptom?symptom=${encodeURIComponent(symptom)}`);
+  }
 }

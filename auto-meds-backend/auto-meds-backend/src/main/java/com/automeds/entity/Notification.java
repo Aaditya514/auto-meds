@@ -14,8 +14,8 @@ public class Notification {
 
     // Primary Key identifier field
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_notifications")
-    @SequenceGenerator(name = "seq_notifications", sequenceName = "SEQ_NOTIFICATIONS", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Defines a Many-to-One relational database mapping

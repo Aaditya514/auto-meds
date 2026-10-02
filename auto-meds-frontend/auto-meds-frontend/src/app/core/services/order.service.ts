@@ -22,4 +22,8 @@ export class OrderService {
   getOrderById(id: number): Observable<Order> {
     return this.http.get<Order>(`${this.apiUrl}/${id}`);
   }
+
+  downloadPrescription(prescriptionId: number): Observable<Blob> {
+    return this.http.get(`http://localhost:8080/api/prescriptions/${prescriptionId}`, { responseType: 'blob' });
+  }
 }

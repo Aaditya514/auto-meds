@@ -8,6 +8,7 @@ package com.automeds.dto;
 public class AuthResponse {
 
     private String token;
+    private String refreshToken;
     private String tokenType = "Bearer";
     private Long userId;
     private String name;
@@ -26,12 +27,30 @@ public class AuthResponse {
         this.role = role;
     }
 
+    public AuthResponse(String token, String refreshToken, Long userId, String name, String email, String role) {
+        this.token = token;
+        this.refreshToken = refreshToken;
+        this.tokenType = "Bearer";
+        this.userId = userId;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+    }
+
     public String getToken() {
         return token;
     }
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getTokenType() {

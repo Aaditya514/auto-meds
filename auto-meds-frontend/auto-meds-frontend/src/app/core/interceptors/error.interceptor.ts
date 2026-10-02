@@ -17,7 +17,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           this.authService.logout();
           this.router.navigate(['/login']);
         }
-        const errorMessage = error.error?.message || error.statusText || 'An unexpected error occurred';
+        const errorMessage = error.error?.detail || error.error?.message || error.statusText || 'An unexpected error occurred';
         return throwError(() => new Error(errorMessage));
       })
     );

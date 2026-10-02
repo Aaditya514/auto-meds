@@ -39,6 +39,12 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.searchMedicines(query));
     }
 
+    // Handles symptom-based taxonomy discovery
+    @GetMapping("/symptom")
+    public ResponseEntity<List<MedicineDTO>> getMedicinesBySymptom(@RequestParam String symptom) {
+        return ResponseEntity.ok(medicineService.getMedicinesBySymptom(symptom));
+    }
+
     /**
      * Finds alternative medicine brands matching SAME composition AND SAME strength
      */

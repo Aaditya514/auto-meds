@@ -15,8 +15,8 @@ public class Medicine {
 
     // Primary Key identifier field
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_medicines")
-    @SequenceGenerator(name = "seq_medicines", sequenceName = "SEQ_MEDICINES", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Maps this field to a database table column
@@ -47,6 +47,18 @@ public class Medicine {
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 
+    // Quantity reserved/soft-locked for ongoing subscriptions
+    @Column(name = "reserved_quantity", nullable = false)
+    private Integer reservedQuantity = 0;
+
+    // Safety reorder threshold triggering replenishment alerts
+    @Column(name = "reorder_threshold", nullable = false)
+    private Integer reorderThreshold = 10;
+
+    // Suggested bulk pack reorder size from distributor
+    @Column(name = "suggested_reorder_pack_size", nullable = false)
+    private Integer suggestedReorderPackSize = 50;
+
     // Maps this field to a database table column
     @Column(name = "requires_prescription", nullable = false)
     private Integer requiresPrescription; // 1 = true, 0 = false
@@ -67,8 +79,15 @@ public class Medicine {
     @Column(nullable = false)
     private Integer active; // 1 = true, 0 = false
 
+    // Maps symptom keywords for patient ailment discovery
+    @Column(length = 255)
+    private String symptoms;
+
     public Medicine() {
         this.stockQuantity = 0;
+        this.reservedQuantity = 0;
+        this.reorderThreshold = 10;
+        this.suggestedReorderPackSize = 50;
         this.requiresPrescription = 0;
         this.active = 1;
     }
@@ -153,6 +172,36 @@ public class Medicine {
         this.stockQuantity = stockQuantity;
     }
 
+    public Integer getReservedQuantity() {
+        return reservedQuantity != null ? reservedQuantity : 0;
+    }
+
+    public void setReservedQuantity(Integer reservedQuantity) {
+        this.reservedQuantity = reservedQuantity != null ? reservedQuantity : 0;
+    }
+
+    public Integer getAvailableQuantity() {
+        int stock = this.stockQuantity != null ? this.stockQuantity : 0;
+        int reserved = this.reservedQuantity != null ? this.reservedQuantity : 0;
+        return Math.max(0, stock - reserved);
+    }
+
+    public Integer getReorderThreshold() {
+        return reorderThreshold != null ? reorderThreshold : 10;
+    }
+
+    public void setReorderThreshold(Integer reorderThreshold) {
+        this.reorderThreshold = reorderThreshold != null ? reorderThreshold : 10;
+    }
+
+    public Integer getSuggestedReorderPackSize() {
+        return suggestedReorderPackSize != null ? suggestedReorderPackSize : 50;
+    }
+
+    public void setSuggestedReorderPackSize(Integer suggestedReorderPackSize) {
+        this.suggestedReorderPackSize = suggestedReorderPackSize != null ? suggestedReorderPackSize : 50;
+    }
+
     public Integer getRequiresPrescription() {
         return requiresPrescription;
     }
@@ -191,6 +240,14 @@ public class Medicine {
 
     public void setActive(Integer active) {
         this.active = active;
+    }
+
+    public String getSymptoms() {
+        return symptoms;
+    }
+
+    public void setSymptoms(String symptoms) {
+        this.symptoms = symptoms;
     }
 
     @Override

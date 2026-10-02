@@ -17,8 +17,8 @@ public class Order {
 
     // Primary Key identifier field
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_orders")
-    @SequenceGenerator(name = "seq_orders", sequenceName = "SEQ_ORDERS", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Defines a Many-to-One relational database mapping
@@ -30,6 +30,28 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id")
     private Subscription subscription;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "prescription_id")
+    private Prescription prescription;
+
+    @Column(name = "is_bridge_supply")
+    private Boolean isBridgeSupply = false;
+
+    @Column(name = "dispensing_notes", length = 500)
+    private String dispensingNotes;
+
+    @Column(name = "transaction_id", length = 100)
+    private String transactionId;
+
+    @Column(name = "payment_gateway_response", columnDefinition = "TEXT")
+    private String paymentGatewayResponse;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
+    @Column(name = "dispensing_slip_code", length = 100)
+    private String dispensingSlipCode;
 
     // Maps this field to a database table column
     @Column(name = "order_date", updatable = false)
@@ -203,6 +225,62 @@ public class Order {
 
     public void setItems(List<OrderItem> items) {
         this.items = items;
+    }
+
+    public Prescription getPrescription() {
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
+    }
+
+    public Boolean getIsBridgeSupply() {
+        return isBridgeSupply;
+    }
+
+    public void setIsBridgeSupply(Boolean isBridgeSupply) {
+        this.isBridgeSupply = isBridgeSupply;
+    }
+
+    public String getDispensingNotes() {
+        return dispensingNotes;
+    }
+
+    public void setDispensingNotes(String dispensingNotes) {
+        this.dispensingNotes = dispensingNotes;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getPaymentGatewayResponse() {
+        return paymentGatewayResponse;
+    }
+
+    public void setPaymentGatewayResponse(String paymentGatewayResponse) {
+        this.paymentGatewayResponse = paymentGatewayResponse;
+    }
+
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(LocalDateTime paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public String getDispensingSlipCode() {
+        return dispensingSlipCode;
+    }
+
+    public void setDispensingSlipCode(String dispensingSlipCode) {
+        this.dispensingSlipCode = dispensingSlipCode;
     }
 
     @Override

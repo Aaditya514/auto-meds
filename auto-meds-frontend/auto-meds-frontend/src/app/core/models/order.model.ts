@@ -24,5 +24,13 @@ export interface Order {
   orderStatus: 'PENDING' | 'APPROVED' | 'PACKED' | 'DISPATCHED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' | 'REJECTED';
   orderType: 'ONE_TIME' | 'SUBSCRIPTION_REFILL';
   expectedDeliveryDate?: string;
+  prescriptionId?: number;
+  prescriptionFileName?: string;
+  isBridgeSupply?: boolean;
+  dispensingNotes?: string;
+  transactionId?: string;
+  dispensingSlipCode?: string;
+  paidAt?: string;
+  paymentGatewayResponse?: string;
   items: OrderItem[];
 }

@@ -16,8 +16,8 @@ public class Cart {
 
     // Primary Key identifier field
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_carts")
-    @SequenceGenerator(name = "seq_carts", sequenceName = "SEQ_CARTS", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

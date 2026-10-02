@@ -25,6 +25,13 @@ public class OrderDTO {
     private String orderStatus;
     private String orderType;
     private LocalDateTime expectedDeliveryDate;
+    private Long prescriptionId;
+    private String prescriptionFileName;
+    private Boolean isBridgeSupply;
+    private String dispensingNotes;
+    private String transactionId;
+    private LocalDateTime paidAt;
+    private String dispensingSlipCode;
     private List<OrderItemDTO> items = new ArrayList<>();
 
     public OrderDTO() {
@@ -158,6 +165,62 @@ public class OrderDTO {
 
     public void setItems(List<OrderItemDTO> items) {
         this.items = items;
+    }
+
+    public Long getPrescriptionId() {
+        return prescriptionId;
+    }
+
+    public void setPrescriptionId(Long prescriptionId) {
+        this.prescriptionId = prescriptionId;
+    }
+
+    public String getPrescriptionFileName() {
+        return prescriptionFileName;
+    }
+
+    public void setPrescriptionFileName(String prescriptionFileName) {
+        this.prescriptionFileName = prescriptionFileName;
+    }
+
+    public Boolean getIsBridgeSupply() {
+        return isBridgeSupply;
+    }
+
+    public void setIsBridgeSupply(Boolean isBridgeSupply) {
+        this.isBridgeSupply = isBridgeSupply;
+    }
+
+    public String getDispensingNotes() {
+        return dispensingNotes;
+    }
+
+    public void setDispensingNotes(String dispensingNotes) {
+        this.dispensingNotes = dispensingNotes;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(LocalDateTime paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public String getDispensingSlipCode() {
+        return dispensingSlipCode;
+    }
+
+    public void setDispensingSlipCode(String dispensingSlipCode) {
+        this.dispensingSlipCode = dispensingSlipCode;
     }
 
     @Override

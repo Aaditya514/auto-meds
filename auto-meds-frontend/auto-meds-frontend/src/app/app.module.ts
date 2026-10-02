@@ -10,6 +10,7 @@ import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { LoginComponent } from './auth/login/login.component';
 import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
 import { RegisterComponent } from './auth/register/register.component';
+import { AdminRegisterComponent } from './auth/admin-register/admin-register.component';
 
 import { HomeComponent } from './patient/home/home.component';
 import { MedicinesComponent } from './patient/medicines/medicines.component';
@@ -18,6 +19,7 @@ import { CheckoutComponent } from './patient/checkout/checkout.component';
 import { SubscriptionsComponent } from './patient/subscriptions/subscriptions.component';
 import { SubscriptionCreateComponent } from './patient/subscriptions/subscription-create/subscription-create.component';
 import { OrdersComponent } from './patient/orders/orders.component';
+import { ProfileComponent } from './patient/profile/profile.component';
 
 import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
 import { AdminMedicinesComponent } from './admin/medicines/admin-medicines.component';
@@ -25,6 +27,8 @@ import { AdminInventoryComponent } from './admin/inventory/admin-inventory.compo
 import { AdminSubscriptionRequestsComponent } from './admin/subscriptions/admin-subscription-requests.component';
 import { AdminOrdersComponent } from './admin/orders/admin-orders.component';
 import { AdminUsersComponent } from './admin/users/admin-users.component';
+import { AdminAuditLogsComponent } from './admin/audit-logs/admin-audit-logs.component';
+import { DispensingSlipModalComponent } from './shared/components/dispensing-slip-modal/dispensing-slip-modal.component';
 
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
@@ -33,9 +37,11 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
   declarations: [
     AppComponent,
     NavbarComponent,
+    DispensingSlipModalComponent,
     LoginComponent,
     AdminLoginComponent,
     RegisterComponent,
+    AdminRegisterComponent,
     HomeComponent,
     MedicinesComponent,
     CartComponent,
@@ -43,12 +49,14 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
     SubscriptionsComponent,
     SubscriptionCreateComponent,
     OrdersComponent,
+    ProfileComponent,
     AdminDashboardComponent,
     AdminMedicinesComponent,
     AdminInventoryComponent,
     AdminSubscriptionRequestsComponent,
     AdminOrdersComponent,
-    AdminUsersComponent
+    AdminUsersComponent,
+    AdminAuditLogsComponent
   ],
   imports: [
     BrowserModule,

@@ -28,12 +28,22 @@ public class SubscriptionResponseDTO {
     private LocalDateTime nextRefillDate;
     private LocalDateTime nextDispatchDate;
     private String status;
+    private String reservationStatus;
+    private LocalDateTime reservationDate;
+    private Boolean isBridgeSupply;
+    private LocalDateTime lastSnoozeDate;
+    private Integer snoozeCount;
     private LocalDateTime createdAt;
 
     public SubscriptionResponseDTO() {
     }
 
     public SubscriptionResponseDTO(Long id, Long patientId, String patientName, String patientEmail, Long medicineId, String medicineName, String brandName, String composition, String strength, Long prescriptionId, String prescriptionFileName, LocalDateTime prescriptionExpiryDate, String dosage, String frequency, Integer quantity, LocalDateTime startDate, LocalDateTime nextRefillDate, LocalDateTime nextDispatchDate, String status, LocalDateTime createdAt) {
+        this(id, patientId, patientName, patientEmail, medicineId, medicineName, brandName, composition, strength, prescriptionId, prescriptionFileName, prescriptionExpiryDate, dosage, frequency, quantity, startDate, nextRefillDate, nextDispatchDate, status, "NONE", null, createdAt);
+    }
+
+    @SuppressWarnings("java:S107")
+    public SubscriptionResponseDTO(Long id, Long patientId, String patientName, String patientEmail, Long medicineId, String medicineName, String brandName, String composition, String strength, Long prescriptionId, String prescriptionFileName, LocalDateTime prescriptionExpiryDate, String dosage, String frequency, Integer quantity, LocalDateTime startDate, LocalDateTime nextRefillDate, LocalDateTime nextDispatchDate, String status, String reservationStatus, LocalDateTime reservationDate, LocalDateTime createdAt) {
         this.id = id;
         this.patientId = patientId;
         this.patientName = patientName;
@@ -53,6 +63,8 @@ public class SubscriptionResponseDTO {
         this.nextRefillDate = nextRefillDate;
         this.nextDispatchDate = nextDispatchDate;
         this.status = status;
+        this.reservationStatus = reservationStatus != null ? reservationStatus : "NONE";
+        this.reservationDate = reservationDate;
         this.createdAt = createdAt;
     }
 
@@ -208,12 +220,52 @@ public class SubscriptionResponseDTO {
         this.status = status;
     }
 
+    public String getReservationStatus() {
+        return reservationStatus != null ? reservationStatus : "NONE";
+    }
+
+    public void setReservationStatus(String reservationStatus) {
+        this.reservationStatus = reservationStatus != null ? reservationStatus : "NONE";
+    }
+
+    public LocalDateTime getReservationDate() {
+        return reservationDate;
+    }
+
+    public void setReservationDate(LocalDateTime reservationDate) {
+        this.reservationDate = reservationDate;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getIsBridgeSupply() {
+        return isBridgeSupply;
+    }
+
+    public void setIsBridgeSupply(Boolean isBridgeSupply) {
+        this.isBridgeSupply = isBridgeSupply;
+    }
+
+    public LocalDateTime getLastSnoozeDate() {
+        return lastSnoozeDate;
+    }
+
+    public void setLastSnoozeDate(LocalDateTime lastSnoozeDate) {
+        this.lastSnoozeDate = lastSnoozeDate;
+    }
+
+    public Integer getSnoozeCount() {
+        return snoozeCount;
+    }
+
+    public void setSnoozeCount(Integer snoozeCount) {
+        this.snoozeCount = snoozeCount;
     }
 
     @Override

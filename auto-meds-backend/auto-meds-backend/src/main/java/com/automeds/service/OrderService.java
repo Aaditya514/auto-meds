@@ -75,9 +75,13 @@ public class OrderService {
                 throw new BadRequestException("Medicine '" + medicine.getMedicineName() + "' is no longer active.");
             }
 
-            if (medicine.getStockQuantity() < cartItem.getQuantity()) {
-                throw new InsufficientStockException("Insufficient stock for '" + medicine.getMedicineName() + "'. Available: " + medicine.getStockQuantity() + ", Requested: " + cartItem.getQuantity());
+            // Atomic stock decrement: prevents TOCTOU race condition and protects subscription reservation
+            int updated = medicineRepository.deductAvailableStock(medicine.getId(), cartItem.getQuantity());
+            if (updated == 0) {
+                throw new InsufficientStockException("Insufficient stock available for '" + medicine.getMedicineName() + 
+                        "'. Available stock was depleted or is reserved for ongoing patient subscriptions.");
             }
+            medicine.setStockQuantity(medicine.getStockQuantity() - cartItem.getQuantity());
 
             BigDecimal lineSubtotal = medicine.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             subtotalSum = subtotalSum.add(lineSubtotal);
@@ -89,10 +93,6 @@ public class OrderService {
             orderItem.setPrice(medicine.getPrice());
             orderItem.setSubtotal(lineSubtotal);
             orderItems.add(orderItem);
-
-            // Deduct stock quantity
-            medicine.setStockQuantity(medicine.getStockQuantity() - cartItem.getQuantity());
-            medicineRepository.save(medicine);
         }
 
         BigDecimal deliveryFee = new BigDecimal("40.00");
@@ -131,6 +131,8 @@ public class OrderService {
         Order order = new Order();
         order.setPatient(patient);
         order.setSubscription(sub);
+        order.setPrescription(sub.getPrescription());
+        order.setIsBridgeSupply(Boolean.TRUE.equals(sub.getIsBridgeSupply()));
         order.setDeliveryAddress(patient.getAddress() != null ? patient.getAddress() + ", " + patient.getCity() : "Default Address");
         order.setPaymentMethod("AUTO_REFILL_COD");
         order.setPaymentStatus(STATUS_PENDING);
@@ -149,11 +151,18 @@ public class OrderService {
         item.setSubtotal(lineSubtotal);
         items.add(item);
 
-        order.setItems(items);
-
-        // Deduct stock
+        // Atomic deduction of reserved or available inventory
+        int updated = 0;
+        if ("RESERVED".equals(sub.getReservationStatus())) {
+            updated = medicineRepository.deductReservedStock(med.getId(), sub.getQuantity());
+        }
+        if (updated == 0) {
+            updated = medicineRepository.deductAvailableStock(med.getId(), sub.getQuantity());
+        }
+        if (updated == 0) {
+            throw new InsufficientStockException("Insufficient stock to fulfill auto-refill for " + med.getMedicineName());
+        }
         med.setStockQuantity(med.getStockQuantity() - sub.getQuantity());
-        medicineRepository.save(med);
 
         Order savedOrder = orderRepository.save(order);
 
@@ -180,6 +189,21 @@ public class OrderService {
         return convertToDTO(order);
     }
 
+    @Transactional(readOnly = true)
+    public OrderDTO getOrderById(Long orderId, com.automeds.security.UserPrincipal userPrincipal) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+
+        if (userPrincipal != null) {
+            boolean isStaff = userPrincipal.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_PHARMACIST"));
+            if (!isStaff && !order.getPatient().getId().equals(userPrincipal.getId())) {
+                throw new BadRequestException("Unauthorized access to order details.");
+            }
+        }
+        return convertToDTO(order);
+    }
+
     public OrderDTO convertToDTO(Order order) {
         List<OrderItemDTO> itemDTOs = order.getItems().stream()
                 .map(item -> new OrderItemDTO(
@@ -195,7 +219,7 @@ public class OrderService {
                 ))
                 .toList();
 
-        return new OrderDTO(
+        OrderDTO dto = new OrderDTO(
                 order.getId(),
                 order.getPatient().getId(),
                 order.getPatient().getName(),
@@ -211,5 +235,21 @@ public class OrderService {
                 order.getExpectedDeliveryDate(),
                 itemDTOs
         );
+
+        if (order.getPrescription() != null) {
+            dto.setPrescriptionId(order.getPrescription().getId());
+            dto.setPrescriptionFileName(order.getPrescription().getFileName());
+        } else if (order.getSubscription() != null && order.getSubscription().getPrescription() != null) {
+            dto.setPrescriptionId(order.getSubscription().getPrescription().getId());
+            dto.setPrescriptionFileName(order.getSubscription().getPrescription().getFileName());
+        }
+
+        dto.setIsBridgeSupply(order.getIsBridgeSupply());
+        dto.setDispensingNotes(order.getDispensingNotes());
+        dto.setTransactionId(order.getTransactionId());
+        dto.setPaidAt(order.getPaidAt());
+        dto.setDispensingSlipCode(order.getDispensingSlipCode());
+
+        return dto;
     }
 }

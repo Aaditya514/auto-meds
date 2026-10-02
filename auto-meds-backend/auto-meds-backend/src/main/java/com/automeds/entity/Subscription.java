@@ -14,8 +14,8 @@ public class Subscription {
 
     // Primary Key identifier field
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_subscriptions")
-    @SequenceGenerator(name = "seq_subscriptions", sequenceName = "SEQ_SUBSCRIPTIONS", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Defines a Many-to-One relational database mapping
@@ -61,6 +61,23 @@ public class Subscription {
     @Column(nullable = false, length = 30)
     private String status; // PENDING, ACTIVE, REJECTED, CANCELLED, EXPIRED, PRESCRIPTION_EXPIRED, CLARIFICATION_REQUIRED, PAUSED
 
+    // Soft-lock reservation status for upcoming chronic refills
+    @Column(name = "reservation_status", length = 30)
+    private String reservationStatus = "NONE"; // NONE, RESERVED, OUT_OF_STOCK_DEFICIT
+
+    // Timestamp when inventory was locked
+    @Column(name = "reservation_date")
+    private LocalDateTime reservationDate;
+
+    @Column(name = "is_bridge_supply")
+    private Boolean isBridgeSupply = false;
+
+    @Column(name = "last_snooze_date")
+    private LocalDateTime lastSnoozeDate;
+
+    @Column(name = "snooze_count")
+    private Integer snoozeCount = 0;
+
     // Maps this field to a database table column
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -75,6 +92,7 @@ public class Subscription {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.status = PENDING;
+        this.reservationStatus = "NONE";
     }
 
     @SuppressWarnings("java:S107")
@@ -198,6 +216,22 @@ public class Subscription {
         this.status = status;
     }
 
+    public String getReservationStatus() {
+        return reservationStatus != null ? reservationStatus : "NONE";
+    }
+
+    public void setReservationStatus(String reservationStatus) {
+        this.reservationStatus = reservationStatus != null ? reservationStatus : "NONE";
+    }
+
+    public LocalDateTime getReservationDate() {
+        return reservationDate;
+    }
+
+    public void setReservationDate(LocalDateTime reservationDate) {
+        this.reservationDate = reservationDate;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -212,6 +246,30 @@ public class Subscription {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getIsBridgeSupply() {
+        return isBridgeSupply;
+    }
+
+    public void setIsBridgeSupply(Boolean isBridgeSupply) {
+        this.isBridgeSupply = isBridgeSupply;
+    }
+
+    public LocalDateTime getLastSnoozeDate() {
+        return lastSnoozeDate;
+    }
+
+    public void setLastSnoozeDate(LocalDateTime lastSnoozeDate) {
+        this.lastSnoozeDate = lastSnoozeDate;
+    }
+
+    public Integer getSnoozeCount() {
+        return snoozeCount;
+    }
+
+    public void setSnoozeCount(Integer snoozeCount) {
+        this.snoozeCount = snoozeCount;
     }
 
     @Override

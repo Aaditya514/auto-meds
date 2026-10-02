@@ -120,4 +120,22 @@ public class AdminController {
         autoRefillScheduler.processAutoRefills();
         return ResponseEntity.ok(Map.of("message", "Auto-refill process triggered successfully."));
     }
+
+    // Handles GET requests for inventory procurement and reorder alerts
+    @GetMapping("/procurement/alerts")
+    public ResponseEntity<List<com.automeds.dto.ProcurementAlertDTO>> getProcurementAlerts() {
+        return ResponseEntity.ok(adminService.getProcurementAlerts());
+    }
+
+    // Handles GET requests for subscriptions currently in deficit
+    @GetMapping("/procurement/deficits")
+    public ResponseEntity<List<com.automeds.dto.DeficitSubscriptionDTO>> getDeficitSubscriptions() {
+        return ResponseEntity.ok(adminService.getDeficitSubscriptions());
+    }
+
+    // Handles POST requests for 1-click batch restock and automated deficit fulfillment
+    @PostMapping("/procurement/restock")
+    public ResponseEntity<com.automeds.dto.RestockResponseDTO> restockMedicine(@Valid @RequestBody com.automeds.dto.RestockRequestDTO request) {
+        return ResponseEntity.ok(adminService.restockMedicine(request));
+    }
 }

@@ -9,6 +9,7 @@ import com.automeds.repository.SubscriptionRepository;
 import com.automeds.service.NotificationService;
 import com.automeds.service.OrderService;
 import com.automeds.service.SubscriptionService;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,8 +17,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,11 +29,15 @@ import java.util.stream.Collectors;
 /**
  * // EDUCATIONAL CODE EXPLANATION
  * Class: AutoRefillScheduler
- * Description: Application component class containing configuration, exceptions, or scheduling logic.
+ * Description: Distributed scheduler for chronic care auto-refills, 5-day pre-allocation inventory soft-locking,
+ * and dual notification cadence for patients and clinical staff.
  */
 public class AutoRefillScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(AutoRefillScheduler.class);
+
+    private static final Set<Long> ALERT_DAYS_RX = Set.of(30L, 17L, 7L, 5L, 2L);
+    private static final Set<Long> ALERT_DAYS_REFILL = Set.of(14L, 7L, 5L, 3L, 1L);
 
     private final SubscriptionRepository subscriptionRepository;
     private final MedicineRepository medicineRepository;
@@ -49,20 +57,34 @@ public class AutoRefillScheduler {
     }
 
     /**
-     * Executes every day at midnight (or configured fixed rate).
+     * Executes every day at midnight.
+     * ShedLock guarantees that across multi-container instances, only ONE instance executes this task.
      */
     @Scheduled(cron = "0 0 0 * * ?")
-    // Wraps execution inside a database transaction
+    @SchedulerLock(name = "AutoRefillScheduler_processAutoRefills", lockAtLeastFor = "5m", lockAtMostFor = "30m")
     @Transactional
     public void processAutoRefills() {
-        logger.info("Starting AutoRefillScheduler execution...");
+        logger.info("Starting AutoRefillScheduler execution with ShedLock...");
 
-        LocalDateTime bufferThreshold = LocalDateTime.now().plusDays(refillBufferDays);
-        List<Subscription> activeSubscriptions = subscriptionRepository.findByStatusAndNextRefillDateLessThanEqual("ACTIVE", bufferThreshold);
+        LocalDateTime now = LocalDateTime.now();
 
-        logger.info("Found {} active subscriptions approaching refill date.", activeSubscriptions.size());
+        // Step 1: 5-Day Inventory Soft-Lock Reservation Check
+        LocalDateTime reservationThreshold = now.plusDays(refillBufferDays);
+        List<Subscription> pendingReservations = subscriptionRepository.findPendingReservations("ACTIVE", reservationThreshold);
+        logger.info("Found {} active subscriptions eligible for 5-day stock reservation.", pendingReservations.size());
+        for (Subscription sub : pendingReservations) {
+            try {
+                reserveInventoryForSubscription(sub);
+            } catch (Exception ex) {
+                logger.error("Error reserving inventory for subscription id: " + sub.getId(), ex);
+            }
+        }
 
-        for (Subscription sub : activeSubscriptions) {
+        // Step 2: Auto-Refill Order Execution for subscriptions due today
+        List<Subscription> dueSubscriptions = subscriptionRepository.findByStatusAndNextRefillDateLessThanEqual("ACTIVE", now);
+        logger.info("Found {} active subscriptions due for order generation.", dueSubscriptions.size());
+
+        for (Subscription sub : dueSubscriptions) {
             try {
                 processSingleSubscriptionRefill(sub);
             } catch (Exception ex) {
@@ -70,7 +92,146 @@ public class AutoRefillScheduler {
             }
         }
 
+        // Step 3: Dual Notification Cadence Watchers (Prescription Expiry & Upcoming Refill Depletion)
+        try {
+            sendPrescriptionExpiryAlerts();
+            sendRefillApproachingAlerts();
+        } catch (Exception ex) {
+            logger.error("Error executing dual notification cadence alerts", ex);
+        }
+
         logger.info("AutoRefillScheduler execution completed.");
+    }
+
+    /**
+     * Dual Notification Cadence: Prescription Expiry Watcher (30, 17, 7, 5, 2 days).
+     * Alerts both the patient and clinical pharmacists/admins.
+     */
+    public void sendPrescriptionExpiryAlerts() {
+        List<Subscription> activeSubs = subscriptionRepository.findByStatus("ACTIVE");
+        LocalDate today = LocalDate.now();
+
+        for (Subscription sub : activeSubs) {
+            Prescription rx = sub.getPrescription();
+            Medicine medicine = sub.getMedicine();
+            if (rx != null && rx.getExpiryDate() != null && medicine != null) {
+                long daysLeft = ChronoUnit.DAYS.between(today, rx.getExpiryDate().toLocalDate());
+                if (ALERT_DAYS_RX.contains(daysLeft)) {
+                    String patientMsg = String.format(
+                            "Your prescription for %s expires in %d days (%s). Please upload a renewed prescription to prevent auto-refill interruptions.",
+                            medicine.getMedicineName(), daysLeft, rx.getExpiryDate().toLocalDate()
+                    );
+                    String staffMsg = String.format(
+                            "Prescription for Patient %s (%s) expires in %d days (%s). Medicine: %s. Please review or follow up for renewal.",
+                            sub.getPatient().getFullName(), sub.getPatient().getEmail(), daysLeft, rx.getExpiryDate().toLocalDate(), medicine.getMedicineName()
+                    );
+                    String severity = daysLeft <= 5 ? "DANGER" : "WARNING";
+                    notificationService.notifyStaffAndPatient(
+                            sub.getPatient().getId(),
+                            "Prescription Renewal Due (" + daysLeft + " Days Left)",
+                            patientMsg,
+                            staffMsg,
+                            severity
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Dual Notification Cadence: Medication Refill Approaching Watcher (14, 7, 5, 3, 1 days).
+     * Proactively reminds patient and warns pharmacy procurement of upcoming refill demands.
+     */
+    public void sendRefillApproachingAlerts() {
+        List<Subscription> activeSubs = subscriptionRepository.findByStatus("ACTIVE");
+        LocalDate today = LocalDate.now();
+
+        for (Subscription sub : activeSubs) {
+            Medicine medicine = sub.getMedicine();
+            if (sub.getNextRefillDate() != null && medicine != null) {
+                long daysLeft = ChronoUnit.DAYS.between(today, sub.getNextRefillDate().toLocalDate());
+                if (ALERT_DAYS_REFILL.contains(daysLeft)) {
+                    String patientMsg = String.format(
+                            "Your upcoming chronic refill for %s (%d units) will dispatch in %d day(s) on %s. Please ensure your delivery address is accurate.",
+                            medicine.getMedicineName(), sub.getQuantity(), daysLeft, sub.getNextRefillDate().toLocalDate()
+                    );
+                    int available = medicine.getAvailableQuantity();
+                    String staffMsg;
+                    String severity;
+                    if (available < sub.getQuantity() && !"RESERVED".equals(sub.getReservationStatus())) {
+                        severity = "DANGER";
+                        staffMsg = String.format(
+                                "⚠️ Refill Stockout Risk: Subscription #%d for %s (%s) due in %d day(s). Required: %d, Available: %d. Restock immediately!",
+                                sub.getId(), sub.getPatient().getFullName(), sub.getPatient().getEmail(),
+                                daysLeft, sub.getQuantity(), available
+                        );
+                    } else {
+                        severity = "INFO";
+                        staffMsg = String.format(
+                                "Upcoming Refill: Subscription #%d for %s due in %d day(s). Quantity: %d units of %s. Stock is verified.",
+                                sub.getId(), sub.getPatient().getFullName(), daysLeft, sub.getQuantity(), medicine.getMedicineName()
+                        );
+                    }
+                    notificationService.notifyStaffAndPatient(
+                            sub.getPatient().getId(),
+                            "Upcoming Refill in " + daysLeft + " Day(s)",
+                            patientMsg,
+                            staffMsg,
+                            severity
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * 5-Day Soft-Lock Reservation: Locks stock in the warehouse so ad-hoc buyers cannot deplete it.
+     */
+    public void reserveInventoryForSubscription(Subscription sub) {
+        Medicine medicine = sub.getMedicine();
+        if (medicine == null || medicine.getActive() == 0) {
+            return;
+        }
+
+        int rows = medicineRepository.reserveStock(medicine.getId(), sub.getQuantity());
+        if (rows > 0) {
+            sub.setReservationStatus("RESERVED");
+            sub.setReservationDate(LocalDateTime.now());
+            subscriptionRepository.save(sub);
+
+            notificationService.createNotification(
+                    sub.getPatient().getId(),
+                    "🔒 Refill Secured: Medication Locked in Vault",
+                    "Your upcoming monthly refill of " + medicine.getMedicineName() + " (" + sub.getQuantity() + " units) has been locked and reserved in our pharmacy vault. Walk-in buyers cannot purchase your stock.",
+                    "SUCCESS"
+            );
+            logger.info("Successfully soft-locked {} units of {} for subscription #{}", sub.getQuantity(), medicine.getMedicineName(), sub.getId());
+        } else {
+            sub.setReservationStatus("OUT_OF_STOCK_DEFICIT");
+            subscriptionRepository.save(sub);
+
+            notificationService.createNotification(
+                    sub.getPatient().getId(),
+                    "Refill Notice: Stock Replenishment in Progress",
+                    "Your subscription refill for " + medicine.getMedicineName() + " is approaching in " + refillBufferDays + " days. Our pharmacy team has been alerted to prioritize restocking your medication.",
+                    "WARNING"
+            );
+
+            int available = medicine.getAvailableQuantity();
+            int deficit = sub.getQuantity() - available;
+            String staffMsg = String.format(
+                    "Stockout Warning! Subscription #%d for patient %s (%s) requires %d units of %s. Current available stock: %d. Deficit: %d units. Refill due in %d days. Please restock immediately.",
+                    sub.getId(), sub.getPatient().getFullName(), sub.getPatient().getEmail(),
+                    sub.getQuantity(), medicine.getMedicineName(), available,
+                    Math.max(1, deficit), refillBufferDays
+            );
+            notificationService.notifyStaff(
+                    "🚨 URGENT: Reorder Required for " + medicine.getMedicineName(),
+                    staffMsg,
+                    "DANGER"
+            );
+            logger.warn("Could not reserve {} units of {} for subscription #{}. Deficit recorded.", sub.getQuantity(), medicine.getMedicineName(), sub.getId());
+        }
     }
 
     public void processSingleSubscriptionRefill(Subscription sub) {
@@ -91,21 +252,11 @@ public class AutoRefillScheduler {
             return;
         }
 
-        // Advance prescription expiry warnings (30, 15, 7 days)
-        if (prescription != null && prescription.getExpiryDate() != null) {
-            long daysUntilExpiry = java.time.Duration.between(LocalDateTime.now(), prescription.getExpiryDate()).toDays();
-            if (daysUntilExpiry == 30 || daysUntilExpiry == 15 || daysUntilExpiry == 7) {
-                notificationService.createNotification(
-                        sub.getPatient().getId(),
-                        "Prescription Expiring Soon",
-                        "Your prescription for " + medicine.getMedicineName() + " will expire in " + daysUntilExpiry + " days (" + prescription.getExpiryDate().toLocalDate() + "). Please prepare a renewal.",
-                        "WARNING"
-                );
-            }
-        }
+        // 2. Check Stock & Generate Refill Order
+        boolean isReserved = "RESERVED".equals(sub.getReservationStatus());
+        boolean hasAvailableStock = medicine.getActive() == 1 && (isReserved || medicine.getAvailableQuantity() >= sub.getQuantity());
 
-        // 2. Check Medicine Stock
-        if (medicine.getActive() == 1 && medicine.getStockQuantity() >= sub.getQuantity()) {
+        if (hasAvailableStock) {
             // Generate Automatic Refill Order
             Order refillOrder = orderService.createSubscriptionRefillOrder(sub, medicine);
 
@@ -114,6 +265,8 @@ public class AutoRefillScheduler {
             LocalDateTime newNextRefill = LocalDateTime.now().plusDays(durationDays);
             sub.setNextRefillDate(newNextRefill);
             sub.setNextDispatchDate(newNextRefill.minusDays(refillBufferDays));
+            sub.setReservationStatus("NONE");
+            sub.setReservationDate(null);
 
             subscriptionRepository.save(sub);
 
@@ -126,7 +279,7 @@ public class AutoRefillScheduler {
                     medicine.getComposition(),
                     medicine.getStrength(),
                     medicine.getId()
-            ).stream().filter(m -> m.getStockQuantity() >= sub.getQuantity()).toList();
+            ).stream().filter(m -> m.getAvailableQuantity() >= sub.getQuantity()).toList();
 
             if (!alternatives.isEmpty()) {
                 String altNames = alternatives.stream()

@@ -19,6 +19,40 @@ export class AdminMedicinesComponent implements OnInit {
   message = '';
   errorMessage = '';
 
+  // Disease Classification & Tagging State
+  diseaseTags: string[] = [];
+  currentTagInput: string = '';
+  
+  presetDiseaseSuggestions: string[] = [
+    'Type 2 Diabetes',
+    'High Blood Sugar',
+    'Hypertension',
+    'High Blood Pressure',
+    'Acidity & GERD',
+    'Heartburn & Reflux',
+    'Fever & Pain',
+    'Headache & Migraine',
+    'High Cholesterol',
+    'Allergy & Cold',
+    'GLP-1 / Weight Loss',
+    'Asthma & Bronchitis',
+    'Joint & Muscle Pain',
+    'Bacterial Infection'
+  ];
+
+  therapeuticCategories: string[] = [
+    'Diabetes Care',
+    'Cardiovascular & Hypertension',
+    'GLP-1 & Metabolic Care',
+    'Gastrointestinal & Acidity',
+    'Analgesic & Pain Relief',
+    'Respiratory & Allergy',
+    'Antibiotics & Anti-Infective',
+    'Cholesterol & Lipid Care',
+    'Vitamins & Supplements',
+    'General Health & Wellness'
+  ];
+
   constructor(
     private formBuilder: FormBuilder,
     private medicineService: MedicineService,
@@ -31,6 +65,8 @@ export class AdminMedicinesComponent implements OnInit {
   }
 
   initForm(): void {
+    this.diseaseTags = [];
+    this.currentTagInput = '';
     this.medicineForm = this.formBuilder.group({
       medicineName: ['', Validators.required],
       brandName: ['', Validators.required],
@@ -64,6 +100,11 @@ export class AdminMedicinesComponent implements OnInit {
 
   openEditModal(med: Medicine): void {
     this.editingMedicineId = med.id;
+    this.diseaseTags = med.symptoms 
+      ? med.symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      : [];
+    this.currentTagInput = '';
+
     this.medicineForm.patchValue({
       medicineName: med.medicineName,
       brandName: med.brandName,
@@ -82,13 +123,45 @@ export class AdminMedicinesComponent implements OnInit {
   closeModal(): void {
     this.showModal = false;
     this.editingMedicineId = null;
+    this.diseaseTags = [];
+    this.currentTagInput = '';
+  }
+
+  addTag(tagToAdd?: string): void {
+    const raw = tagToAdd !== undefined ? tagToAdd : this.currentTagInput;
+    if (!raw) return;
+    const clean = raw.trim();
+    if (clean.length > 0 && !this.diseaseTags.includes(clean)) {
+      this.diseaseTags.push(clean);
+    }
+    if (tagToAdd === undefined) {
+      this.currentTagInput = '';
+    }
+  }
+
+  removeTag(index: number): void {
+    if (index >= 0 && index < this.diseaseTags.length) {
+      this.diseaseTags.splice(index, 1);
+    }
+  }
+
+  addPresetTag(preset: string): void {
+    this.addTag(preset);
+  }
+
+  getSymptomsList(symptoms?: string): string[] {
+    if (!symptoms) return [];
+    return symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
   onSubmit(): void {
     if (this.medicineForm.invalid) return;
 
     this.submitting = true;
-    const val = this.medicineForm.value;
+    const val = {
+      ...this.medicineForm.value,
+      symptoms: this.diseaseTags.join(', ')
+    };
 
     if (this.editingMedicineId) {
       this.adminService.updateMedicine(this.editingMedicineId, val).subscribe({

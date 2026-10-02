@@ -1,24 +1,43 @@
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 border-bottom pb-3 gap-2">
     <div>
       <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-arrow-repeat text-primary me-2"></i>My Medication Subscriptions</h3>
-      <p class="text-muted small mb-0">Manage chronic medication refill schedules and prescription approvals</p>
+      <p class="text-muted small mb-0">Manage chronic medication refill schedules, prescription audits & emergency continuity</p>
     </div>
-    <a routerLink="/subscriptions/create" class="btn btn-pharma-primary">
-      <i class="bi bi-plus-lg me-1"></i> New Subscription
-    </a>
+    <div class="d-flex gap-2">
+      <button *ngIf="subscriptions.length > 1" (click)="openSyncModal()" class="btn btn-outline-primary fw-semibold">
+        <i class="bi bi-calendar2-range me-1"></i> Sync Refills ("Pillbox Day")
+      </button>
+      <a routerLink="/subscriptions/create" class="btn btn-pharma-primary">
+        <i class="bi bi-plus-lg me-1"></i> New Subscription
+      </a>
+    </div>
   </div>
 
+  <!-- Messages -->
+  <div *ngIf="message" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+    <button type="button" class="btn-close" (click)="message = ''"></button>
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted small mt-2">Loading your subscriptions...</p>
   </div>
 
+  <!-- Subscriptions Grid -->
   <div *ngIf="!loading && subscriptions.length > 0" class="row g-4">
     <div class="col-md-6 col-lg-4" *ngFor="let sub of subscriptions">
       <div class="card card-pharma h-100 bg-white shadow-sm border-0 d-flex flex-column">
         <div class="card-body p-4 d-flex flex-column">
-          <!-- Status Banner -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <!-- Status Banner & Bridge Badge -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-bold text-muted small">Subscription #{{ sub.id }}</span>
             <span [ngClass]="{
               'badge-active': sub.status === 'ACTIVE',
@@ -30,9 +49,15 @@
             </span>
           </div>
 
+          <!-- Emergency Bridge Supply Active Banner -->
+          <div *ngIf="sub.isBridgeSupply" class="badge-bridge p-2 rounded-2 text-center small mb-3">
+            <i class="bi bi-shield-exclamation me-1"></i> 5-Day Emergency Bridge Supply Active
+          </div>
+
           <h4 class="fw-bold text-dark mb-1">{{ sub.medicineName }}</h4>
           <p class="text-muted small mb-3">Brand: <strong class="text-dark">{{ sub.brandName }}</strong></p>
 
+          <!-- Formula & Details Box -->
           <div class="bg-light p-3 rounded-3 mb-3 border small">
             <div class="d-flex justify-content-between mb-1">
               <span class="text-muted">Composition:</span>
@@ -51,20 +76,20 @@
               <span>{{ sub.frequency }}</span>
             </div>
             <div class="d-flex justify-content-between mb-1 border-top pt-1 mt-1" *ngIf="sub.prescriptionFileName">
-              <span class="text-muted">File:</span>
+              <span class="text-muted">Prescription:</span>
               <span class="text-dark text-truncate" style="max-width: 150px;" [title]="sub.prescriptionFileName">
                 <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ sub.prescriptionFileName }}
               </span>
             </div>
             <div class="d-flex justify-content-between" *ngIf="sub.prescriptionExpiryDate">
-              <span class="text-muted">Prescription Expiry:</span>
+              <span class="text-muted">Rx Expiry:</span>
               <span class="text-danger fw-bold">{{ sub.prescriptionExpiryDate | date:'mediumDate' }}</span>
             </div>
           </div>
 
-          <!-- Schedule Box -->
+          <!-- Schedule & Refill Box -->
           <div *ngIf="sub.status === 'ACTIVE'" class="alert alert-success py-2 px-3 small mb-3">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mb-1">
               <span><i class="bi bi-calendar-check me-1"></i> Next Refill:</span>
               <strong>{{ sub.nextRefillDate | date:'mediumDate' }}</strong>
             </div>
@@ -72,17 +97,39 @@
               <span><i class="bi bi-truck me-1"></i> Next Dispatch:</span>
               <span>{{ sub.nextDispatchDate | date:'mediumDate' }}</span>
             </div>
+            <div *ngIf="sub.snoozeCount && sub.snoozeCount > 0" class="text-muted border-top pt-1 mt-1" style="font-size: 11px;">
+              <i class="bi bi-moon-stars me-1 text-primary"></i> Snoozed {{ sub.snoozeCount }}x (Last: {{ sub.lastSnoozeDate | date:'mediumDate' }})
+            </div>
           </div>
 
           <div *ngIf="sub.status === 'PENDING'" class="alert alert-warning py-2 px-3 small mb-3">
-            <i class="bi bi-clock-history me-1"></i> Pending Pharmacist review & medicine assignment for your uploaded prescription.
+            <i class="bi bi-clock-history me-1"></i> Pending Pharmacist clinical triage & medicine matching.
           </div>
 
           <div *ngIf="sub.status === 'CLARIFICATION_REQUIRED'" class="alert alert-danger py-2 px-3 small mb-3">
             <i class="bi bi-exclamation-circle me-1"></i> Clarification requested by Pharmacist.
           </div>
 
-          <!-- Action Buttons -->
+          <!-- Phase 4 Chronic Care Action Buttons -->
+          <div class="d-flex flex-column gap-2 mb-3" *ngIf="sub.status === 'ACTIVE' || sub.status === 'PRESCRIPTION_EXPIRED'">
+            <!-- Emergency Bridge Supply Trigger -->
+            <button *ngIf="!sub.isBridgeSupply" 
+                    (click)="requestBridgeSupply(sub)" 
+                    [disabled]="actionLoading"
+                    class="btn btn-sm btn-outline-danger w-100 fw-bold py-2">
+              <i class="bi bi-shield-plus me-1"></i> Request 5-Day Emergency Bridge Supply
+            </button>
+
+            <!-- Vacation Snooze Trigger -->
+            <button *ngIf="sub.status === 'ACTIVE'" 
+                    (click)="openSnoozeModal(sub)" 
+                    [disabled]="actionLoading"
+                    class="btn btn-sm btn-outline-secondary w-100 fw-semibold py-1">
+              <i class="bi bi-moon-stars me-1"></i> Vacation Snooze Refill
+            </button>
+          </div>
+
+          <!-- Standard Lifecycle Action Buttons -->
           <div class="mt-auto pt-3 border-top d-flex gap-2">
             <button *ngIf="sub.status === 'ACTIVE'" (click)="pause(sub.id)" class="btn btn-sm btn-outline-warning flex-fill">Pause</button>
             <button *ngIf="sub.status === 'PAUSED'" (click)="resume(sub.id)" class="btn btn-sm btn-outline-success flex-fill">Resume</button>
@@ -94,9 +141,101 @@
     </div>
   </div>
 
+  <!-- Empty State -->
   <div *ngIf="!loading && subscriptions.length === 0" class="text-center py-5">
     <i class="bi bi-inbox text-muted display-4 mb-3 d-block"></i>
     <h5 class="text-muted">No medication subscriptions found.</h5>
     <a routerLink="/subscriptions/create" class="btn btn-pharma-primary mt-2">Start a Subscription</a>
+  </div>
+</div>
+
+<!-- VACATION SNOOZE MODAL -->
+<div *ngIf="snoozeModalOpen && selectedSubForSnooze" class="modal-backdrop-custom" (click)="closeSnoozeModal()">
+  <div class="modal-card-custom" (click)="$event.stopPropagation()">
+    <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+      <h6 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-moon-stars text-primary me-2"></i>Vacation Snooze Refill
+      </h6>
+      <button type="button" class="btn-close" (click)="closeSnoozeModal()"></button>
+    </div>
+    <div class="p-4">
+      <p class="text-muted small mb-3">
+        Going on holiday or have surplus medication? Snooze your next scheduled delivery for 
+        <strong>{{ selectedSubForSnooze.medicineName }}</strong>. All reserved inventory locks will be released cleanly.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold text-dark small">Select Snooze Duration:</label>
+        <div class="d-flex gap-2">
+          <button type="button" 
+                  (click)="selectedSnoozeDays = 7" 
+                  class="btn flex-fill py-2 fw-semibold"
+                  [class.btn-primary]="selectedSnoozeDays === 7"
+                  [class.btn-outline-secondary]="selectedSnoozeDays !== 7">
+            7 Days
+          </button>
+          <button type="button" 
+                  (click)="selectedSnoozeDays = 14" 
+                  class="btn flex-fill py-2 fw-semibold"
+                  [class.btn-primary]="selectedSnoozeDays === 14"
+                  [class.btn-outline-secondary]="selectedSnoozeDays !== 14">
+            14 Days
+          </button>
+          <button type="button" 
+                  (click)="selectedSnoozeDays = 21" 
+                  class="btn flex-fill py-2 fw-semibold"
+                  [class.btn-primary]="selectedSnoozeDays === 21"
+                  [class.btn-outline-secondary]="selectedSnoozeDays !== 21">
+            21 Days
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="p-3 bg-light border-top d-flex justify-content-end gap-2">
+      <button (click)="closeSnoozeModal()" type="button" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
+      <button (click)="submitSnooze()" [disabled]="actionLoading" type="button" class="btn btn-primary btn-sm px-4 fw-bold">
+        <span *ngIf="actionLoading" class="spinner-border spinner-border-sm me-1"></span>
+        Confirm Snooze (+{{ selectedSnoozeDays }} Days)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REFILL SYNCHRONIZATION ("PILLBOX DAY") MODAL -->
+<div *ngIf="syncModalOpen" class="modal-backdrop-custom" (click)="closeSyncModal()">
+  <div class="modal-card-custom" (click)="$event.stopPropagation()">
+    <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+      <h6 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-calendar2-range text-primary me-2"></i>Refill Synchronization ("Pillbox Day")
+      </h6>
+      <button type="button" class="btn-close" (click)="closeSyncModal()"></button>
+    </div>
+    <div class="p-4">
+      <p class="text-muted small mb-3">
+        Align all your chronic medication subscriptions so every refill arrives in a single, consolidated delivery package on your chosen day of the month.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold text-dark small">Preferred Delivery Day of Month:</label>
+        <select class="form-select" [(ngModel)]="selectedPillboxDay">
+          <option [ngValue]="1">1st of each month</option>
+          <option [ngValue]="5">5th of each month</option>
+          <option [ngValue]="10">10th of each month</option>
+          <option [ngValue]="15">15th of each month</option>
+          <option [ngValue]="20">20th of each month</option>
+          <option [ngValue]="25">25th of each month</option>
+        </select>
+        <div class="form-text small mt-2">
+          <i class="bi bi-box-seam text-success me-1"></i> Reduces packaging waste and guarantees all chronic meds arrive together.
+        </div>
+      </div>
+    </div>
+    <div class="p-3 bg-light border-top d-flex justify-content-end gap-2">
+      <button (click)="closeSyncModal()" type="button" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
+      <button (click)="submitSyncRefills()" [disabled]="actionLoading" type="button" class="btn btn-success btn-sm px-4 fw-bold">
+        <span *ngIf="actionLoading" class="spinner-border spinner-border-sm me-1"></span>
+        Sync All Chronic Refills
+      </button>
+    </div>
   </div>
 </div>

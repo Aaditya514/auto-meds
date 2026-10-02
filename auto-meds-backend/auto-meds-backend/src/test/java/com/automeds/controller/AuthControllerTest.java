@@ -58,6 +58,26 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void testRefreshTokenEndpoint() throws Exception {
+        com.automeds.dto.RefreshTokenRequest req = new com.automeds.dto.RefreshTokenRequest("valid-refresh-token");
+        AuthResponse res = new AuthResponse("new-token", "new-refresh-token", 1L, "User", "user@example.com", "PATIENT");
+        Mockito.when(authService.refreshToken(any())).thenReturn(res);
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testLogoutEndpoint() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"some-token\"}"))
+                .andExpect(status().isOk());
+    }
 }
 
 

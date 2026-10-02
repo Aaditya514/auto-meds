@@ -23,6 +23,7 @@ class PrescriptionServiceTest {
     private PrescriptionRepository prescriptionRepository;
     private UserRepository userRepository;
     private FileStorageUtil fileStorageUtil;
+    private PrescriptionOcrService prescriptionOcrService;
     private PrescriptionService prescriptionService;
 
     @BeforeEach
@@ -30,8 +31,9 @@ class PrescriptionServiceTest {
         prescriptionRepository = Mockito.mock(PrescriptionRepository.class);
         userRepository = Mockito.mock(UserRepository.class);
         fileStorageUtil = Mockito.mock(FileStorageUtil.class);
+        prescriptionOcrService = Mockito.mock(PrescriptionOcrService.class);
 
-        prescriptionService = new PrescriptionService(prescriptionRepository, userRepository, fileStorageUtil);
+        prescriptionService = new PrescriptionService(prescriptionRepository, userRepository, fileStorageUtil, prescriptionOcrService);
     }
 
     @Test

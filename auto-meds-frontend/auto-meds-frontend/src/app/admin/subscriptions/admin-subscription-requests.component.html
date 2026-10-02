@@ -364,42 +364,155 @@
       <button type="button" class="btn-close btn-close-white" (click)="closeAuditModal()"></button>
     </div>
 
-    <!-- Modal Body -->
+    <!-- Modal Body: Split-Screen Pharmacist Triage Desk -->
     <div class="auditor-modal-body">
       <div class="row g-4">
-        <!-- Left Column: Prescription Document Preview -->
-        <div class="col-lg-5 border-end">
-          <div class="p-3 bg-light rounded-3 mb-3 border">
-            <h6 class="fw-bold text-dark mb-2">Prescription Request Summary</h6>
-            <div class="mb-2"><span class="text-muted small">Patient:</span> <strong>{{ activeModalReq.patientName }}</strong></div>
-            <div class="mb-2"><span class="text-muted small">Email:</span> <span>{{ activeModalReq.patientEmail }}</span></div>
-            <div class="mb-2"><span class="text-muted small">Dosage:</span> <span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ activeModalReq.dosage }}</span></div>
-            <div class="mb-2"><span class="text-muted small">Frequency:</span> <strong>{{ activeModalReq.frequency }}</strong></div>
-            <div><span class="text-muted small">Quantity:</span> <strong>{{ activeModalReq.quantity }} units / refill</strong></div>
+        <!-- Left Column: Prescription Document Preview & Optical Controls -->
+        <div class="col-lg-6 border-end pe-lg-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-dark mb-0">
+              <i class="bi bi-file-earmark-medical text-primary me-1"></i> Doctor Prescription Document
+            </h6>
+            <div class="auditor-toolbar position-static">
+              <button (click)="zoomOut()" class="btn-tool" title="Zoom Out"><i class="bi bi-zoom-out"></i></button>
+              <span class="text-white-50 px-1 small" style="font-size: 11px;">{{ (prescriptionZoom * 100).toFixed(0) }}%</span>
+              <button (click)="zoomIn()" class="btn-tool" title="Zoom In"><i class="bi bi-zoom-in"></i></button>
+              <button (click)="rotatePrescription()" class="btn-tool" title="Rotate 90°"><i class="bi bi-arrow-clockwise"></i></button>
+              <button (click)="resetPrescriptionView()" class="btn-tool" title="Reset View"><i class="bi bi-aspect-ratio"></i></button>
+              <button *ngIf="activeModalReq.prescriptionId" (click)="viewPrescription(activeModalReq.prescriptionId)" class="btn-tool" title="Open Full Screen">
+                <i class="bi bi-box-arrow-up-right"></i>
+              </button>
+            </div>
           </div>
 
-          <div class="p-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 text-center">
-            <i class="bi bi-file-earmark-pdf text-primary display-4 mb-2 d-block"></i>
-            <h6 class="fw-bold text-dark">Prescription Document</h6>
-            <p class="text-muted small mb-3">Verify patient uploaded doctor prescription document</p>
-            <button *ngIf="activeModalReq.prescriptionId" (click)="viewPrescription(activeModalReq.prescriptionId)" class="btn btn-primary w-100 fw-bold">
-              <i class="bi bi-box-arrow-up-right me-2"></i>Open Full Document PDF
-            </button>
-            <span *ngIf="!activeModalReq.prescriptionId" class="text-muted small">No file uploaded</span>
+          <!-- Document Viewport -->
+          <div class="auditor-viewport-box mb-3">
+            <div class="auditor-canvas-wrapper">
+              <iframe *ngIf="prescriptionPreviewUrl" 
+                      [src]="prescriptionPreviewUrl" 
+                      class="auditor-preview-iframe"
+                      [style.transform]="'scale(' + prescriptionZoom + ') rotate(' + prescriptionRotation + 'deg)'">
+              </iframe>
+              <div *ngIf="!prescriptionPreviewUrl && activeModalReq.prescriptionId" class="text-center text-white-50 p-4">
+                <i class="bi bi-file-earmark-pdf display-3 text-primary mb-3 d-block"></i>
+                <h6 class="text-white mb-2">Prescription Document #{{ activeModalReq.prescriptionId }}</h6>
+                <p class="small text-white-50 mb-3">Loaded into triage viewer.</p>
+                <button (click)="viewPrescription(activeModalReq.prescriptionId)" class="btn btn-sm btn-primary fw-bold">
+                  <i class="bi bi-box-arrow-up-right me-1"></i> Open In External Window
+                </button>
+              </div>
+              <div *ngIf="!activeModalReq.prescriptionId" class="text-center text-white-50 p-4">
+                <i class="bi bi-exclamation-triangle display-4 text-warning mb-2 d-block"></i>
+                <p class="mb-0">No prescription file attached to this subscription request.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Patient & OCR Metadata Snapshot -->
+          <div class="p-3 bg-light rounded-3 border">
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <span class="text-muted small d-block">Patient:</span>
+                <strong class="text-dark small">{{ activeModalReq.patientName }}</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted small d-block">Email:</span>
+                <span class="text-dark small text-truncate d-block">{{ activeModalReq.patientEmail }}</span>
+              </div>
+            </div>
+
+            <!-- OCR Extracted Clinic & Doctor Info -->
+            <div *ngIf="modalOcrResult" class="p-2 bg-white rounded-2 border border-info border-opacity-25 mt-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold" style="font-size: 11px;">
+                  <i class="bi bi-cpu me-1"></i> OCR Extraction Confidence: {{ modalOcrResult.confidenceOverall | number:'1.0-0' }}%
+                </span>
+                <span *ngIf="modalOcrResult.doctorRegNumber" class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 10px;">
+                  Reg: {{ modalOcrResult.doctorRegNumber }}
+                </span>
+              </div>
+              <div class="row g-1 small text-dark">
+                <div class="col-6">
+                  <span class="text-muted" style="font-size: 11px;">Prescribing Doctor:</span>
+                  <strong class="d-block text-truncate">{{ modalOcrResult.doctorName || 'Not detected' }}</strong>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted" style="font-size: 11px;">Clinic / Hospital:</span>
+                  <strong class="d-block text-truncate">{{ modalOcrResult.clinicOrHospital || 'Not detected' }}</strong>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Right Column: Medicine Checklist Auditor -->
-        <div class="col-lg-7">
+        <!-- Right Column: OCR Intelligence Auto-Matcher & Catalog Auditor -->
+        <div class="col-lg-6 ps-lg-4">
+          <!-- OCR Detected Medications Rapid Matcher -->
+          <div class="ocr-triage-panel mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold text-dark mb-0">
+                <i class="bi bi-magic text-indigo me-1"></i> OCR Detected Medications
+              </h6>
+              <button *ngIf="modalOcrResult && modalOcrResult.candidates && modalOcrResult.candidates.length > 0"
+                      (click)="acceptAllOcrMatches(activeModalReq)" 
+                      class="btn btn-sm btn-primary fw-bold py-1 px-2"
+                      style="font-size: 11px;">
+                <i class="bi bi-lightning-charge-fill me-1"></i> Auto-Assign All OCR Matches
+              </button>
+            </div>
+
+            <div *ngIf="modalOcrLoading" class="text-center py-3">
+              <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+              <span class="text-muted small">Analyzing prescription document with medical lexer...</span>
+            </div>
+
+            <div *ngIf="!modalOcrLoading && modalOcrResult && modalOcrResult.candidates && modalOcrResult.candidates.length > 0" class="d-flex flex-column gap-2 mb-2">
+              <div *ngFor="let cand of modalOcrResult.candidates" class="ocr-candidate-card d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <strong class="text-dark small">{{ cand.medicineName }}</strong>
+                    <span class="badge rounded-pill" 
+                          [class.ocr-badge-high]="cand.confidenceScore >= 80" 
+                          [class.ocr-badge-med]="cand.confidenceScore < 80" 
+                          style="font-size: 10px;">
+                      {{ cand.confidenceScore }}% match
+                    </span>
+                    <span *ngIf="cand.savingsPercentage && cand.savingsPercentage > 0" class="badge bg-success bg-opacity-10 text-success" style="font-size: 10px;">
+                      Save {{ cand.savingsPercentage }}% generic
+                    </span>
+                  </div>
+                  <div class="text-muted" style="font-size: 11px;">
+                    <span>Scanned: <em>"{{ cand.detectedText }}"</em></span>
+                    <span class="ms-2">• {{ cand.dosage }} • {{ cand.frequency }}</span>
+                  </div>
+                </div>
+                <button *ngIf="cand.medicineId && !isMedicineSelected(activeModalReq, cand.medicineId)"
+                        (click)="acceptSingleOcrCandidate(activeModalReq, cand)" 
+                        class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold"
+                        style="font-size: 11px;">
+                  <i class="bi bi-plus-lg me-1"></i> Add
+                </button>
+                <span *ngIf="cand.medicineId && isMedicineSelected(activeModalReq, cand.medicineId)" class="badge bg-success py-1 px-2">
+                  <i class="bi bi-check-lg me-1"></i> Added
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="!modalOcrLoading && (!modalOcrResult || !modalOcrResult.candidates || modalOcrResult.candidates.length === 0)" class="text-muted small py-2 text-center">
+              <i class="bi bi-info-circle me-1"></i> No high-confidence automated matches. Search and select medicines manually below.
+            </div>
+          </div>
+
+          <!-- Catalog Medicine Multi-Selector -->
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-capsule text-primary me-1"></i> Select Prescribed Inventory Medicines</h6>
-            <button (click)="selectAllFiltered(activeModalReq, modalSearchTerm)" class="btn btn-sm btn-link text-primary text-decoration-none">
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-capsule text-primary me-1"></i> Prescribed Inventory Medicines</h6>
+            <button (click)="selectAllFiltered(activeModalReq, modalSearchTerm)" class="btn btn-sm btn-link text-primary text-decoration-none py-0">
               Select All Filtered
             </button>
           </div>
 
           <!-- Selected Tags -->
-          <div class="med-chips-container mb-3 d-flex flex-wrap gap-2">
+          <div class="med-chips-container mb-2 d-flex flex-wrap gap-2">
             <span *ngIf="!activeModalReq.selectedMedicineIds || activeModalReq.selectedMedicineIds.length === 0" class="text-muted small italic">
               No medicines selected yet.
             </span>
@@ -412,13 +525,13 @@
           </div>
 
           <!-- Search filter -->
-          <div class="input-group input-group-sm mb-3">
+          <div class="input-group input-group-sm mb-2">
             <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search medicines catalog..." [(ngModel)]="modalSearchTerm">
+            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search catalog medicines by brand, name, composition..." [(ngModel)]="modalSearchTerm">
           </div>
 
           <!-- Checkbox List -->
-          <div class="med-scroll-grid" style="max-height: 300px;">
+          <div class="med-scroll-grid" style="max-height: 220px;">
             <div class="row row-cols-1 row-cols-sm-2 g-2">
               <div *ngFor="let m of getFilteredMedicines(activeModalReq, modalSearchTerm)" class="col">
                 <div class="med-item-card d-flex align-items-start gap-2" 
@@ -439,6 +552,7 @@
             </div>
           </div>
         </div>
+      </div>
     </div>
 
     <!-- Modal Footer -->
@@ -449,7 +563,7 @@
       <button type="button" (click)="approve(activeModalReq)" 
               class="btn btn-success fw-bold px-4 shadow-sm" 
               [disabled]="!activeModalReq.selectedMedicineIds || activeModalReq.selectedMedicineIds.length === 0">
-        <i class="bi bi-check-circle-fill me-1"></i> Approve Request ({{ activeModalReq.selectedMedicineIds.length }})
+        <i class="bi bi-check-circle-fill me-1"></i> Approve Request ({{ activeModalReq.selectedMedicineIds ? activeModalReq.selectedMedicineIds.length : 0 }})
       </button>
     </div>
   </div>

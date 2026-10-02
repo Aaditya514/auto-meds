@@ -23,6 +23,7 @@
             <th>Type</th>
             <th>Patient</th>
             <th>Total Amount</th>
+            <th>Prescription Verification</th>
             <th>Date</th>
             <th>Current Status</th>
             <th>Update Delivery Status</th>
@@ -41,9 +42,35 @@
               <span class="text-muted small">{{ order.patientEmail }}</span>
             </td>
             <td class="fw-bold text-primary">₹{{ order.totalAmount }}</td>
-            <td class="small text-muted">{{ order.orderDate | date:'short' }}</td>
             <td>
-              <span class="badge" [ngClass]="{
+              <div *ngIf="order.prescriptionId" class="d-flex flex-column gap-1">
+                <button (click)="viewPrescription(order.prescriptionId)" class="btn btn-xs btn-outline-primary py-1 px-2 fw-semibold" style="font-size: 11px;">
+                  <i class="bi bi-file-earmark-medical me-1"></i> View Doctor Rx #{{ order.prescriptionId }}
+                </button>
+                <div class="d-flex gap-1 flex-wrap">
+                  <span class="badge bg-info bg-opacity-10 text-primary border border-info" style="font-size: 10px;">
+                    <i class="bi bi-shield-check me-1"></i>Four-Eyes Verified
+                  </span>
+                  <span *ngIf="order.isBridgeSupply" class="badge bg-danger bg-opacity-10 text-danger border border-danger" style="font-size: 10px;">
+                    <i class="bi bi-shield-plus me-1"></i>Bridge Supply
+                  </span>
+                </div>
+              </div>
+              <span *ngIf="!order.prescriptionId" class="text-muted small">OTC (No Rx Required)</span>
+            </td>
+            <td class="small text-muted">
+              <div>{{ order.orderDate | date:'short' }}</div>
+              <div class="mt-1">
+                <span class="badge" [ngClass]="order.paymentStatus === 'PAID' ? 'bg-success bg-opacity-10 text-success border border-success' : 'bg-warning bg-opacity-10 text-dark border border-warning'" style="font-size: 10px;">
+                  {{ order.paymentStatus || 'PENDING' }}
+                </span>
+                <span *ngIf="order.paymentMethod" class="badge bg-light text-secondary border ms-1" style="font-size: 10px;">
+                  {{ order.paymentMethod }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="badge mb-1 d-inline-block" [ngClass]="{
                 'badge-active': order.orderStatus === 'DELIVERED',
                 'badge-pending': order.orderStatus === 'PENDING' || order.orderStatus === 'APPROVED' || order.orderStatus === 'PACKED',
                 'badge-approved': order.orderStatus === 'DISPATCHED' || order.orderStatus === 'OUT_FOR_DELIVERY',
@@ -51,6 +78,11 @@
               }">
                 {{ order.orderStatus }}
               </span>
+              <div>
+                <button (click)="viewDispensingSlip(order.id)" class="btn btn-xs btn-outline-success py-0 px-2 fw-semibold" style="font-size: 10px;" title="View official physical dispensing slip with doorstep verification QR code">
+                  <i class="bi bi-qr-code me-1"></i> Slip &amp; QR
+                </button>
+              </div>
             </td>
             <td>
               <select [ngModel]="order.orderStatus" (ngModelChange)="updateStatus(order, $event)" class="form-select form-select-sm fw-semibold">
@@ -68,3 +100,10 @@
     <h5 class="text-muted">No orders found in system.</h5>
   </div>
 </div>
+
+<!-- Dispensing Slip Modal Component -->
+<app-dispensing-slip-modal
+  [slip]="selectedDispensingSlip"
+  [isOpen]="showDispensingModal"
+  (close)="closeDispensingModal()"
+></app-dispensing-slip-modal>

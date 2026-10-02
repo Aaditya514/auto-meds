@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 
 class OrderServiceTest {
 
@@ -71,6 +71,7 @@ class OrderServiceTest {
 
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(u));
         Mockito.when(cartService.getOrCreateCartForPatient(1L)).thenReturn(cart);
+        Mockito.when(medicineRepository.deductAvailableStock(anyLong(), anyInt())).thenReturn(1);
 
         Order saved = new Order();
         saved.setId(500L);
@@ -113,6 +114,7 @@ class OrderServiceTest {
 
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(u));
         Mockito.when(cartService.getOrCreateCartForPatient(1L)).thenReturn(cart);
+        Mockito.when(medicineRepository.deductAvailableStock(anyLong(), anyInt())).thenReturn(1);
 
         Order saved = new Order();
         saved.setId(501L);
@@ -220,6 +222,7 @@ class OrderServiceTest {
         Order saved = new Order();
         saved.setId(200L);
 
+        Mockito.when(medicineRepository.deductAvailableStock(anyLong(), anyInt())).thenReturn(1);
         Mockito.when(orderRepository.save(any(Order.class))).thenReturn(saved);
 
         Order res = orderService.createSubscriptionRefillOrder(sub, m);
@@ -246,6 +249,7 @@ class OrderServiceTest {
         Order saved = new Order();
         saved.setId(201L);
 
+        Mockito.when(medicineRepository.deductAvailableStock(anyLong(), anyInt())).thenReturn(1);
         Mockito.when(orderRepository.save(any(Order.class))).thenReturn(saved);
 
         Order res = orderService.createSubscriptionRefillOrder(sub, m);

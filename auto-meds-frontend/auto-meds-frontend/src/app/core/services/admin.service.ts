@@ -15,6 +15,55 @@ export interface AdminDashboardMetrics {
   pendingOrders: number;
   lowStockMedicines: number;
   outOfStockMedicines: number;
+  deficitSubscriptions?: number;
+  procurementAlerts?: number;
+}
+
+export interface ProcurementAlert {
+  medicineId: number;
+  medicineName: string;
+  brandName: string;
+  composition: string;
+  strength: string;
+  price: number;
+  stockQuantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  reorderThreshold: number;
+  suggestedReorderPackSize: number;
+  deficitSubscriptionsCount: number;
+  urgency: 'CRITICAL_STOCKOUT' | 'DEFICIT_QUEUED' | 'LOW_STOCK';
+}
+
+export interface DeficitSubscription {
+  subscriptionId: number;
+  patientId: number;
+  patientName: string;
+  patientEmail: string;
+  medicineId: number;
+  medicineName: string;
+  quantityNeeded: number;
+  currentAvailableStock: number;
+  nextRefillDate: string;
+  daysUntilRefill: number;
+}
+
+export interface RestockRequest {
+  medicineId: number;
+  quantity: number;
+  batchNumber?: string;
+  expiryDate?: string;
+}
+
+export interface RestockResponse {
+  medicineId: number;
+  medicineName: string;
+  previousStock: number;
+  newStock: number;
+  previousAvailable: number;
+  newAvailable: number;
+  deficitsResolvedCount: number;
+  message: string;
 }
 
 @Injectable({
@@ -79,5 +128,17 @@ export class AdminService {
 
   downloadPrescription(id: number): Observable<Blob> {
     return this.http.get(`http://localhost:8080/api/prescriptions/${id}`, { responseType: 'blob' });
+  }
+
+  getProcurementAlerts(): Observable<ProcurementAlert[]> {
+    return this.http.get<ProcurementAlert[]>(`${this.apiUrl}/procurement/alerts`);
+  }
+
+  getDeficitSubscriptions(): Observable<DeficitSubscription[]> {
+    return this.http.get<DeficitSubscription[]>(`${this.apiUrl}/procurement/deficits`);
+  }
+
+  restockMedicine(request: RestockRequest): Observable<RestockResponse> {
+    return this.http.post<RestockResponse>(`${this.apiUrl}/procurement/restock`, request);
   }
 }

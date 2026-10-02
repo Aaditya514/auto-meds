@@ -14,8 +14,8 @@ public class Prescription {
 
     // Primary Key identifier field
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_prescriptions")
-    @SequenceGenerator(name = "seq_prescriptions", sequenceName = "SEQ_PRESCRIPTIONS", allocationSize = 1)
+    // Use IDENTITY strategy so PostgreSQL auto-increments via BIGSERIAL (no separate sequence objects needed)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // Defines a Many-to-One relational database mapping
@@ -45,6 +45,10 @@ public class Prescription {
     // Maps this field to a database table column
     @Column(nullable = false, length = 30)
     private String status; // "PENDING", "APPROVED", "REJECTED", "CLARIFICATION_REQUIRED", "EXPIRED"
+
+    // Extracted OCR text & candidate medicine metadata (JSON)
+    @Column(name = "ocr_data", columnDefinition = "TEXT")
+    private String ocrData;
 
     private static final String PENDING = "PENDING";
 
@@ -135,6 +139,14 @@ public class Prescription {
 
     public void setDoctorVisitDate(LocalDateTime doctorVisitDate) {
         this.doctorVisitDate = doctorVisitDate;
+    }
+
+    public String getOcrData() {
+        return ocrData;
+    }
+
+    public void setOcrData(String ocrData) {
+        this.ocrData = ocrData;
     }
 
     @Override

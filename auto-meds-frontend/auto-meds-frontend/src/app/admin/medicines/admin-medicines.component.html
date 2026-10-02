@@ -27,6 +27,7 @@
             <th>Brand</th>
             <th>Composition</th>
             <th>Strength</th>
+            <th>Therapeutic Class & Disease Indications</th>
             <th>Price</th>
             <th>Stock</th>
             <th>Actions</th>
@@ -39,6 +40,17 @@
             <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ med.brandName }}</span></td>
             <td>{{ med.composition }}</td>
             <td><strong>{{ med.strength }}</strong></td>
+            <td>
+              <div class="mb-1" *ngIf="med.category">
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold">{{ med.category }}</span>
+              </div>
+              <div class="d-flex flex-wrap gap-1" *ngIf="getSymptomsList(med.symptoms).length > 0">
+                <span *ngFor="let sym of getSymptomsList(med.symptoms)" class="badge bg-light text-dark border" style="font-size: 10px;">
+                  <i class="bi bi-tag-fill text-primary opacity-50 me-1"></i>{{ sym }}
+                </span>
+              </div>
+              <span *ngIf="getSymptomsList(med.symptoms).length === 0 && !med.category" class="text-muted small italic">No tags assigned</span>
+            </td>
             <td class="fw-bold text-primary">₹{{ med.price }}</td>
             <td>
               <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'">
@@ -83,7 +95,7 @@
             </div>
 
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Composition (Active Ingredient) *</label>
+              <label class="form-label fw-semibold">Composition (Active Ingredient / Molecule) *</label>
               <input type="text" formControlName="composition" class="form-control" placeholder="Metformin">
             </div>
 
@@ -103,8 +115,11 @@
             </div>
 
             <div class="col-md-4">
-              <label class="form-label fw-semibold">Category</label>
-              <input type="text" formControlName="category" class="form-control" placeholder="Diabetes">
+              <label class="form-label fw-semibold">Therapeutic Category</label>
+              <input type="text" formControlName="category" list="categoryOptions" class="form-control" placeholder="Select or type class...">
+              <datalist id="categoryOptions">
+                <option *ngFor="let cat of therapeuticCategories" [value]="cat"></option>
+              </datalist>
             </div>
 
             <div class="col-md-6">
@@ -116,6 +131,61 @@
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" formControlName="requiresPrescription" id="reqRx">
                 <label class="form-check-label fw-semibold ms-2" for="reqRx">Requires Prescription</label>
+              </div>
+            </div>
+
+            <!-- Disease Indications & Classification Tags for Disease Search -->
+            <div class="col-12">
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <label class="form-label fw-bold text-dark mb-0">
+                      <i class="bi bi-tags-fill text-primary me-1"></i> Disease Indications & Classification Tags
+                    </label>
+                    <span class="d-block text-muted small" style="font-size: 12px;">
+                      Classifies which diseases and clinical ailments this medicine treats (powers patient symptom discovery and therapeutic classification).
+                    </span>
+                  </div>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ diseaseTags.length }} Tag(s)</span>
+                </div>
+
+                <!-- Active Tags Chip Container -->
+                <div class="p-2 bg-white rounded-2 border mb-2 d-flex flex-wrap gap-1" style="min-height: 42px;">
+                  <span *ngIf="diseaseTags.length === 0" class="text-muted small italic p-1">
+                    No disease tags assigned yet. Type a disease below or click quick presets.
+                  </span>
+                  <span *ngFor="let tag of diseaseTags; let idx = index" class="badge bg-primary text-white d-inline-flex align-items-center gap-1 px-2 py-1" style="font-size: 12px;">
+                    <span>{{ tag }}</span>
+                    <i (click)="removeTag(idx)" class="bi bi-x-circle-fill text-white-50 ms-1" style="cursor: pointer;" title="Remove tag"></i>
+                  </span>
+                </div>
+
+                <!-- Input to add custom tag -->
+                <div class="input-group input-group-sm mb-2">
+                  <input type="text" 
+                         [(ngModel)]="currentTagInput" 
+                         [ngModelOptions]="{standalone: true}"
+                         (keydown.enter)="addTag(); $event.preventDefault()"
+                         class="form-control" 
+                         placeholder="Type a disease (e.g. 'Type 2 Diabetes', 'Migraine', 'Acid Reflux') and press Enter...">
+                  <button type="button" (click)="addTag()" class="btn btn-outline-primary fw-semibold">
+                    <i class="bi bi-plus-lg me-1"></i> Add Tag
+                  </button>
+                </div>
+
+                <!-- 1-Click Preset Suggestions -->
+                <div>
+                  <span class="text-muted small fw-semibold me-1" style="font-size: 11px;">Quick Preset Diseases:</span>
+                  <div class="d-flex flex-wrap gap-1 mt-1">
+                    <button *ngFor="let preset of presetDiseaseSuggestions" 
+                            type="button" 
+                            (click)="addPresetTag(preset)"
+                            class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill"
+                            style="font-size: 11px;">
+                      + {{ preset }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

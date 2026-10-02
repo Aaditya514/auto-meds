@@ -64,8 +64,10 @@ public class SubscriptionController {
 
     // Handles GET requests at this endpoint
     @GetMapping("/{id}")
-    public ResponseEntity<SubscriptionResponseDTO> getSubscriptionById(@PathVariable Long id) {
-        return ResponseEntity.ok(subscriptionService.getSubscriptionById(id));
+    public ResponseEntity<SubscriptionResponseDTO> getSubscriptionById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(subscriptionService.getSubscriptionById(id, userPrincipal));
     }
 
     // Handles PUT requests at this endpoint
@@ -99,5 +101,30 @@ public class SubscriptionController {
             @PathVariable Long id,
             @RequestPart(value = "prescriptionFile", required = false) MultipartFile prescriptionFile) {
         return ResponseEntity.ok(subscriptionService.renewSubscription(userPrincipal.getId(), id, prescriptionFile));
+    }
+
+    // Emergency 5-Day Bridge Supply: clinical stopgap for chronic care
+    @PostMapping("/{id}/bridge-supply")
+    public ResponseEntity<SubscriptionResponseDTO> requestBridgeSupply(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.requestBridgeSupply(userPrincipal.getId(), id));
+    }
+
+    // Subscription Vacation Snooze (7 or 14 days deferred refill)
+    @PostMapping("/{id}/snooze")
+    public ResponseEntity<SubscriptionResponseDTO> snoozeSubscription(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "7") int days) {
+        return ResponseEntity.ok(subscriptionService.snoozeSubscription(userPrincipal.getId(), id, days));
+    }
+
+    // Refill Synchronization (Pillbox Day)
+    @PostMapping("/sync-refills")
+    public ResponseEntity<List<SubscriptionResponseDTO>> syncRefills(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(defaultValue = "1") int targetDay) {
+        return ResponseEntity.ok(subscriptionService.syncRefills(userPrincipal.getId(), targetDay));
     }
 }

@@ -18,12 +18,21 @@ public class MedicineDTO {
     private String category;
     private BigDecimal price;
     private Integer stockQuantity;
+    private Integer reservedQuantity;
+    private Integer availableQuantity;
+    private Integer reorderThreshold;
+    private Integer suggestedReorderPackSize;
     private Boolean requiresPrescription;
     private String description;
     private String manufacturer;
     private LocalDateTime expiryDate;
     private Boolean active;
     private Boolean inStock;
+    private String symptoms;
+    private Long genericAlternativeId;
+    private String genericAlternativeName;
+    private BigDecimal genericAlternativePrice;
+    private String genericSavingsText;
 
     public MedicineDTO() {
     }
@@ -38,12 +47,38 @@ public class MedicineDTO {
         this.category = category;
         this.price = price;
         this.stockQuantity = stockQuantity;
+        this.reservedQuantity = 0;
+        this.availableQuantity = stockQuantity != null ? stockQuantity : 0;
+        this.reorderThreshold = 10;
+        this.suggestedReorderPackSize = 50;
         this.requiresPrescription = requiresPrescription;
         this.description = description;
         this.manufacturer = manufacturer;
         this.expiryDate = expiryDate;
         this.active = active;
-        this.inStock = stockQuantity != null && stockQuantity > 0;
+        this.inStock = this.availableQuantity > 0;
+    }
+
+    @SuppressWarnings("java:S107")
+    public MedicineDTO(Long id, String medicineName, String brandName, String composition, String strength, String category, BigDecimal price, Integer stockQuantity, Integer reservedQuantity, Integer availableQuantity, Integer reorderThreshold, Integer suggestedReorderPackSize, Boolean requiresPrescription, String description, String manufacturer, LocalDateTime expiryDate, Boolean active) {
+        this.id = id;
+        this.medicineName = medicineName;
+        this.brandName = brandName;
+        this.composition = composition;
+        this.strength = strength;
+        this.category = category;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+        this.reservedQuantity = reservedQuantity != null ? reservedQuantity : 0;
+        this.availableQuantity = availableQuantity != null ? availableQuantity : Math.max(0, (stockQuantity != null ? stockQuantity : 0) - this.reservedQuantity);
+        this.reorderThreshold = reorderThreshold != null ? reorderThreshold : 10;
+        this.suggestedReorderPackSize = suggestedReorderPackSize != null ? suggestedReorderPackSize : 50;
+        this.requiresPrescription = requiresPrescription;
+        this.description = description;
+        this.manufacturer = manufacturer;
+        this.expiryDate = expiryDate;
+        this.active = active;
+        this.inStock = this.availableQuantity > 0;
     }
 
     public Long getId() {
@@ -108,7 +143,46 @@ public class MedicineDTO {
 
     public void setStockQuantity(Integer stockQuantity) {
         this.stockQuantity = stockQuantity;
-        this.inStock = stockQuantity != null && stockQuantity > 0;
+        this.availableQuantity = Math.max(0, (stockQuantity != null ? stockQuantity : 0) - (this.reservedQuantity != null ? this.reservedQuantity : 0));
+        this.inStock = this.availableQuantity > 0;
+    }
+
+    public Integer getReservedQuantity() {
+        return reservedQuantity != null ? reservedQuantity : 0;
+    }
+
+    public void setReservedQuantity(Integer reservedQuantity) {
+        this.reservedQuantity = reservedQuantity != null ? reservedQuantity : 0;
+        this.availableQuantity = Math.max(0, (this.stockQuantity != null ? this.stockQuantity : 0) - this.reservedQuantity);
+        this.inStock = this.availableQuantity > 0;
+    }
+
+    public Integer getAvailableQuantity() {
+        if (this.availableQuantity != null) {
+            return this.availableQuantity;
+        }
+        return Math.max(0, (this.stockQuantity != null ? this.stockQuantity : 0) - (this.reservedQuantity != null ? this.reservedQuantity : 0));
+    }
+
+    public void setAvailableQuantity(Integer availableQuantity) {
+        this.availableQuantity = availableQuantity != null ? availableQuantity : 0;
+        this.inStock = this.availableQuantity > 0;
+    }
+
+    public Integer getReorderThreshold() {
+        return reorderThreshold != null ? reorderThreshold : 10;
+    }
+
+    public void setReorderThreshold(Integer reorderThreshold) {
+        this.reorderThreshold = reorderThreshold != null ? reorderThreshold : 10;
+    }
+
+    public Integer getSuggestedReorderPackSize() {
+        return suggestedReorderPackSize != null ? suggestedReorderPackSize : 50;
+    }
+
+    public void setSuggestedReorderPackSize(Integer suggestedReorderPackSize) {
+        this.suggestedReorderPackSize = suggestedReorderPackSize != null ? suggestedReorderPackSize : 50;
     }
 
     public Boolean getRequiresPrescription() {
@@ -157,6 +231,46 @@ public class MedicineDTO {
 
     public void setInStock(Boolean inStock) {
         this.inStock = inStock;
+    }
+
+    public String getSymptoms() {
+        return symptoms;
+    }
+
+    public void setSymptoms(String symptoms) {
+        this.symptoms = symptoms;
+    }
+
+    public Long getGenericAlternativeId() {
+        return genericAlternativeId;
+    }
+
+    public void setGenericAlternativeId(Long genericAlternativeId) {
+        this.genericAlternativeId = genericAlternativeId;
+    }
+
+    public String getGenericAlternativeName() {
+        return genericAlternativeName;
+    }
+
+    public void setGenericAlternativeName(String genericAlternativeName) {
+        this.genericAlternativeName = genericAlternativeName;
+    }
+
+    public BigDecimal getGenericAlternativePrice() {
+        return genericAlternativePrice;
+    }
+
+    public void setGenericAlternativePrice(BigDecimal genericAlternativePrice) {
+        this.genericAlternativePrice = genericAlternativePrice;
+    }
+
+    public String getGenericSavingsText() {
+        return genericSavingsText;
+    }
+
+    public void setGenericSavingsText(String genericSavingsText) {
+        this.genericSavingsText = genericSavingsText;
     }
 
     @Override

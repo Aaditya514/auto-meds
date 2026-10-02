@@ -1,0 +1,69 @@
+.dispensing-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1060;
+  overflow-y: auto;
+}
+
+.dispensing-slip-card {
+  width: 100%;
+  max-width: 860px;
+  margin: auto;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.qr-box {
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+/* Print Specific Rules */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .dispensing-modal-backdrop {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .dispensing-slip-card {
+    max-width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  #printableDispensingSlip, #printableDispensingSlip * {
+    visibility: visible;
+  }
+
+  #printableDispensingSlip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 15mm !important;
+    background: #ffffff;
+  }
+}

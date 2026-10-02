@@ -16,5 +16,6 @@ Thumbs.db
 
 # Logs and runtime
 *.log
-uploads/prescriptions/*
-!uploads/prescriptions/.gitkeep
+**/uploads/prescriptions/*
+!**/uploads/prescriptions/.gitkeep
+*.ps1

@@ -1,8 +1,12 @@
 package com.automeds.service;
 
 import com.automeds.dto.AdminDashboardDTO;
+import com.automeds.dto.DeficitSubscriptionDTO;
 import com.automeds.dto.MedicineDTO;
 import com.automeds.dto.OrderDTO;
+import com.automeds.dto.ProcurementAlertDTO;
+import com.automeds.dto.RestockRequestDTO;
+import com.automeds.dto.RestockResponseDTO;
 import com.automeds.dto.SubscriptionResponseDTO;
 import com.automeds.entity.Medicine;
 import com.automeds.entity.Order;
@@ -17,7 +21,9 @@ import com.automeds.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,10 +74,13 @@ public class AdminService {
         Long pendingOrders = orderRepository.countByOrderStatus(STATUS_PENDING);
         Long lowStockMedicines = (long) medicineRepository.findByActiveAndStockQuantityLessThanEqual(1, 10).size();
         Long outOfStockMedicines = (long) medicineRepository.findByActiveAndStockQuantityEquals(1, 0).size();
+        Long deficitSubscriptions = (long) subscriptionRepository.findByStatusAndReservationStatus(STATUS_ACTIVE, "OUT_OF_STOCK_DEFICIT").size();
+        Long procurementAlerts = (long) medicineRepository.findMedicinesNeedingReorder().size();
 
         return new AdminDashboardDTO(
                 totalPatients, totalMedicines, activeSubscriptions, pendingRequests,
-                upcomingRefills, pendingOrders, lowStockMedicines, outOfStockMedicines
+                upcomingRefills, pendingOrders, lowStockMedicines, outOfStockMedicines,
+                deficitSubscriptions, procurementAlerts
         );
     }
 
@@ -187,6 +196,7 @@ public class AdminService {
         medicine.setDescription(dto.getDescription());
         medicine.setManufacturer(dto.getManufacturer());
         medicine.setExpiryDate(dto.getExpiryDate());
+        medicine.setSymptoms(dto.getSymptoms());
         medicine.setActive(1);
 
         return medicineService.convertToDTO(medicineRepository.save(medicine));
@@ -208,6 +218,7 @@ public class AdminService {
         medicine.setRequiresPrescription(dto.getRequiresPrescription() != null && dto.getRequiresPrescription() ? 1 : 0);
         medicine.setDescription(dto.getDescription());
         medicine.setManufacturer(dto.getManufacturer());
+        medicine.setSymptoms(dto.getSymptoms());
         if (dto.getExpiryDate() != null) {
             medicine.setExpiryDate(dto.getExpiryDate());
         }
@@ -272,5 +283,156 @@ public class AdminService {
     @Transactional(readOnly = true)
     public List<User> getAllPatients() {
         return userRepository.findByRole("PATIENT");
+    }
+
+    /**
+     * Retrieves inventory items reaching or below reorder threshold with active subscriber deficit counts.
+     */
+    @Transactional(readOnly = true)
+    public List<ProcurementAlertDTO> getProcurementAlerts() {
+        List<Medicine> needingReorder = medicineRepository.findMedicinesNeedingReorder();
+        List<ProcurementAlertDTO> alerts = new ArrayList<>();
+
+        for (Medicine m : needingReorder) {
+            int available = m.getAvailableQuantity();
+            Long deficitCount = subscriptionRepository.countByMedicineIdAndStatusAndReservationStatus(
+                    m.getId(), STATUS_ACTIVE, "OUT_OF_STOCK_DEFICIT"
+            );
+
+            String urgency;
+            if (m.getStockQuantity() == 0 || available == 0) {
+                urgency = "CRITICAL_STOCKOUT";
+            } else if (deficitCount > 0) {
+                urgency = "DEFICIT_QUEUED";
+            } else {
+                urgency = "LOW_STOCK";
+            }
+
+            alerts.add(new ProcurementAlertDTO(
+                    m.getId(),
+                    m.getMedicineName(),
+                    m.getBrandName(),
+                    m.getComposition(),
+                    m.getStrength(),
+                    m.getPrice(),
+                    m.getStockQuantity(),
+                    m.getReservedQuantity(),
+                    available,
+                    m.getReorderThreshold(),
+                    m.getSuggestedReorderPackSize(),
+                    deficitCount,
+                    urgency
+            ));
+        }
+
+        alerts.sort((a, b) -> {
+            int pA = "CRITICAL_STOCKOUT".equals(a.getUrgency()) ? 0 : ("DEFICIT_QUEUED".equals(a.getUrgency()) ? 1 : 2);
+            int pB = "CRITICAL_STOCKOUT".equals(b.getUrgency()) ? 0 : ("DEFICIT_QUEUED".equals(b.getUrgency()) ? 1 : 2);
+            return Integer.compare(pA, pB);
+        });
+
+        return alerts;
+    }
+
+    /**
+     * Retrieves all active chronic subscriptions currently waiting for stock replenishment.
+     */
+    @Transactional(readOnly = true)
+    public List<DeficitSubscriptionDTO> getDeficitSubscriptions() {
+        List<Subscription> deficitSubs = subscriptionRepository.findByStatusAndReservationStatus(STATUS_ACTIVE, "OUT_OF_STOCK_DEFICIT");
+        List<DeficitSubscriptionDTO> dtos = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (Subscription sub : deficitSubs) {
+            Medicine med = sub.getMedicine();
+            long daysUntilRefill = sub.getNextRefillDate() != null
+                    ? ChronoUnit.DAYS.between(today, sub.getNextRefillDate().toLocalDate())
+                    : 0L;
+
+            dtos.add(new DeficitSubscriptionDTO(
+                    sub.getId(),
+                    sub.getPatient().getId(),
+                    sub.getPatient().getFullName(),
+                    sub.getPatient().getEmail(),
+                    med != null ? med.getId() : null,
+                    med != null ? med.getMedicineName() : "Unknown Medicine",
+                    sub.getQuantity(),
+                    med != null ? med.getAvailableQuantity() : 0,
+                    sub.getNextRefillDate(),
+                    daysUntilRefill
+            ));
+        }
+
+        dtos.sort((a, b) -> Long.compare(a.getDaysUntilRefill(), b.getDaysUntilRefill()));
+        return dtos;
+    }
+
+    /**
+     * Replenishes warehouse medicine inventory and executes closed-loop deficit fulfillment for waiting subscribers.
+     */
+    @Transactional
+    public RestockResponseDTO restockMedicine(RestockRequestDTO request) {
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new BadRequestException("Restock quantity must be greater than zero.");
+        }
+
+        Medicine medicine = medicineRepository.findByIdForUpdate(request.getMedicineId())
+                .orElseThrow(() -> new ResourceNotFoundException(ENTITY_MEDICINE, "id", request.getMedicineId()));
+
+        int previousStock = medicine.getStockQuantity();
+        int previousAvailable = medicine.getAvailableQuantity();
+
+        medicine.setStockQuantity(previousStock + request.getQuantity());
+        if (request.getExpiryDate() != null) {
+            medicine.setExpiryDate(request.getExpiryDate().atStartOfDay());
+        }
+        medicineRepository.save(medicine);
+
+        List<Subscription> deficitSubs = subscriptionRepository.findByMedicineIdAndStatusAndReservationStatusOrderByNextRefillDateAsc(
+                medicine.getId(), STATUS_ACTIVE, "OUT_OF_STOCK_DEFICIT"
+        );
+
+        int deficitsResolved = 0;
+        for (Subscription sub : deficitSubs) {
+            if (medicine.getAvailableQuantity() >= sub.getQuantity()) {
+                int rows = medicineRepository.reserveStock(medicine.getId(), sub.getQuantity());
+                if (rows > 0) {
+                    sub.setReservationStatus("RESERVED");
+                    sub.setReservationDate(LocalDateTime.now());
+                    subscriptionRepository.save(sub);
+                    deficitsResolved++;
+
+                    notificationService.createNotification(
+                            sub.getPatient().getId(),
+                            "🔒 Medication Restocked & Locked in Vault",
+                            "Great news! Your chronic care medication " + medicine.getMedicineName() + " has been restocked, and " + sub.getQuantity() + " units have been reserved in our vault for your upcoming refill.",
+                            "SUCCESS"
+                    );
+
+                    notificationService.notifyStaff(
+                            "Deficit Fulfilled: " + medicine.getMedicineName(),
+                            String.format("Subscription #%d for patient %s has been automatically allocated and soft-locked (%d units) following batch restock.",
+                                    sub.getId(), sub.getPatient().getFullName(), sub.getQuantity()),
+                            "INFO"
+                    );
+                }
+            }
+        }
+
+        Medicine refreshed = medicineRepository.findById(medicine.getId()).orElse(medicine);
+
+        String msg = String.format("Successfully restocked %d units of %s. Current stock: %d (Available: %d, Reserved: %d). %d waiting subscriber deficits fulfilled.",
+                request.getQuantity(), medicine.getMedicineName(), refreshed.getStockQuantity(), refreshed.getAvailableQuantity(), refreshed.getReservedQuantity(), deficitsResolved);
+
+        return new RestockResponseDTO(
+                medicine.getId(),
+                medicine.getMedicineName(),
+                previousStock,
+                refreshed.getStockQuantity(),
+                previousAvailable,
+                refreshed.getAvailableQuantity(),
+                deficitsResolved,
+                msg
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.automeds.controller;
 
+import com.automeds.dto.PrescriptionOcrDTO;
 import com.automeds.entity.Prescription;
 import com.automeds.exception.BadRequestException;
 import com.automeds.security.UserPrincipal;
@@ -12,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +35,36 @@ public class PrescriptionController {
     public PrescriptionController(PrescriptionService prescriptionService, FileStorageUtil fileStorageUtil) {
         this.prescriptionService = prescriptionService;
         this.fileStorageUtil = fileStorageUtil;
+    }
+
+    // Direct OCR Scan endpoint: extracts text, doctor credentials, and candidate medicines
+    @PostMapping(value = "/scan", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PrescriptionOcrDTO> scanPrescription(
+            @RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("Uploaded file is empty.");
+        }
+        PrescriptionOcrDTO ocrResult = prescriptionService.scanPrescriptionFile(file);
+        return ResponseEntity.ok(ocrResult);
+    }
+
+    // Retrieves stored OCR extraction data for a specific prescription
+    @GetMapping("/{id}/ocr")
+    public ResponseEntity<PrescriptionOcrDTO> getPrescriptionOcr(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long id) {
+
+        Prescription prescription = prescriptionService.getPrescriptionById(id);
+
+        boolean isAdmin = userPrincipal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+
+        if (!isAdmin && !prescription.getPatient().getId().equals(userPrincipal.getId())) {
+            throw new BadRequestException("Unauthorized access to prescription OCR details.");
+        }
+
+        PrescriptionOcrDTO ocrResult = prescriptionService.getPrescriptionOcr(id);
+        return ResponseEntity.ok(ocrResult != null ? ocrResult : new PrescriptionOcrDTO());
     }
 
     // Handles GET requests at this endpoint

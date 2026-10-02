@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
 import { AuthResponse, User } from '../models/user.model';
 
 @Injectable({
@@ -44,9 +44,31 @@ export class AuthService {
     );
   }
 
+  // Calls the ADMIN-protected endpoint; JWT token auto-attached by JwtInterceptor
+  registerAdmin(data: any): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register-admin`, data);
+  }
+
   login(credentials: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(res => this.setSession(res))
+    );
+  }
+
+  getProfile(): Observable<User> {
+    return this.http.get<User>('http://localhost:8080/api/users/profile');
+  }
+
+  updateProfile(data: Partial<User>): Observable<User> {
+    return this.http.put<User>('http://localhost:8080/api/users/profile', data).pipe(
+      tap(updatedUser => {
+        const current = this.currentUserValue;
+        if (current && updatedUser.name) {
+          current.name = updatedUser.name;
+          localStorage.setItem('currentUser', JSON.stringify(current));
+          this.currentUserSubject.next(current);
+        }
+      })
     );
   }
 
@@ -55,7 +77,24 @@ export class AuthService {
     this.currentUserSubject.next(authResponse);
   }
 
+  refreshToken(): Observable<AuthResponse> {
+    const current = this.currentUserValue;
+    if (!current?.refreshToken) {
+      this.logout();
+      return throwError(() => new Error('No refresh token available'));
+    }
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken: current.refreshToken }).pipe(
+      tap(res => this.setSession(res))
+    );
+  }
+
   logout(): void {
+    const refreshToken = this.currentUserValue?.refreshToken;
+    if (refreshToken) {
+      this.http.post(`${this.apiUrl}/logout`, { refreshToken }).subscribe({
+        error: () => {}
+      });
+    }
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
   }

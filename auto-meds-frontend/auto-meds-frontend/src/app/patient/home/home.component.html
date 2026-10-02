@@ -126,7 +126,9 @@
             </div>
 
             <div class="d-flex gap-2 mt-auto pt-2 border-top">
-              <a [routerLink]="['/subscriptions', sub.id]" class="btn btn-sm btn-outline-primary flex-fill">View Details</a>
+              <button (click)="viewDetails(sub)" class="btn btn-sm btn-primary flex-fill fw-semibold">
+                <i class="bi bi-eye me-1"></i>View Details
+              </button>
               <button (click)="pauseSubscription(sub.id)" class="btn btn-sm btn-outline-warning">Pause</button>
               <button (click)="cancelSubscription(sub.id)" class="btn btn-sm btn-outline-danger">Cancel</button>
             </div>
@@ -155,6 +157,142 @@
             <p class="mb-0 text-muted small">{{ notif.message }}</p>
           </div>
           <span class="badge bg-light text-dark small">{{ notif.createdAt | date:'shortTime' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription Details Modal -->
+  <div class="modal fade show d-block" *ngIf="selectedSubscription" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" (click)="closeDetailsModal()">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+        <!-- Modal Header -->
+        <div class="modal-header bg-brand-gradient text-white border-0 py-3">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-capsule-pill display-6 me-3"></i>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">{{ selectedSubscription.medicineName }}</h5>
+              <small class="text-light opacity-75">Subscription #{{ selectedSubscription.id }} &bull; {{ selectedSubscription.brandName }}</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetailsModal()" aria-label="Close"></button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body p-4">
+          <!-- Status Banner -->
+          <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3 border">
+            <div>
+              <span class="text-muted small d-block">Current Status</span>
+              <span class="badge fs-6 rounded-pill" [ngClass]="{
+                'bg-success': selectedSubscription.status === 'ACTIVE',
+                'bg-warning text-dark': selectedSubscription.status === 'PAUSED' || selectedSubscription.status === 'PENDING',
+                'bg-danger': selectedSubscription.status === 'REJECTED' || selectedSubscription.status === 'CANCELLED' || selectedSubscription.status === 'EXPIRED'
+              }">
+                {{ selectedSubscription.status }}
+              </span>
+            </div>
+            <div class="text-end" *ngIf="selectedSubscription.createdAt">
+              <span class="text-muted small d-block">Created On</span>
+              <strong class="text-dark">{{ selectedSubscription.createdAt | date:'mediumDate' }}</strong>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <!-- Medication Specs -->
+            <div class="col-md-6">
+              <div class="card h-100 border p-3 bg-white rounded-3 shadow-none">
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                  <i class="bi bi-info-circle text-primary me-2"></i>Medication & Regimen
+                </h6>
+                <div class="d-flex justify-content-between py-1 border-bottom small">
+                  <span class="text-muted">Composition:</span>
+                  <strong class="text-dark">{{ selectedSubscription.composition }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom small">
+                  <span class="text-muted">Strength:</span>
+                  <strong class="text-dark">{{ selectedSubscription.strength }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom small">
+                  <span class="text-muted">Dosage:</span>
+                  <strong class="text-success">{{ selectedSubscription.dosage }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom small">
+                  <span class="text-muted">Frequency:</span>
+                  <span class="fw-semibold text-dark">{{ selectedSubscription.frequency }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-1 small">
+                  <span class="text-muted">Refill Quantity:</span>
+                  <strong class="text-primary">{{ selectedSubscription.quantity }} units</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Schedule & Buffer -->
+            <div class="col-md-6">
+              <div class="card h-100 border p-3 bg-white rounded-3 shadow-none">
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                  <i class="bi bi-calendar-check text-success me-2"></i>Refill Schedule
+                </h6>
+                <div class="d-flex justify-content-between py-1 border-bottom small" *ngIf="selectedSubscription.startDate">
+                  <span class="text-muted">Subscription Start:</span>
+                  <span>{{ selectedSubscription.startDate | date:'mediumDate' }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom small">
+                  <span class="text-muted">Next Refill Date:</span>
+                  <strong class="text-primary">{{ selectedSubscription.nextRefillDate ? (selectedSubscription.nextRefillDate | date:'mediumDate') : 'Scheduled' }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom small">
+                  <span class="text-muted">Next Dispatch:</span>
+                  <strong class="text-dark">{{ selectedSubscription.nextDispatchDate ? (selectedSubscription.nextDispatchDate | date:'mediumDate') : 'Pending' }}</strong>
+                </div>
+                <div class="p-2 bg-success bg-opacity-10 rounded mt-2 small text-success">
+                  <i class="bi bi-shield-check me-1"></i>
+                  <strong>5-Day Soft-Lock Reserve:</strong> Warehouse inventory is reserved 5 days prior to dispatch.
+                </div>
+              </div>
+            </div>
+
+            <!-- Prescription Details -->
+            <div class="col-12" *ngIf="selectedSubscription.prescriptionFileName || selectedSubscription.prescriptionExpiryDate">
+              <div class="card border p-3 bg-white rounded-3 shadow-none">
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">
+                  <i class="bi bi-file-earmark-medical text-danger me-2"></i>Prescription Verification
+                </h6>
+                <div class="row align-items-center">
+                  <div class="col-md-6 small" *ngIf="selectedSubscription.prescriptionFileName">
+                    <span class="text-muted d-block">Prescription Document:</span>
+                    <span class="text-dark fw-semibold">
+                      <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ selectedSubscription.prescriptionFileName }}
+                    </span>
+                  </div>
+                  <div class="col-md-6 small" *ngIf="selectedSubscription.prescriptionExpiryDate">
+                    <span class="text-muted d-block">Prescription Expiration:</span>
+                    <span class="text-danger fw-bold">{{ selectedSubscription.prescriptionExpiryDate | date:'mediumDate' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer bg-light border-0 py-3 d-flex justify-content-between">
+          <a routerLink="/subscriptions" (click)="closeDetailsModal()" class="text-decoration-none fw-semibold small text-primary">
+            <i class="bi bi-box-arrow-up-right me-1"></i>Go to Subscriptions Desk
+          </a>
+          <div class="d-flex gap-2">
+            <button *ngIf="selectedSubscription.status === 'ACTIVE'" (click)="pauseSubscription(selectedSubscription.id)" class="btn btn-warning btn-sm">
+              <i class="bi bi-pause-circle me-1"></i>Pause Subscription
+            </button>
+            <button *ngIf="selectedSubscription.status === 'PAUSED'" (click)="resumeSubscription(selectedSubscription.id)" class="btn btn-success btn-sm">
+              <i class="bi bi-play-circle me-1"></i>Resume Subscription
+            </button>
+            <button *ngIf="selectedSubscription.status === 'ACTIVE' || selectedSubscription.status === 'PAUSED'" (click)="cancelSubscription(selectedSubscription.id)" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-x-circle me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="closeDetailsModal()">Close</button>
+          </div>
         </div>
       </div>
     </div>

@@ -18,5 +18,10 @@ export interface Subscription {
   nextRefillDate?: string;
   nextDispatchDate?: string;
   status: 'PENDING' | 'ACTIVE' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'PRESCRIPTION_EXPIRED' | 'CLARIFICATION_REQUIRED' | 'PAUSED';
+  reservationStatus?: string;
+  reservationDate?: string;
+  isBridgeSupply?: boolean;
+  lastSnoozeDate?: string;
+  snoozeCount?: number;
   createdAt?: string;
 }

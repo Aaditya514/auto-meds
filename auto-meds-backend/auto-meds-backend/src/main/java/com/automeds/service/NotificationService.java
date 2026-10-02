@@ -44,6 +44,32 @@ public class NotificationService {
         return convertToDTO(saved);
     }
 
+    /**
+     * Broadcasts clinical/procurement event to both the affected patient and all clinical staff (Pharmacists & Admins).
+     */
+    @Transactional
+    public void notifyStaffAndPatient(Long patientId, String title, String patientMsg, String staffMsg, String type) {
+        if (patientId != null) {
+            createNotification(patientId, title, patientMsg, type);
+        }
+        notifyStaff(title, staffMsg, type);
+    }
+
+    /**
+     * Broadcasts notification to all pharmacists and administrators.
+     */
+    @Transactional
+    public void notifyStaff(String title, String staffMsg, String type) {
+        List<User> staff = userRepository.findByRoleIn(List.of("ROLE_PHARMACIST", "ROLE_ADMIN"));
+        for (User s : staff) {
+            try {
+                createNotification(s.getId(), "[Clinical/Staff Alert] " + title, staffMsg, type);
+            } catch (Exception ex) {
+                // Ignore failure for individual staff to ensure remaining alerts continue
+            }
+        }
+    }
+
     public List<NotificationDTO> getUserNotifications(Long userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(this::convertToDTO)

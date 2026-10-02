@@ -1,0 +1,140 @@
+<div *ngIf="isOpen && slip" class="dispensing-modal-backdrop d-flex align-items-center justify-content-center p-3">
+  <div class="dispensing-slip-card bg-white rounded-3 shadow-lg border">
+    
+    <!-- Modal Action Bar (Screen Only) -->
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-light d-print-none">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-success bg-opacity-10 text-success border border-success">
+          <i class="bi bi-shield-check me-1"></i>Four-Eyes Compliance Verified
+        </span>
+        <span class="text-muted small">Code: {{ slip.dispensingSlipCode }}</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm fw-semibold" (click)="printSlip()">
+          <i class="bi bi-printer me-1"></i> Print Doorstep Slip
+        </button>
+        <button class="btn btn-close btn-sm" (click)="onClose()" aria-label="Close"></button>
+      </div>
+    </div>
+
+    <!-- Official Printable Dispensing Slip Document -->
+    <div class="p-4 p-md-5 print-document" id="printableDispensingSlip">
+      
+      <!-- Slip Header -->
+      <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <i class="bi bi-prescription2 text-primary fs-2"></i>
+            <h4 class="fw-bold mb-0 text-dark">AUTO-MEDS PHARMACY</h4>
+          </div>
+          <p class="text-muted small mb-0">Central Automated Dispensing Facility &bull; CDSCO Registered</p>
+          <p class="text-muted small mb-0">Drug License No: <strong>DL-2026-KA-0941</strong> &bull; GSTIN: 29AABCA1234D1Z5</p>
+          <p class="text-muted small mb-0"><i class="bi bi-telephone me-1"></i>Helpline: 1800-AUTOMEDS (24x7 Emergency Support)</p>
+        </div>
+
+        <div class="text-end">
+          <div class="qr-box p-2 border rounded bg-white d-inline-block text-center shadow-sm">
+            <img [src]="qrCodeDataUrl" alt="Doorstep Verification QR" width="130" height="130" class="d-block mx-auto mb-1" />
+            <div class="small fw-bold text-dark font-monospace" style="font-size: 10px;">{{ slip.dispensingSlipCode }}</div>
+          </div>
+          <div class="text-muted small mt-1" style="font-size: 11px;">Scan at doorstep to confirm authenticity</div>
+        </div>
+      </div>
+
+      <!-- Slip Meta Details -->
+      <div class="row g-3 mb-4 pb-3 border-bottom small">
+        <div class="col-6 col-md-3">
+          <span class="text-muted d-block">Order Reference</span>
+          <strong class="text-dark fs-6">#{{ slip.orderId }}</strong>
+        </div>
+        <div class="col-6 col-md-3">
+          <span class="text-muted d-block">Dispense Date & Time</span>
+          <strong class="text-dark">{{ slip.dispensedAt | date:'medium' }}</strong>
+        </div>
+        <div class="col-6 col-md-3">
+          <span class="text-muted d-block">Payment Status</span>
+          <span class="badge" [ngClass]="slip.paymentStatus === 'PAID' ? 'bg-success' : 'bg-warning text-dark'">
+            {{ slip.paymentStatus }} ({{ slip.paymentMethod }})
+          </span>
+          <div *ngIf="slip.transactionId" class="text-muted font-monospace" style="font-size: 10px;">
+            Txn: {{ slip.transactionId }}
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <span class="text-muted d-block">Pharmacist Sign-Off</span>
+          <strong class="text-success"><i class="bi bi-patch-check-fill me-1"></i>{{ slip.fourEyesApprovedBy }}</strong>
+        </div>
+      </div>
+
+      <!-- Patient & Delivery Information -->
+      <div class="card bg-light border-0 p-3 mb-4">
+        <div class="row g-2">
+          <div class="col-md-5">
+            <span class="text-muted small d-block">Patient Name</span>
+            <strong class="text-dark">{{ slip.patientName }}</strong>
+          </div>
+          <div class="col-md-7">
+            <span class="text-muted small d-block">Doorstep Delivery Address</span>
+            <span class="text-dark">{{ slip.deliveryAddress }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prescribed & Dispensed Line Items Table -->
+      <h6 class="fw-bold text-dark mb-3">
+        <i class="bi bi-capsule text-primary me-2"></i>DISPENSED MEDICATIONS & BATCH TRACEABILITY
+      </h6>
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <thead class="table-light text-uppercase small">
+            <tr>
+              <th>#</th>
+              <th>Medication Name & Strength</th>
+              <th>Batch No.</th>
+              <th>Expiry Date</th>
+              <th class="text-center">Qty Dispensed</th>
+              <th>Dosage Instructions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of slip.items; let i = index">
+              <td class="text-muted">{{ i + 1 }}</td>
+              <td>
+                <strong>{{ item.medicineName }}</strong>
+                <span class="text-muted small d-block">{{ item.strength }}</span>
+              </td>
+              <td><span class="font-monospace fw-semibold">{{ item.batchNumber }}</span></td>
+              <td><span class="text-muted">{{ item.expiryDate }}</span></td>
+              <td class="text-center fw-bold">{{ item.quantity }} units</td>
+              <td class="small text-muted">{{ item.instructions }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Clinical Safety Notes -->
+      <div class="alert alert-info py-2 px-3 small mb-4 d-flex align-items-center">
+        <i class="bi bi-shield-check text-primary fs-5 me-2"></i>
+        <div>
+          <strong>Clinical Interceptor Status:</strong> {{ slip.clinicalWarning || 'Zero contraindications or adverse drug interactions detected. Verified against patient clinical profile.' }}
+        </div>
+      </div>
+
+      <!-- Verification Footer & Legal Notice -->
+      <div class="pt-3 border-top d-flex justify-content-between align-items-end text-muted small" style="font-size: 11px;">
+        <div>
+          <p class="mb-0"><strong>Notice:</strong> Keep medications out of reach of children. Store in a cool, dry place away from sunlight.</p>
+          <p class="mb-0">Electronically generated dispensing record complying with Pharmacy Practice Regulations.</p>
+        </div>
+        <div class="text-end">
+          <div class="border-bottom pb-1 mb-1 font-monospace fw-bold text-dark">
+            [DIGITALLY SIGNED BY LICENSED PHARMACIST]
+          </div>
+          <div>Four-Eyes Verification Complete</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
