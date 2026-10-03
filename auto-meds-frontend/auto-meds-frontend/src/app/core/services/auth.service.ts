@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
 import { AuthResponse, User } from '../models/user.model';
+import { API_BASE } from '../constants/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = `${API_BASE}/auth`;
   private currentUserSubject = new BehaviorSubject<AuthResponse | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -60,11 +61,11 @@ export class AuthService {
   }
 
   getProfile(): Observable<User> {
-    return this.http.get<User>('http://localhost:8080/api/users/profile');
+    return this.http.get<User>(`${API_BASE}/users/profile`);
   }
 
   updateProfile(data: Partial<User>): Observable<User> {
-    return this.http.put<User>('http://localhost:8080/api/users/profile', data).pipe(
+    return this.http.put<User>(`${API_BASE}/users/profile`, data).pipe(
       tap(updatedUser => {
         const current = this.currentUserValue;
         if (current && updatedUser.name) {

@@ -8,14 +8,15 @@ import {
   PaymentRequest,
   PaymentResponse
 } from '../models/compliance-and-payment.model';
+import { API_BASE } from '../constants/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ComplianceAndPaymentService {
-  private paymentApi = 'http://localhost:8080/api/payments';
-  private clinicalSafetyApi = 'http://localhost:8080/api/clinical-safety';
-  private auditLogsApi = 'http://localhost:8080/api/audit-logs';
+  private paymentApi = `${API_BASE}/payments`;
+  private clinicalSafetyApi = `${API_BASE}/clinical-safety`;
+  private auditLogsApi = `${API_BASE}/audit-logs`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE } from '../constants/api.config';
 
 export interface CaregiverInviteRequest {
   caregiverEmail: string;
@@ -56,7 +57,7 @@ export interface PendingInvitationResponse {
 @Injectable({ providedIn: 'root' })
 export class CaregiverService {
 
-  private readonly apiBase = 'http://localhost:8080/api/caregiver';
+  private readonly apiBase = `${API_BASE}/caregiver`;
 
   constructor(private http: HttpClient) {}
 

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Medicine } from '../models/medicine.model';
+import { API_BASE } from '../constants/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MedicineService {
-  private apiUrl = 'http://localhost:8080/api/medicines';
+  private apiUrl = `${API_BASE}/medicines`;
 
   constructor(private http: HttpClient) {}
 

@@ -66,11 +66,13 @@ export interface RestockResponse {
   message: string;
 }
 
+import { API_BASE } from '../constants/api.config';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = 'http://localhost:8080/api/admin';
+  private apiUrl = `${API_BASE}/admin`;
 
   constructor(private http: HttpClient) {}
 
@@ -127,7 +129,7 @@ export class AdminService {
   }
 
   downloadPrescription(id: number): Observable<Blob> {
-    return this.http.get(`http://localhost:8080/api/prescriptions/${id}`, { responseType: 'blob' });
+    return this.http.get(`${API_BASE}/prescriptions/${id}`, { responseType: 'blob' });
   }
 
   getProcurementAlerts(): Observable<ProcurementAlert[]> {

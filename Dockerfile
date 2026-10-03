@@ -1,16 +1,17 @@
 # ==============================================================================
 # Auto-Meds Multi-Stage Production Dockerfile with Tesseract OCR (Linux)
+# Java 17 LTS + Eclipse Temurin JRE
 # ==============================================================================
 
 # Stage 1: Build Java Backend Application
-FROM maven:3.9.6-eclipse-temurin-20 AS backend-build
+FROM maven:3.9.6-eclipse-temurin-17 AS backend-build
 WORKDIR /app/backend
 COPY auto-meds-backend/auto-meds-backend/pom.xml .
 COPY auto-meds-backend/auto-meds-backend/src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Production Runtime with Linux Tesseract OCR Engine
-FROM eclipse-temurin:20-jre
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 LABEL maintainer="Auto-Meds Engineering Team"
@@ -41,7 +42,7 @@ ENV PORT=8080
 ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8080
 
-# Health check probe
+# Health check probe using Spring Boot Actuator
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Order } from '../models/order.model';
+import { API_BASE } from '../constants/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'http://localhost:8080/api/orders';
+  private apiUrl = `${API_BASE}/orders`;
 
   constructor(private http: HttpClient) {}
 
@@ -24,6 +25,6 @@ export class OrderService {
   }
 
   downloadPrescription(prescriptionId: number): Observable<Blob> {
-    return this.http.get(`http://localhost:8080/api/prescriptions/${prescriptionId}`, { responseType: 'blob' });
+    return this.http.get(`${API_BASE}/prescriptions/${prescriptionId}`, { responseType: 'blob' });
   }
 }

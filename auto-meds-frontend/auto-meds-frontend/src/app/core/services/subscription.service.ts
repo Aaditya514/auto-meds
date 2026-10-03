@@ -3,13 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Subscription } from '../models/subscription.model';
 import { PrescriptionOcrResult } from '../models/prescription-ocr.model';
+import { API_BASE } from '../constants/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubscriptionService {
-  private apiUrl = 'http://localhost:8080/api/subscriptions';
-  private rxUrl = 'http://localhost:8080/api/prescriptions';
+  private apiUrl = `${API_BASE}/subscriptions`;
+  private rxUrl = `${API_BASE}/prescriptions`;
 
   constructor(private http: HttpClient) {}
 

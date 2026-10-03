@@ -39,11 +39,14 @@ services:
     ports:
       - "8080:8080"
     environment:
+      DB_URL: jdbc:postgresql://postgres:5432/automeds
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/automeds
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_FLYWAY_ENABLED: "true"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       APP_JWT_SECRET: REDACTED_JWT_SECRET
       APP_JWT_EXPIRATION_MS: "86400000"
       APP_UPLOAD_DIR: /app/uploads/prescriptions
@@ -70,10 +73,17 @@ services:
     container_name: automeds-frontend
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "80:80"
       - "4200:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 20s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
     networks:
       - automeds-net
 
