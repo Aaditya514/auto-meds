@@ -21,7 +21,8 @@
   [Docker](#-docker-deployment) •
   [API Reference](#-api-endpoints) •
   [Accessibility](#-accessibility-wcag-aa) •
-  [Demo Credentials](#-demo-credentials)
+  [Demo Credentials](#-demo-credentials) •
+  [Roadmap](#-whats-next--roadmap)
 
 </div>
 
@@ -310,6 +311,29 @@ Auto-Meds provides first-class support for elderly and low-vision patients:
 | **Real-time Notifications** | SSE over WebSocket | Lightweight, unidirectional server-to-client push; seamless integration with standard HTTP/HTTPS proxies. |
 | **SMS Gateway** | Twilio with toggle flag | Fallback mechanism for non-smartphone users; toggleable via environment variables for easy local testing. |
 | **Database Migrations** | Flyway Versioned Migrations | Declarative, reproducible database schema management ensuring identical environments across dev and production. |
+
+---
+
+## 🗺️ What's Next / Upcoming Roadmap
+
+The platform follows a persona-driven, clinical-safety first engineering roadmap. The next development phases focus on production hardening, automated compliance, and senior-care accessibility:
+
+### 1. ☁️ Cloud Storage & Security Hardening
+- [ ] **S3 / MinIO Prescription Storage**: Migrate prescription file storage from local filesystem to AWS S3 / MinIO object storage with time-limited pre-signed URLs and server-side encryption (SSE-KMS).
+- [ ] **OCR Confidence Scoring & Triage**: Introduce confidence metrics on Tesseract OCR extractions; automatically tag low-confidence or degraded scans as `NEEDS_MANUAL_REVIEW` with an interactive pharmacist correction interface.
+- [ ] **Production Payment Gateway**: Transition from mock payment verification to full Razorpay / Stripe integration supporting UPI AutoPay and card recurring mandates for subscriptions.
+
+### 2. 👵 Elderly & Caregiver UX ("Simple Mode")
+- [ ] **One-Touch "Simple Mode" UI**: A dedicated, distraction-free portal mode with ultra-high contrast, large touch controls (≥56px), and simplified 3-button navigation (`My Meds`, `Order Status`, `Help`).
+- [ ] **DoseLog Adherence Tracking**: Daily medication intake logging (`TAKEN`, `MISSED`, `SKIPPED`) with automated adherence score calculation.
+- [ ] **Caregiver Weekly Compliance Digest**: Automated SMS / Email adherence summaries sent to registered caregivers highlighting missed doses or upcoming prescription expirations.
+- [ ] **Interactive WhatsApp & IVR Bot**: Allow patients to confirm refills and check dispatch status directly via WhatsApp messages or automated voice response (IVR).
+
+### 3. 🛡️ Pharmacy Operations & Regulatory Compliance
+- [ ] **Schedule H & X Controlled Substance Gating**: Strict clinical locks preventing automated refill dispatch for habit-forming substances without fresh doctor validation.
+- [ ] **Automated Supplier Purchase Orders (PO)**: Generate automated purchase orders (PDF / EDI) directly to pharmaceutical distributors when inventory falls below buffer thresholds.
+- [ ] **Barcode & QR Dispensing Verification**: Pharmacist packaging scanner to verify the physical medicine strip's GTIN/barcode matches the patient prescription before dispatch.
+- [ ] **Last-Mile Delivery Carrier Integration**: Real-time webhook integration with logistics providers (Shiprocket / Delhivery / Dunzo) for live doorstep delivery tracking.
 
 ---
 
