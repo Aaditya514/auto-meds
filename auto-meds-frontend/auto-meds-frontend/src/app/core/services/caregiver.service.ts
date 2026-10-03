@@ -43,6 +43,16 @@ export interface DelegatedPatientResponse {
   acceptedAt: string;
 }
 
+export interface PendingInvitationResponse {
+  accessId: number;
+  patientId: number;
+  patientName: string;
+  patientEmail: string;
+  relationshipLabel: string;
+  permissions: string;
+  invitedAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CaregiverService {
 
@@ -70,9 +80,19 @@ export class CaregiverService {
     return this.http.post<CaregiverLinkResponse>(`${this.apiBase}/respond`, request);
   }
 
+  /** Caregiver: Get all incoming pending invitations */
+  getPendingInvitations(): Observable<PendingInvitationResponse[]> {
+    return this.http.get<PendingInvitationResponse[]>(`${this.apiBase}/pending-invitations`);
+  }
+
   /** Caregiver: Get all patients this caregiver is delegated to manage */
   getMyPatients(): Observable<DelegatedPatientResponse[]> {
     return this.http.get<DelegatedPatientResponse[]>(`${this.apiBase}/my-patients`);
+  }
+
+  /** Caregiver: Get pending refill orders for a delegated patient */
+  getPatientPendingOrders(patientId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiBase}/patient/${patientId}/pending-orders`);
   }
 
   /** Caregiver: Pay for a patient's pending order on their behalf */

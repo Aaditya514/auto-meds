@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   CaregiverService,
   CaregiverLinkResponse,
   DelegatedPatientResponse,
+  PendingInvitationResponse,
   CaregiverInviteRequest
 } from '../../core/services/caregiver.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -25,6 +27,16 @@ export class CaregiverComponent implements OnInit {
   delegatedPatients: DelegatedPatientResponse[] = [];
   loadingPatients = false;
 
+  // ── Pending Invitations (caregiver inbox) ─────────────────────────────────
+  pendingInvitations: PendingInvitationResponse[] = [];
+  loadingPending = false;
+
+  // ── Patient Orders (for proxy payment) ─────────────────────────────────────
+  patientOrders: { [patientId: number]: any[] } = {};
+  loadingOrders: { [patientId: number]: boolean } = {};
+  expandedPatientId: number | null = null;
+  payingOrderId: number | null = null;
+
   // ── Invite Form ───────────────────────────────────────────────────────────
   showInviteForm = false;
   inviteForm: CaregiverInviteRequest = {
@@ -37,19 +49,29 @@ export class CaregiverComponent implements OnInit {
   inviteSuccess = '';
   inviteError = '';
 
-  // ── Feedback ──────────────────────────────────────────────────────────────
+  // ── Feedback & Actions ────────────────────────────────────────────────────
   actionMessage = '';
   actionError = '';
   processingId: number | null = null;
+  copiedLinkId: number | null = null;
 
   constructor(
     private caregiverService: CaregiverService,
-    public authService: AuthService
+    public authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadCaregivers();
     this.loadDelegatedPatients();
+    this.loadPendingInvitations();
+
+    // Check if user arrived via an /accept/:id invitation link
+    const acceptId = this.route.snapshot.paramMap.get('id');
+    if (acceptId) {
+      this.acceptPendingInvitation(Number(acceptId), true);
+    }
   }
 
   // ── Data Loading ──────────────────────────────────────────────────────────
@@ -76,6 +98,21 @@ export class CaregiverComponent implements OnInit {
     });
   }
 
+  loadPendingInvitations(): void {
+    this.loadingPending = true;
+    this.caregiverService.getPendingInvitations().subscribe({
+      next: (list: PendingInvitationResponse[]) => {
+        this.pendingInvitations = list;
+        this.loadingPending = false;
+        // If caregiver has pending invites but no caregivers of their own, switch tab to patients
+        if (this.pendingInvitations.length > 0 && this.caregivers.length === 0) {
+          this.activeTab = 'my-patients';
+        }
+      },
+      error: () => { this.loadingPending = false; }
+    });
+  }
+
   // ── Invite ────────────────────────────────────────────────────────────────
 
   toggleInviteForm(): void {
@@ -96,7 +133,7 @@ export class CaregiverComponent implements OnInit {
 
     this.caregiverService.inviteCaregiver(this.inviteForm).subscribe({
       next: (response: CaregiverLinkResponse) => {
-        this.inviteSuccess = `✅ Invitation sent to ${response.caregiverEmail}! They will receive an email shortly.`;
+        this.inviteSuccess = `✅ Invitation sent to ${response.caregiverEmail}! They can now accept it in their AutoMeds account.`;
         this.inviting = false;
         this.showInviteForm = false;
         this.inviteForm = { caregiverEmail: '', relationshipLabel: '', permissions: 'NOTIFICATIONS,PAY_ON_BEHALF', notifyPhone: '' };
@@ -110,16 +147,16 @@ export class CaregiverComponent implements OnInit {
     });
   }
 
-  // ── Revoke ────────────────────────────────────────────────────────────────
+  // ── Revoke / Cancel ───────────────────────────────────────────────────────
 
   revokeCaregiver(accessId: number, caregiverName: string): void {
-    if (!confirm(`Remove ${caregiverName} as your caregiver? They will lose all access immediately.`)) {
+    if (!confirm(`Cancel/Revoke caregiver access for ${caregiverName}?`)) {
       return;
     }
     this.processingId = accessId;
     this.caregiverService.revokeCaregiver(accessId).subscribe({
       next: () => {
-        this.actionMessage = `✅ ${caregiverName}'s access has been revoked.`;
+        this.actionMessage = `✅ Caregiver link for ${caregiverName} has been revoked.`;
         this.processingId = null;
         this.loadCaregivers();
       },
@@ -130,20 +167,109 @@ export class CaregiverComponent implements OnInit {
     });
   }
 
-  // ── Accept (from pending invitation as a caregiver) ───────────────────────
+  // ── Pending Invitation Actions (Caregiver Inbound) ────────────────────────
 
-  acceptInvitation(accessId: number): void {
+  acceptPendingInvitation(accessId: number, fromUrl = false): void {
     this.processingId = accessId;
     this.caregiverService.respondToInvitation({ accessId, action: 'ACCEPT' }).subscribe({
-      next: (r: CaregiverLinkResponse) => {
-        this.actionMessage = `✅ You are now a caregiver for ${r.caregiverName || 'the patient'}!`;
+      next: () => {
+        this.actionMessage = '🎉 Congratulations! You have accepted the caregiver invitation. You can now manage medications for this patient.';
         this.processingId = null;
-        this.loadCaregivers();
+        this.loadPendingInvitations();
         this.loadDelegatedPatients();
+        this.activeTab = 'my-patients';
+
+        if (fromUrl) {
+          this.router.navigate(['/caregiver'], { replaceUrl: true });
+        }
       },
       error: (err: Error | { error?: { detail?: string } }) => {
         this.actionError = (err as Error).message || (err as any)?.error?.detail || 'Failed to accept invitation.';
         this.processingId = null;
+        if (fromUrl) {
+          this.router.navigate(['/caregiver'], { replaceUrl: true });
+        }
+      }
+    });
+  }
+
+  declinePendingInvitation(accessId: number): void {
+    if (!confirm('Decline this caregiver invitation?')) {
+      return;
+    }
+    this.processingId = accessId;
+    this.caregiverService.respondToInvitation({ accessId, action: 'DECLINE' }).subscribe({
+      next: () => {
+        this.actionMessage = 'Caregiver invitation declined.';
+        this.processingId = null;
+        this.loadPendingInvitations();
+      },
+      error: (err: Error | { error?: { detail?: string } }) => {
+        this.actionError = (err as Error).message || (err as any)?.error?.detail || 'Failed to decline invitation.';
+        this.processingId = null;
+      }
+    });
+  }
+
+  // ── Copy Direct Accept Link ───────────────────────────────────────────────
+
+  copyInviteLink(accessId: number): void {
+    const url = `${window.location.origin}/caregiver/accept/${accessId}`;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.copiedLinkId = accessId;
+        this.actionMessage = `📋 Direct invite link copied to clipboard! The caregiver can open this link in their browser to accept instantly.`;
+        setTimeout(() => {
+          if (this.copiedLinkId === accessId) {
+            this.copiedLinkId = null;
+          }
+        }, 3500);
+      });
+    } else {
+      prompt('Copy this invite link for your caregiver:', url);
+    }
+  }
+
+  // ── Delegated Patient Orders & Proxy Payment ──────────────────────────────
+
+  togglePatientOrders(patientId: number): void {
+    if (this.expandedPatientId === patientId) {
+      this.expandedPatientId = null;
+      return;
+    }
+    this.expandedPatientId = patientId;
+    this.loadPatientOrders(patientId);
+  }
+
+  loadPatientOrders(patientId: number): void {
+    this.loadingOrders[patientId] = true;
+    this.caregiverService.getPatientPendingOrders(patientId).subscribe({
+      next: (orders: any[]) => {
+        this.patientOrders[patientId] = orders;
+        this.loadingOrders[patientId] = false;
+      },
+      error: () => {
+        this.loadingOrders[patientId] = false;
+      }
+    });
+  }
+
+  payOrderOnBehalf(patientId: number, orderId: number): void {
+    this.payingOrderId = orderId;
+    this.caregiverService.payOnBehalf({
+      patientId,
+      orderId,
+      paymentMethod: 'UPI',
+      paymentReference: 'UPI-PROXY-' + Date.now()
+    }).subscribe({
+      next: (res) => {
+        this.actionMessage = `✅ ${res.message || 'Payment completed successfully!'}`;
+        this.payingOrderId = null;
+        this.loadPatientOrders(patientId);
+      },
+      error: (err: Error | { error?: { detail?: string } }) => {
+        this.actionError = (err as Error).message || (err as any)?.error?.detail || 'Payment failed.';
+        this.payingOrderId = null;
       }
     });
   }
@@ -176,5 +302,18 @@ export class CaregiverComponent implements OnInit {
     this.actionError = '';
     this.inviteSuccess = '';
     this.inviteError = '';
+  }
+
+  getInitial(name?: string, fallback = '?'): string {
+    return name && name.length > 0 ? name.charAt(0).toUpperCase() : fallback;
+  }
+
+  hasOrders(patientId: number): boolean {
+    const list = this.patientOrders[patientId];
+    return Array.isArray(list) && list.length > 0;
+  }
+
+  getOrderList(patientId: number): any[] {
+    return this.patientOrders[patientId] || [];
   }
 }

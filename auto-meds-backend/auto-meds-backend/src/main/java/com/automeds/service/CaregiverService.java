@@ -1,6 +1,7 @@
 package com.automeds.service;
 
 import com.automeds.dto.CaregiverDTO;
+import com.automeds.dto.OrderDTO;
 import com.automeds.entity.CaregiverAccess;
 import com.automeds.entity.Order;
 import com.automeds.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +44,7 @@ public class CaregiverService {
     private final CaregiverAccessRepository caregiverRepo;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
     private final EmailService emailService;
     private final AuditLogService auditLogService;
 
@@ -55,12 +58,14 @@ public class CaregiverService {
             CaregiverAccessRepository caregiverRepo,
             UserRepository userRepository,
             OrderRepository orderRepository,
+            OrderService orderService,
             EmailService emailService,
             AuditLogService auditLogService,
             MeterRegistry meterRegistry) {
         this.caregiverRepo = caregiverRepo;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
+        this.orderService = orderService;
         this.emailService = emailService;
         this.auditLogService = auditLogService;
 
@@ -98,22 +103,32 @@ public class CaregiverService {
             throw new BadRequestException("You cannot add yourself as a caregiver.");
         }
 
-        // Prevent duplicate active/pending invitations
-        caregiverRepo.findByPatientIdAndCaregiverId(patientId, caregiver.getId())
-                .ifPresent(existing -> {
-                    if (!"REVOKED".equalsIgnoreCase(existing.getStatus())) {
-                        throw new BadRequestException(
-                                "A caregiver link for this user already exists with status: " + existing.getStatus());
-                    }
-                });
-
+        // Prevent duplicate active/pending invitations, or re-activate if previously REVOKED
+        Optional<CaregiverAccess> existingOpt = caregiverRepo.findByPatientIdAndCaregiverId(patientId, caregiver.getId());
         String perms = request.getPermissions() != null
                 ? request.getPermissions()
                 : "NOTIFICATIONS,PAY_ON_BEHALF";
 
-        CaregiverAccess access = new CaregiverAccess(patient, caregiver,
-                request.getRelationshipLabel(), perms);
-        access.setNotifyPhone(request.getNotifyPhone());
+        CaregiverAccess access;
+        if (existingOpt.isPresent()) {
+            access = existingOpt.get();
+            if (!"REVOKED".equalsIgnoreCase(access.getStatus())) {
+                throw new BadRequestException(
+                        "A caregiver link for this user already exists with status: " + access.getStatus());
+            }
+            // Re-activate previously revoked link as PENDING
+            access.setStatus("PENDING");
+            access.setRelationshipLabel(request.getRelationshipLabel());
+            access.setPermissions(perms);
+            access.setNotifyPhone(request.getNotifyPhone());
+            access.setInvitedAt(LocalDateTime.now());
+            access.setAcceptedAt(null);
+            access.setRevokedAt(null);
+        } else {
+            access = new CaregiverAccess(patient, caregiver,
+                    request.getRelationshipLabel(), perms);
+            access.setNotifyPhone(request.getNotifyPhone());
+        }
         CaregiverAccess saved = caregiverRepo.save(access);
 
         // Send invitation email to caregiver
@@ -210,6 +225,31 @@ public class CaregiverService {
         return caregiverRepo.findActiveDelegatedPatients(caregiverId)
                 .stream()
                 .map(this::toDelegatedResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Caregiver: List incoming pending invitations waiting for response.
+     */
+    @Transactional(readOnly = true)
+    public List<CaregiverDTO.PendingInvitationResponse> getPendingInvitations(Long caregiverId) {
+        return caregiverRepo.findPendingInvitationsForCaregiver(caregiverId)
+                .stream()
+                .map(this::toPendingInvitationResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Caregiver: View pending orders for a delegated patient to pay on their behalf.
+     */
+    @Transactional(readOnly = true)
+    public List<OrderDTO> getPendingOrdersForDelegatedPatient(Long caregiverId, Long patientId) {
+        if (!caregiverRepo.existsActiveLink(patientId, caregiverId)) {
+            throw new BadRequestException("You do not have active caregiver access for patient id=" + patientId);
+        }
+        return orderRepository.findByPatientIdAndPaymentStatus(patientId, "PENDING")
+                .stream()
+                .map(orderService::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -438,6 +478,18 @@ public class CaregiverService {
         r.setRelationshipLabel(access.getRelationshipLabel());
         r.setPermissions(access.getPermissions());
         r.setAcceptedAt(access.getAcceptedAt());
+        return r;
+    }
+
+    private CaregiverDTO.PendingInvitationResponse toPendingInvitationResponse(CaregiverAccess access) {
+        CaregiverDTO.PendingInvitationResponse r = new CaregiverDTO.PendingInvitationResponse();
+        r.setAccessId(access.getId());
+        r.setPatientId(access.getPatient().getId());
+        r.setPatientName(access.getPatient().getName());
+        r.setPatientEmail(access.getPatient().getEmail());
+        r.setRelationshipLabel(access.getRelationshipLabel());
+        r.setPermissions(access.getPermissions());
+        r.setInvitedAt(access.getInvitedAt());
         return r;
     }
 }

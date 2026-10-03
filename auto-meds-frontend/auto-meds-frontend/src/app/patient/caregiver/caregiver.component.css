@@ -598,6 +598,345 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(108, 99, 255, 0); }
+}
+
+/* ── Pending Hero Banner (Caregiver Inbound Inbox) ───────────────────────── */
+.pending-hero-banner {
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.95), rgba(240, 253, 250, 0.95));
+  border: 2px solid #818cf8;
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+  animation: slideIn 0.35s ease;
+}
+
+.pending-hero-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.bell-glow {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: pulseGlow 2s infinite;
+  flex-shrink: 0;
+}
+
+.pending-hero-header h3 {
+  margin: 0 0 3px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.pending-hero-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.pending-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pending-card {
+  background: white;
+  border: 1px solid #c7d2fe;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.pending-card-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.patient-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.patient-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.patient-email {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.relationship-callout {
+  margin: 0 0 8px;
+  font-size: 0.87rem;
+  color: #374151;
+}
+
+.relationship-callout strong {
+  color: #4338ca;
+}
+
+.invited-date-stamp {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.pending-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-accept-hero {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-accept-hero:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+}
+
+.btn-decline-hero {
+  background: transparent;
+  color: #6b7280;
+  border: 1.5px solid #d1d5db;
+  border-radius: 9px;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-decline-hero:hover:not(:disabled) {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+/* ── Tab Badge Pending ───────────────────────────────────────────────────── */
+.tab-badge-pending {
+  background: #ef4444;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  animation: pulseGlow 1.5s infinite;
+}
+
+/* ── Pending Notice Box (Inside Caregiver Card for Patient) ─────────────── */
+.pending-notice-box {
+  background: #fffbeb;
+  border: 1px dashed #f59e0b;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.notice-text {
+  font-size: 0.82rem;
+  color: #92400e;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copy-link-row {
+  display: flex;
+}
+
+.btn-copy-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1.5px solid #d97706;
+  color: #b45309;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-copy-link:hover {
+  background: #fef3c7;
+}
+
+.copied-check {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* ── Delegated Patient Orders Section ───────────────────────────────────── */
+.patient-orders-section {
+  margin-top: 14px;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+}
+
+.btn-toggle-orders {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-toggle-orders:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.orders-dropdown {
+  margin-top: 10px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.orders-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #6b7280;
+  justify-content: center;
+  padding: 10px;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #6C63FF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.no-orders-msg {
+  font-size: 0.8rem;
+  color: #059669;
+  text-align: center;
+  padding: 8px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-mini-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-mini-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.order-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.order-badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.order-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.btn-pay-proxy {
+  background: linear-gradient(135deg, #6C63FF, #48CAE4);
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.btn-pay-proxy:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .caregiver-page { padding: 16px; }
@@ -607,4 +946,7 @@
   .command-grid { grid-template-columns: 1fr 1fr; }
   .tab-bar { width: 100%; }
   .tab-btn { flex: 1; justify-content: center; }
+  .pending-card { flex-direction: column; align-items: flex-start; }
+  .pending-actions { width: 100%; justify-content: flex-end; }
 }
+

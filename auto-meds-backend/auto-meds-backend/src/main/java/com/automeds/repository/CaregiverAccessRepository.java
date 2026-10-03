@@ -29,6 +29,12 @@ public interface CaregiverAccessRepository extends JpaRepository<CaregiverAccess
     List<CaregiverAccess> findActiveDelegatedPatients(@Param("caregiverId") Long caregiverId);
 
     /**
+     * Find all pending invitations for a caregiver (where they were invited but have not yet responded).
+     */
+    @Query("SELECT c FROM CaregiverAccess c JOIN FETCH c.patient WHERE c.caregiver.id = :caregiverId AND c.status = 'PENDING'")
+    List<CaregiverAccess> findPendingInvitationsForCaregiver(@Param("caregiverId") Long caregiverId);
+
+    /**
      * Find a specific link between a patient and a caregiver.
      */
     @Query("SELECT c FROM CaregiverAccess c WHERE c.patient.id = :patientId AND c.caregiver.id = :caregiverId")

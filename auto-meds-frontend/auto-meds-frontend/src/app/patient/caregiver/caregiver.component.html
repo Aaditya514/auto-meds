@@ -12,7 +12,7 @@
       </div>
       <div>
         <h1>Caregiver Access</h1>
-        <p class="header-subtitle">Manage trusted family members who can help with your medications</p>
+        <p class="header-subtitle">Manage trusted family members and patient delegations for medication support</p>
       </div>
     </div>
     <button class="btn-invite" (click)="toggleInviteForm()">
@@ -33,7 +33,58 @@
     <button class="alert-close">✕</button>
   </div>
 
-  <!-- ── Invite Form ────────────────────────────────────────────────────── -->
+  <!-- ── INCOMING PENDING INVITATIONS HERO BANNER (Caregiver Inbox) ──────── -->
+  <div class="pending-hero-banner" *ngIf="pendingInvitations.length > 0">
+    <div class="pending-hero-header">
+      <div class="bell-glow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div>
+        <h3>You have {{ pendingInvitations.length }} Caregiver Invitation{{ pendingInvitations.length > 1 ? 's' : '' }} Waiting!</h3>
+        <p>A family member or patient wants you to help manage their medications.</p>
+      </div>
+    </div>
+
+    <div class="pending-cards-list">
+      <div class="pending-card" *ngFor="let inv of pendingInvitations">
+        <div class="pending-card-main">
+          <div class="avatar avatar-patient">{{ getInitial(inv.patientName, 'P') }}</div>
+          <div class="pending-details">
+            <div class="patient-line">
+              <span class="patient-name">{{ inv.patientName }}</span>
+              <span class="patient-email">({{ inv.patientEmail }})</span>
+            </div>
+            <p class="relationship-callout">
+              Relationship / Role: <strong>{{ inv.relationshipLabel }}</strong>
+            </p>
+            <div class="permission-tags">
+              <span class="perm-tag" *ngFor="let perm of getPermissionBadges(inv.permissions)">
+                {{ perm.replace('_', ' ') }}
+              </span>
+            </div>
+            <span class="invited-date-stamp">Invited on {{ formatDate(inv.invitedAt) }}</span>
+          </div>
+        </div>
+
+        <div class="pending-actions">
+          <button class="btn-accept-hero" (click)="acceptPendingInvitation(inv.accessId)" [disabled]="processingId === inv.accessId">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Accept Invitation
+          </button>
+          <button class="btn-decline-hero" (click)="declinePendingInvitation(inv.accessId)" [disabled]="processingId === inv.accessId">
+            Decline
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Invite Form Panel ──────────────────────────────────────────────── -->
   <div class="invite-panel" *ngIf="showInviteForm">
     <div class="invite-panel-header">
       <h3>
@@ -44,8 +95,8 @@
         Send Caregiver Invitation
       </h3>
       <p class="invite-info">
-        ⚠️ <strong>The person you invite must already have an AutoMeds account</strong> registered with that email address.
-        They will receive an invitation email with an accept link.
+        ⚠️ <strong>The person you invite must have an AutoMeds account</strong> with that email address.
+        Once sent, they can accept inside their account, or you can copy the direct accept link.
       </p>
     </div>
 
@@ -57,9 +108,9 @@
                  placeholder="family.member@example.com" class="form-input"/>
         </div>
         <div class="form-group">
-          <label>Relationship <span class="required">*</span></label>
+          <label>Relationship Label <span class="required">*</span></label>
           <input type="text" [(ngModel)]="inviteForm.relationshipLabel"
-                 placeholder="e.g. My daughter Priya, Son Rohan" class="form-input"/>
+                 placeholder="e.g. My daughter Priya, Son Rohan, Dad" class="form-input"/>
         </div>
       </div>
 
@@ -68,10 +119,10 @@
           <label>WhatsApp/SMS Phone (optional)</label>
           <input type="tel" [(ngModel)]="inviteForm.notifyPhone"
                  placeholder="+91 98765 43210" class="form-input"/>
-          <span class="form-hint">They can reply CONFIRM/SKIP/SNOOZE to manage your refills via SMS</span>
+          <span class="form-hint">They can reply CONFIRM / SKIP / SNOOZE to manage your refills via SMS</span>
         </div>
         <div class="form-group">
-          <label>Permissions</label>
+          <label>Permissions Granted</label>
           <select [(ngModel)]="inviteForm.permissions" class="form-input">
             <option value="NOTIFICATIONS">View Only + Notifications</option>
             <option value="NOTIFICATIONS,PAY_ON_BEHALF">Notifications + Pay on Behalf</option>
@@ -106,6 +157,9 @@
       </svg>
       Patients I Manage
       <span class="tab-badge" *ngIf="delegatedPatients.length > 0">{{ delegatedPatients.length }}</span>
+      <span class="tab-badge-pending" *ngIf="pendingInvitations.length > 0" title="Pending invitations waiting for you">
+        {{ pendingInvitations.length }} new
+      </span>
     </button>
   </div>
 
@@ -118,7 +172,7 @@
 
     <div class="empty-state" *ngIf="!loadingCaregivers && caregivers.length === 0">
       <div class="empty-icon">👨‍👩‍👧</div>
-      <h3>No Caregivers Yet</h3>
+      <h3>No Caregivers Assigned Yet</h3>
       <p>Invite a trusted family member or friend to help manage your medications. They can receive refill reminders and pay for your subscriptions on your behalf.</p>
       <button class="btn-invite" (click)="toggleInviteForm()">+ Invite Your First Caregiver</button>
     </div>
@@ -126,14 +180,14 @@
     <div class="cards-grid" *ngIf="!loadingCaregivers && caregivers.length > 0">
       <div class="caregiver-card" *ngFor="let cg of caregivers">
         <div class="card-header">
-          <div class="avatar">{{ cg.caregiverName?.charAt(0)?.toUpperCase() || '?' }}</div>
+          <div class="avatar">{{ getInitial(cg.caregiverName, '?') }}</div>
           <div class="card-info">
             <h4>{{ cg.caregiverName }}</h4>
             <p class="card-email">{{ cg.caregiverEmail }}</p>
             <p class="card-relation">{{ cg.relationshipLabel }}</p>
           </div>
           <span class="status-badge" [ngClass]="getStatusClass(cg.status)">
-            {{ cg.status }}
+            {{ cg.status === 'PENDING' ? '⏳ PENDING' : cg.status }}
           </span>
         </div>
 
@@ -141,6 +195,23 @@
           <span class="perm-tag" *ngFor="let perm of getPermissionBadges(cg.permissions)">
             {{ perm.replace('_', ' ') }}
           </span>
+        </div>
+
+        <!-- Pending Status Info Box -->
+        <div class="pending-notice-box" *ngIf="cg.status === 'PENDING'">
+          <div class="notice-text">
+            <span>⏳</span> Waiting for <strong>{{ cg.caregiverName }}</strong> to accept in their account.
+          </div>
+          <div class="copy-link-row">
+            <button class="btn-copy-link" (click)="copyInviteLink(cg.accessId)">
+              <svg *ngIf="copiedLinkId !== cg.accessId" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span *ngIf="copiedLinkId !== cg.accessId">Copy Direct Accept Link</span>
+              <span *ngIf="copiedLinkId === cg.accessId" class="copied-check">✓ Copied to Clipboard!</span>
+            </button>
+          </div>
         </div>
 
         <div class="card-dates">
@@ -161,13 +232,13 @@
         </div>
 
         <div class="card-actions">
-          <!-- Pending: can accept on behalf or wait -->
-          <button *ngIf="cg.status === 'PENDING'" class="btn-sm btn-accept"
-                  (click)="acceptInvitation(cg.accessId)"
+          <!-- Pending: Cancel invite -->
+          <button *ngIf="cg.status === 'PENDING'" class="btn-sm btn-revoke"
+                  (click)="revokeCaregiver(cg.accessId, cg.caregiverName)"
                   [disabled]="processingId === cg.accessId">
-            Accept (if you're this person)
+            Cancel Invitation
           </button>
-          <!-- Active: can revoke -->
+          <!-- Active: Revoke access -->
           <button *ngIf="cg.status === 'ACTIVE'" class="btn-sm btn-revoke"
                   (click)="revokeCaregiver(cg.accessId, cg.caregiverName)"
                   [disabled]="processingId === cg.accessId">
@@ -176,7 +247,7 @@
             </svg>
             Revoke Access
           </button>
-          <span *ngIf="cg.status === 'REVOKED'" class="revoked-note">Access removed</span>
+          <span *ngIf="cg.status === 'REVOKED'" class="revoked-note">Access Revoked</span>
         </div>
       </div>
     </div>
@@ -191,14 +262,14 @@
 
     <div class="empty-state" *ngIf="!loadingPatients && delegatedPatients.length === 0">
       <div class="empty-icon">💊</div>
-      <h3>No Patients Yet</h3>
-      <p>You haven't been designated as a caregiver for anyone. If a family member has sent you an invitation, check your email to accept it.</p>
+      <h3>No Active Patient Delegations</h3>
+      <p>You haven't accepted any caregiver roles yet. When a patient invites you, their invitation will appear in the banner at the top of this page.</p>
     </div>
 
     <div class="cards-grid" *ngIf="!loadingPatients && delegatedPatients.length > 0">
       <div class="patient-card" *ngFor="let patient of delegatedPatients">
         <div class="card-header">
-          <div class="avatar avatar-patient">{{ patient.patientName?.charAt(0)?.toUpperCase() || '?' }}</div>
+          <div class="avatar avatar-patient">{{ getInitial(patient.patientName, '?') }}</div>
           <div class="card-info">
             <h4>{{ patient.patientName }}</h4>
             <p class="card-email">{{ patient.patientEmail }}</p>
@@ -216,8 +287,8 @@
         <div class="whatsapp-hint" *ngIf="patient.permissions.includes('PAY_ON_BEHALF')">
           <div class="wa-icon">💬</div>
           <div>
-            <p class="wa-title">WhatsApp Commands Available</p>
-            <p class="wa-desc">Reply <strong>CONFIRM</strong>, <strong>SKIP</strong>, <strong>SNOOZE</strong>, or <strong>STATUS</strong> from your registered phone to manage {{ patient.patientName }}'s refills instantly.</p>
+            <p class="wa-title">WhatsApp Commands Active</p>
+            <p class="wa-desc">Reply <strong>CONFIRM</strong>, <strong>SKIP</strong>, <strong>SNOOZE</strong>, or <strong>STATUS</strong> to manage {{ patient.patientName }}'s refills via SMS.</p>
           </div>
         </div>
 
@@ -226,25 +297,68 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Managing since: {{ formatDate(patient.acceptedAt) }}
+            Active since: {{ formatDate(patient.acceptedAt) }}
           </span>
+        </div>
+
+        <!-- Orders & Proxy Payment Accordion -->
+        <div class="patient-orders-section" *ngIf="patient.permissions.includes('PAY_ON_BEHALF')">
+          <button class="btn-toggle-orders" (click)="togglePatientOrders(patient.patientId)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            {{ expandedPatientId === patient.patientId ? 'Hide Pending Orders' : 'View Pending Refill Orders' }}
+          </button>
+
+          <div class="orders-dropdown" *ngIf="expandedPatientId === patient.patientId">
+            <div *ngIf="loadingOrders[patient.patientId]" class="orders-loading">
+              <div class="spinner-small"></div>
+              <span>Checking pending refill orders...</span>
+            </div>
+
+            <div *ngIf="!loadingOrders[patient.patientId] && !hasOrders(patient.patientId)" class="no-orders-msg">
+              ✅ No pending orders waiting for payment for {{ patient.patientName }}.
+            </div>
+
+            <div *ngIf="!loadingOrders[patient.patientId] && hasOrders(patient.patientId)" class="orders-list">
+              <div class="order-mini-card" *ngFor="let ord of getOrderList(patient.patientId)">
+                <div class="order-mini-info">
+                  <div class="order-title">
+                    <strong>Order #{{ ord.id }}</strong>
+                    <span class="order-badge-pending">{{ ord.orderType || 'REFILL' }}</span>
+                  </div>
+                  <div class="order-meta">
+                    <span>Total: <strong>₹{{ ord.totalAmount }}</strong></span>
+                    <span>Status: {{ ord.orderStatus }}</span>
+                  </div>
+                </div>
+                <button class="btn-pay-proxy" (click)="payOrderOnBehalf(patient.patientId, ord.id)" [disabled]="payingOrderId === ord.id">
+                  <span *ngIf="payingOrderId !== ord.id">💳 Pay on Behalf</span>
+                  <span *ngIf="payingOrderId === ord.id">Processing...</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ── How It Works Info Panel ──────────────────────────────────────────── -->
+  <!-- ── WhatsApp Command Center Info Panel ──────────────────────────────── -->
   <div class="info-panel">
-    <h3>💬 WhatsApp Command Center</h3>
-    <p>Once a caregiver has <strong>NOTIFICATIONS</strong> or <strong>PAY_ON_BEHALF</strong> access, they can manage refills via a simple SMS reply:</p>
+    <h3>💬 WhatsApp & SMS Command Center</h3>
+    <p>Caregivers with <strong>NOTIFICATIONS</strong> or <strong>PAY_ON_BEHALF</strong> access can manage refills via simple SMS replies to the AutoMeds gateway:</p>
     <div class="command-grid">
       <div class="command-card">
         <span class="command-word">CONFIRM</span>
-        <span class="command-desc">Approve and pay for the pending refill order</span>
+        <span class="command-desc">Approve and pay for the pending monthly refill order</span>
       </div>
       <div class="command-card">
         <span class="command-word">SKIP</span>
-        <span class="command-desc">Skip this month's refill cycle</span>
+        <span class="command-desc">Skip this month's refill cycle without penalty</span>
       </div>
       <div class="command-card">
         <span class="command-word">SNOOZE</span>
@@ -252,7 +366,7 @@
       </div>
       <div class="command-card">
         <span class="command-word">STATUS</span>
-        <span class="command-desc">Get a summary of current subscriptions and pending orders</span>
+        <span class="command-desc">Receive real-time subscription status and pending order summary</span>
       </div>
     </div>
   </div>

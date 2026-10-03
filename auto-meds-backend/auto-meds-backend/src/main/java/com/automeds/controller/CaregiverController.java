@@ -1,6 +1,7 @@
 package com.automeds.controller;
 
 import com.automeds.dto.CaregiverDTO;
+import com.automeds.dto.OrderDTO;
 import com.automeds.security.UserPrincipal;
 import com.automeds.service.CaregiverService;
 import org.springframework.http.ResponseEntity;
@@ -109,6 +110,29 @@ public class CaregiverController {
             @AuthenticationPrincipal UserPrincipal currentUser) {
 
         return ResponseEntity.ok(caregiverService.getDelegatedPatients(currentUser.getId()));
+    }
+
+    /**
+     * GET /api/caregiver/pending-invitations
+     * Returns all incoming pending caregiver invitations for the logged-in user.
+     */
+    @GetMapping("/pending-invitations")
+    public ResponseEntity<List<CaregiverDTO.PendingInvitationResponse>> getPendingInvitations(
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+
+        return ResponseEntity.ok(caregiverService.getPendingInvitations(currentUser.getId()));
+    }
+
+    /**
+     * GET /api/caregiver/patient/{patientId}/pending-orders
+     * Returns pending orders for a delegated patient so the caregiver can pay on their behalf.
+     */
+    @GetMapping("/patient/{patientId}/pending-orders")
+    public ResponseEntity<List<OrderDTO>> getPatientPendingOrders(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @PathVariable Long patientId) {
+
+        return ResponseEntity.ok(caregiverService.getPendingOrdersForDelegatedPatient(currentUser.getId(), patientId));
     }
 
     /**

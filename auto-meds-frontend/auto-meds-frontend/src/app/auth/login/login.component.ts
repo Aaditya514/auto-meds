@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit {
         if (res.role === 'ADMIN') {
           this.router.navigate(['/admin/dashboard']);
         } else {
-          this.router.navigate(['/home']);
+          this.router.navigateByUrl(this.returnUrl || '/home');
         }
       },
       error: (err) => {

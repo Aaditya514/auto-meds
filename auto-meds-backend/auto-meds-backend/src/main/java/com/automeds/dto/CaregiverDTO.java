@@ -188,4 +188,38 @@ public class CaregiverDTO {
         public LocalDateTime getAcceptedAt() { return acceptedAt; }
         public void setAcceptedAt(LocalDateTime acceptedAt) { this.acceptedAt = acceptedAt; }
     }
+
+    /**
+     * Response describing an incoming pending invitation for a caregiver.
+     */
+    public static class PendingInvitationResponse {
+        private Long accessId;
+        private Long patientId;
+        private String patientName;
+        private String patientEmail;
+        private String relationshipLabel;
+        private String permissions;
+        private LocalDateTime invitedAt;
+
+        public Long getAccessId() { return accessId; }
+        public void setAccessId(Long accessId) { this.accessId = accessId; }
+
+        public Long getPatientId() { return patientId; }
+        public void setPatientId(Long patientId) { this.patientId = patientId; }
+
+        public String getPatientName() { return patientName; }
+        public void setPatientName(String patientName) { this.patientName = patientName; }
+
+        public String getPatientEmail() { return patientEmail; }
+        public void setPatientEmail(String patientEmail) { this.patientEmail = patientEmail; }
+
+        public String getRelationshipLabel() { return relationshipLabel; }
+        public void setRelationshipLabel(String relationshipLabel) { this.relationshipLabel = relationshipLabel; }
+
+        public String getPermissions() { return permissions; }
+        public void setPermissions(String permissions) { this.permissions = permissions; }
+
+        public LocalDateTime getInvitedAt() { return invitedAt; }
+        public void setInvitedAt(LocalDateTime invitedAt) { this.invitedAt = invitedAt; }
+    }
 }
