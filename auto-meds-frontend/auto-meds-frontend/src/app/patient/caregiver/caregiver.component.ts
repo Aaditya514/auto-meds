@@ -55,6 +55,14 @@ export class CaregiverComponent implements OnInit {
   processingId: number | null = null;
   copiedLinkId: number | null = null;
 
+  // ── WhatsApp Simulator Console ───────────────────────────────────────────
+  simPhone = '';
+  simCommand = 'STATUS';
+  simLoading = false;
+  simChat: Array<{ sender: 'user' | 'bot'; text: string; time: string }> = [
+    { sender: 'bot', text: '👋 AutoMeds Caregiver Gateway ready. Select a command or type below.', time: 'System' }
+  ];
+
   constructor(
     private caregiverService: CaregiverService,
     public authService: AuthService,
@@ -66,6 +74,16 @@ export class CaregiverComponent implements OnInit {
     this.loadCaregivers();
     this.loadDelegatedPatients();
     this.loadPendingInvitations();
+
+    // Pre-fill phone number from logged-in user profile
+    this.authService.getProfile().subscribe({
+      next: (profile) => {
+        if (profile?.phone && !this.simPhone) {
+          this.simPhone = profile.phone;
+        }
+      },
+      error: () => {}
+    });
 
     // Check if user arrived via an /accept/:id invitation link
     const acceptId = this.route.snapshot.paramMap.get('id');
@@ -315,5 +333,50 @@ export class CaregiverComponent implements OnInit {
 
   getOrderList(patientId: number): any[] {
     return this.patientOrders[patientId] || [];
+  }
+
+  // ── WhatsApp Simulator Actions ────────────────────────────────────────────
+
+  setSimCommand(cmd: string): void {
+    this.simCommand = cmd;
+  }
+
+  sendSimulatedWhatsApp(): void {
+    if (!this.simPhone || !this.simCommand) {
+      this.actionError = 'Please provide both a phone number and a command.';
+      return;
+    }
+
+    const phone = this.simPhone.trim();
+    const cmd = this.simCommand.trim();
+    const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    this.simChat.push({ sender: 'user', text: cmd, time: now });
+
+    this.simLoading = true;
+    this.caregiverService.sendWhatsAppCommand(phone, cmd).subscribe({
+      next: (res) => {
+        this.simLoading = false;
+        const replyTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        this.simChat.push({ sender: 'bot', text: res.reply, time: replyTime });
+        // Refresh delegations and caregivers in case an order was confirmed/paid
+        this.loadCaregivers();
+        this.loadDelegatedPatients();
+      },
+      error: (err: Error) => {
+        this.simLoading = false;
+        const replyTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        this.simChat.push({
+          sender: 'bot',
+          text: '❌ Gateway Error: ' + (err.message || 'Unable to contact webhook'),
+          time: replyTime
+        });
+      }
+    });
+  }
+
+  clearSimChat(): void {
+    this.simChat = [
+      { sender: 'bot', text: '👋 Chat cleared. Ready for commands.', time: 'Just now' }
+    ];
   }
 }

@@ -369,5 +369,61 @@
         <span class="command-desc">Receive real-time subscription status and pending order summary</span>
       </div>
     </div>
+
+    <!-- ── Interactive WhatsApp Simulator Console ────────────────────────── -->
+    <div class="simulator-panel">
+      <div class="simulator-header">
+        <div class="sim-badge">LIVE TEST CONSOLE</div>
+        <h4>📱 Interactive WhatsApp Command Simulator</h4>
+        <p>Test the AutoMeds webhook directly in your browser without configuring external SMS providers.</p>
+      </div>
+
+      <div class="sim-phone-screen">
+        <div class="sim-screen-header">
+          <div class="sim-avatar">🤖</div>
+          <div class="sim-contact">
+            <strong>AutoMeds Refill Assistant</strong>
+            <span>Verified Medical Bot • Active</span>
+          </div>
+          <button class="btn-clear-chat" (click)="clearSimChat()" title="Reset chat history">Clear</button>
+        </div>
+
+        <div class="sim-chat-area">
+          <div class="chat-bubble" *ngFor="let msg of simChat" [ngClass]="msg.sender === 'user' ? 'bubble-user' : 'bubble-bot'">
+            <div class="bubble-text">{{ msg.text }}</div>
+            <div class="bubble-time">{{ msg.time }}</div>
+          </div>
+          <div class="chat-bubble bubble-bot bubble-typing" *ngIf="simLoading">
+            <span class="typing-dot">.</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+          </div>
+        </div>
+
+        <div class="sim-controls">
+          <div class="sim-row">
+            <div class="sim-field">
+              <label>Caregiver Phone Number</label>
+              <input type="text" [(ngModel)]="simPhone" placeholder="e.g. +919876543211 or registered phone" class="sim-input"/>
+            </div>
+            <div class="sim-field sim-field-cmd">
+              <label>Quick Command Shortcuts</label>
+              <div class="quick-cmd-buttons">
+                <button type="button" class="btn-cmd" [class.active-cmd]="simCommand === 'STATUS'" (click)="setSimCommand('STATUS')">STATUS</button>
+                <button type="button" class="btn-cmd" [class.active-cmd]="simCommand === 'CONFIRM'" (click)="setSimCommand('CONFIRM')">CONFIRM</button>
+                <button type="button" class="btn-cmd" [class.active-cmd]="simCommand === 'SKIP'" (click)="setSimCommand('SKIP')">SKIP</button>
+                <button type="button" class="btn-cmd" [class.active-cmd]="simCommand === 'SNOOZE 7'" (click)="setSimCommand('SNOOZE 7')">SNOOZE 7</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-send-row">
+            <input type="text" [(ngModel)]="simCommand" placeholder="Type custom command (e.g. STATUS, CONFIRM, SNOOZE 14)..." class="sim-input-cmd" (keyup.enter)="sendSimulatedWhatsApp()"/>
+            <button class="btn-sim-send" (click)="sendSimulatedWhatsApp()" [disabled]="simLoading">
+              <span *ngIf="!simLoading">Send Command ➔</span>
+              <span *ngIf="simLoading">Sending...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

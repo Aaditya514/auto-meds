@@ -104,4 +104,9 @@ export class CaregiverService {
   acceptViaEmailLink(accessId: number): Observable<CaregiverLinkResponse> {
     return this.http.get<CaregiverLinkResponse>(`${this.apiBase}/accept/${accessId}`);
   }
+
+  /** WhatsApp / SMS Webhook command execution */
+  sendWhatsAppCommand(from: string, body: string): Observable<{ reply: string; from: string }> {
+    return this.http.post<{ reply: string; from: string }>(`${this.apiBase}/whatsapp-command`, { from, body });
+  }
 }

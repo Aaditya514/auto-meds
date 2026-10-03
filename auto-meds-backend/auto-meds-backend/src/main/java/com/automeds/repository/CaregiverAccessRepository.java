@@ -55,4 +55,15 @@ public interface CaregiverAccessRepository extends JpaRepository<CaregiverAccess
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM CaregiverAccess c " +
            "WHERE c.patient.id = :patientId AND c.caregiver.id = :caregiverId AND c.status = 'ACTIVE'")
     boolean existsActiveLink(@Param("patientId") Long patientId, @Param("caregiverId") Long caregiverId);
+
+    /**
+     * Find active caregiver delegations by caregiver's phone or notify phone digits.
+     * Robust lookup for WhatsApp / SMS webhook commands.
+     */
+    @Query("SELECT c FROM CaregiverAccess c JOIN FETCH c.patient JOIN FETCH c.caregiver " +
+           "WHERE c.status = 'ACTIVE' AND (" +
+           "c.notifyPhone LIKE %:digits% OR " +
+           "c.caregiver.phone LIKE %:digits%) " +
+           "ORDER BY c.acceptedAt DESC")
+    List<CaregiverAccess> findActiveByPhoneDigits(@Param("digits") String digits);
 }

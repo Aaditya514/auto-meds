@@ -937,6 +937,261 @@
   transform: translateY(-1px);
 }
 
+/* ── Interactive WhatsApp Simulator Console ────────────────────────────── */
+.simulator-panel {
+  margin-top: 24px;
+  background: white;
+  border: 1px solid #d1fae5;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+}
+
+.simulator-header {
+  margin-bottom: 16px;
+}
+
+.sim-badge {
+  display: inline-block;
+  background: #10b981;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.simulator-header h4 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #064e3b;
+}
+
+.simulator-header p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.sim-phone-screen {
+  background: #efeae2;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.sim-screen-header {
+  background: #075e54;
+  color: white;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sim-avatar {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.sim-contact {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sim-contact strong {
+  font-size: 0.88rem;
+}
+
+.sim-contact span {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.btn-clear-chat {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear-chat:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sim-chat-area {
+  padding: 16px;
+  min-height: 180px;
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-image: radial-gradient(#d4cdc5 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-line;
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+
+.bubble-user {
+  align-self: flex-end;
+  background: #d9fdd3;
+  color: #111b21;
+  border-top-right-radius: 0;
+}
+
+.bubble-bot {
+  align-self: flex-start;
+  background: white;
+  color: #111b21;
+  border-top-left-radius: 0;
+}
+
+.bubble-time {
+  font-size: 0.65rem;
+  color: #667781;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.bubble-typing {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding: 6px 12px;
+}
+
+.typing-dot {
+  font-size: 1.5rem;
+  line-height: 0.5;
+  animation: blink 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.sim-controls {
+  background: #f0f2f5;
+  border-top: 1px solid #d1d5db;
+  padding: 12px 14px;
+}
+
+.sim-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.sim-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.sim-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  box-sizing: border-box;
+}
+
+.quick-cmd-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-cmd {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-cmd:hover {
+  background: #e5e7eb;
+}
+
+.active-cmd {
+  background: #075e54;
+  color: white;
+  border-color: #075e54;
+}
+
+.sim-send-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sim-input-cmd {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.sim-input-cmd:focus, .sim-input:focus {
+  outline: none;
+  border-color: #075e54;
+}
+
+.btn-sim-send {
+  background: #075e54;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-sim-send:hover:not(:disabled) {
+  background: #128c7e;
+}
+
+.btn-sim-send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .caregiver-page { padding: 16px; }
@@ -948,5 +1203,6 @@
   .tab-btn { flex: 1; justify-content: center; }
   .pending-card { flex-direction: column; align-items: flex-start; }
   .pending-actions { width: 100%; justify-content: flex-end; }
+  .sim-row { grid-template-columns: 1fr; }
 }
 

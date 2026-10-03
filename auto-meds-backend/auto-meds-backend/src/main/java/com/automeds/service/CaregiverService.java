@@ -327,29 +327,30 @@ public class CaregiverService {
 
         log.info("WhatsApp command received from={} command='{}'", phone, rawCommand);
 
-        // Find caregiver by their notify phone number
-        User caregiver = userRepository.findByPhone(phone)
-                .orElseThrow(() -> new BadRequestException(
-                        "No registered caregiver found for phone: " + phone));
-
-        List<CaregiverAccess> delegations = caregiverRepo.findActiveDelegatedPatients(caregiver.getId());
-        if (delegations.isEmpty()) {
-            return "You have no active patient delegations. Please ask your patient to invite you via the AutoMeds app.";
+        if (phone == null || phone.isBlank()) {
+            return "❌ Missing sender phone number.";
         }
 
-        // For simplicity, act on the first active delegation (caregiver with one patient)
-        // In multi-patient scenarios, the command would include a patient identifier
+        String digits = extractPhoneDigits(phone);
+        List<CaregiverAccess> delegations = caregiverRepo.findActiveByPhoneDigits(digits);
+
+        if (delegations.isEmpty()) {
+            return "ℹ️ No active caregiver delegations found for phone: " + phone
+                    + ". Please ensure your phone is registered in AutoMeds with active caregiver permissions.";
+        }
+
         CaregiverAccess delegation = delegations.get(0);
+        Long caregiverId = delegation.getCaregiver().getId();
         Long patientId = delegation.getPatient().getId();
         String patientName = delegation.getPatient().getName();
 
         if (rawCommand.startsWith("CONFIRM")) {
-            return handleConfirmCommand(caregiver.getId(), patientId, patientName);
+            return handleConfirmCommand(caregiverId, patientId, patientName);
         } else if (rawCommand.startsWith("SKIP")) {
-            return handleSkipCommand(caregiver.getId(), patientId, patientName);
+            return handleSkipCommand(caregiverId, patientId, patientName);
         } else if (rawCommand.startsWith("SNOOZE")) {
             int days = parseSnoozeDays(rawCommand);
-            return handleSnoozeCommand(caregiver.getId(), patientId, patientName, days);
+            return handleSnoozeCommand(caregiverId, patientId, patientName, days);
         } else if (rawCommand.startsWith("STATUS")) {
             return handleStatusCommand(patientId, patientName, delegation);
         } else {
@@ -428,6 +429,15 @@ public class CaregiverService {
             // Fall through to default
         }
         return 7; // default snooze duration
+    }
+
+    private String extractPhoneDigits(String phone) {
+        if (phone == null) return "";
+        String cleaned = phone.replace("whatsapp:", "").replaceAll("[^0-9]", "");
+        if (cleaned.length() > 10) {
+            return cleaned.substring(cleaned.length() - 10);
+        }
+        return cleaned;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
