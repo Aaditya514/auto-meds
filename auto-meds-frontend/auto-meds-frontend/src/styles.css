@@ -96,6 +96,56 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
+/* Ensure headings inside dark surfaces and text-white containers are pure white */
+.text-white,
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6,
+.bg-brand-gradient,
+.bg-brand-gradient h1,
+.bg-brand-gradient h2,
+.bg-brand-gradient h3,
+.bg-brand-gradient h4,
+.bg-brand-gradient h5,
+.bg-brand-gradient h6,
+.bg-primary h1,
+.bg-primary h2,
+.bg-primary h3,
+.bg-primary h4,
+.bg-primary h5,
+.bg-primary h6,
+.bg-dark h1,
+.bg-dark h2,
+.bg-dark h3,
+.bg-dark h4,
+.bg-dark h5,
+.bg-dark h6,
+.bg-danger h1,
+.bg-danger h2,
+.bg-danger h3,
+.bg-danger h4,
+.bg-danger h5,
+.bg-danger h6,
+.bg-success h1,
+.bg-success h2,
+.bg-success h3,
+.bg-success h4,
+.bg-success h5,
+.bg-success h6,
+.modal-header.bg-primary .modal-title,
+.modal-header.bg-brand-gradient .modal-title,
+h1.text-white,
+h2.text-white,
+h3.text-white,
+h4.text-white,
+h5.text-white,
+h6.text-white {
+  color: #ffffff !important;
+}
+
 /* ── Typography System Utilities (Design Motion) ────────────────────────── */
 .text-display {
   font-size: var(--type-display-size);
@@ -134,6 +184,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .bg-brand-gradient {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff !important;
+}
+.bg-brand-gradient * {
+  --text-main: #ffffff;
 }
 
 /* ── Glass Navbar ────────────────────────────────────────────────────────── */
