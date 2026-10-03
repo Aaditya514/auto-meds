@@ -27,14 +27,26 @@ public class PrescriptionService {
     private final FileStorageUtil fileStorageUtil;
     private final PrescriptionOcrService prescriptionOcrService;
 
+    private final AsyncPrescriptionProcessor asyncPrescriptionProcessor;
+
+    @org.springframework.beans.factory.annotation.Autowired
     public PrescriptionService(PrescriptionRepository prescriptionRepository, 
                                UserRepository userRepository, 
                                FileStorageUtil fileStorageUtil,
-                               PrescriptionOcrService prescriptionOcrService) {
+                               PrescriptionOcrService prescriptionOcrService,
+                               AsyncPrescriptionProcessor asyncPrescriptionProcessor) {
         this.prescriptionRepository = prescriptionRepository;
         this.userRepository = userRepository;
         this.fileStorageUtil = fileStorageUtil;
         this.prescriptionOcrService = prescriptionOcrService;
+        this.asyncPrescriptionProcessor = asyncPrescriptionProcessor;
+    }
+
+    public PrescriptionService(PrescriptionRepository prescriptionRepository, 
+                               UserRepository userRepository, 
+                               FileStorageUtil fileStorageUtil,
+                               PrescriptionOcrService prescriptionOcrService) {
+        this(prescriptionRepository, userRepository, fileStorageUtil, prescriptionOcrService, null);
     }
 
     // Wraps execution inside a database transaction
@@ -51,15 +63,6 @@ public class PrescriptionService {
         prescription.setFilePath(storedFileName);
         prescription.setUploadDate(LocalDateTime.now());
         prescription.setDoctorVisitDate(doctorVisitDate);
-        
-        // Execute OCR text extraction and catalog matching
-        try {
-            PrescriptionOcrDTO ocrResult = prescriptionOcrService.processPrescription(file);
-            prescription.setOcrData(prescriptionOcrService.toJson(ocrResult));
-        } catch (Exception e) {
-            // Safe fallback if OCR encountered unexpected parsing exception
-            prescription.setOcrData(null);
-        }
 
         // Default prescription validity: 6 months or provided expiryMonths
         int months = (expiryMonths != null && expiryMonths > 0) ? expiryMonths : 6;
@@ -67,7 +70,14 @@ public class PrescriptionService {
         prescription.setExpiryDate(baseDate.plusMonths(months));
         prescription.setStatus("PENDING");
 
-        return prescriptionRepository.save(prescription);
+        Prescription saved = prescriptionRepository.save(prescription);
+
+        // P0: Dispatch asynchronous OCR document parsing on dedicated worker thread pool
+        if (asyncPrescriptionProcessor != null) {
+            asyncPrescriptionProcessor.processOcrAsync(saved.getId(), storedFileName, file.getOriginalFilename());
+        }
+
+        return saved;
     }
 
     // Direct scan without saving to database (useful for instant UI preview)

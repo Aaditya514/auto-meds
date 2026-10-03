@@ -45,8 +45,10 @@ public class AdminService {
     private final OrderService orderService;
     private final NotificationService notificationService;
     private final EmailService emailService;
+    private final SseNotificationService sseNotificationService;
 
-    public AdminService(UserRepository userRepository, MedicineRepository medicineRepository, SubscriptionRepository subscriptionRepository, OrderRepository orderRepository, MedicineService medicineService, SubscriptionService subscriptionService, OrderService orderService, NotificationService notificationService, EmailService emailService) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public AdminService(UserRepository userRepository, MedicineRepository medicineRepository, SubscriptionRepository subscriptionRepository, OrderRepository orderRepository, MedicineService medicineService, SubscriptionService subscriptionService, OrderService orderService, NotificationService notificationService, EmailService emailService, SseNotificationService sseNotificationService) {
         this.userRepository = userRepository;
         this.medicineRepository = medicineRepository;
         this.subscriptionRepository = subscriptionRepository;
@@ -56,6 +58,11 @@ public class AdminService {
         this.orderService = orderService;
         this.notificationService = notificationService;
         this.emailService = emailService;
+        this.sseNotificationService = sseNotificationService;
+    }
+
+    public AdminService(UserRepository userRepository, MedicineRepository medicineRepository, SubscriptionRepository subscriptionRepository, OrderRepository orderRepository, MedicineService medicineService, SubscriptionService subscriptionService, OrderService orderService, NotificationService notificationService, EmailService emailService) {
+        this(userRepository, medicineRepository, subscriptionRepository, orderRepository, medicineService, subscriptionService, orderService, notificationService, emailService, null);
     }
 
     private static final String STATUS_ACTIVE = "ACTIVE";
@@ -141,6 +148,15 @@ public class AdminService {
         notificationService.createNotification(primarySub.getPatient().getId(), "Subscriptions Approved!", 
                 "Your prescription subscription for (" + medNames + ") has been APPROVED. Next refill date: " + primarySub.getNextRefillDate().toLocalDate(), "SUCCESS");
 
+        // P4: Live SSE push to patient
+        if (sseNotificationService != null) {
+            sseNotificationService.sendToPatient(primarySub.getPatient().getId(), "SUBSCRIPTION_APPROVED", java.util.Map.of(
+                    "subscriptionId", subscriptionId,
+                    "medicines", medNames,
+                    "message", "Your medication prescription has been approved by the pharmacist!"
+            ));
+        }
+
         return approvedSubs;
     }
 
@@ -161,6 +177,15 @@ public class AdminService {
 
         notificationService.createNotification(sub.getPatient().getId(), "Subscription Rejected", message, "DANGER");
         emailService.sendSubscriptionNotificationEmail(sub.getPatient(), "Subscription Request Rejected", message);
+
+        // P4: Live SSE push to patient
+        if (sseNotificationService != null) {
+            sseNotificationService.sendToPatient(sub.getPatient().getId(), "SUBSCRIPTION_REJECTED", java.util.Map.of(
+                    "subscriptionId", subscriptionId,
+                    "reason", reason != null ? reason : "Requires clinical review"
+            ));
+        }
+
         return subscriptionService.convertToDTO(saved);
     }
 
@@ -177,6 +202,14 @@ public class AdminService {
         String notifMsg = "Clarification required for your subscription (" + medName + "): " + (message != null ? message : "Please re-upload a valid prescription.");
         notificationService.createNotification(sub.getPatient().getId(), "Subscription Clarification Required", notifMsg, "WARNING");
         emailService.sendSubscriptionNotificationEmail(sub.getPatient(), "Subscription Clarification Required", notifMsg);
+
+        // P4: Live SSE push to patient
+        if (sseNotificationService != null) {
+            sseNotificationService.sendToPatient(sub.getPatient().getId(), "CLARIFICATION_REQUIRED", java.util.Map.of(
+                    "subscriptionId", subscriptionId,
+                    "message", message != null ? message : "Pharmacist requested clarification."
+            ));
+        }
 
         return subscriptionService.convertToDTO(saved);
     }
@@ -199,6 +232,7 @@ public class AdminService {
         medicine.setSymptoms(dto.getSymptoms());
         medicine.setActive(1);
 
+        medicineService.evictMedicineCaches();
         return medicineService.convertToDTO(medicineRepository.save(medicine));
     }
 
@@ -223,6 +257,7 @@ public class AdminService {
             medicine.setExpiryDate(dto.getExpiryDate());
         }
 
+        medicineService.evictMedicineCaches();
         return medicineService.convertToDTO(medicineRepository.save(medicine));
     }
 
@@ -233,6 +268,7 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException(ENTITY_MEDICINE, "id", id));
 
         medicine.setActive(0);
+        medicineService.evictMedicineCaches();
         return medicineService.convertToDTO(medicineRepository.save(medicine));
     }
 
@@ -247,6 +283,7 @@ public class AdminService {
         }
 
         medicine.setStockQuantity(stockQuantity);
+        medicineService.evictMedicineCaches();
         return medicineService.convertToDTO(medicineRepository.save(medicine));
     }
 
@@ -275,6 +312,16 @@ public class AdminService {
         notificationService.createNotification(order.getPatient().getId(), "Order Status Updated", 
                 "Your Order #" + order.getId() + " status is now " + newStatus, "INFO");
         emailService.sendOrderStatusUpdateEmail(order.getPatient(), saved, oldStatus, newStatus);
+
+        // P4: Live SSE push to patient on order status progression
+        if (sseNotificationService != null) {
+            sseNotificationService.sendToPatient(order.getPatient().getId(), "ORDER_STATUS_CHANGED", java.util.Map.of(
+                    "orderId", order.getId(),
+                    "oldStatus", oldStatus != null ? oldStatus : "",
+                    "newStatus", newStatus,
+                    "message", "Order #" + order.getId() + " status is now " + newStatus
+            ));
+        }
 
         return orderService.convertToDTO(saved);
     }
@@ -415,11 +462,34 @@ public class AdminService {
                                     sub.getId(), sub.getPatient().getFullName(), sub.getQuantity()),
                             "INFO"
                     );
+
+                    // P4: Live SSE push to patient on deficit fulfillment
+                    if (sseNotificationService != null) {
+                        sseNotificationService.sendToPatient(sub.getPatient().getId(), "DEFICIT_ALLOCATED", java.util.Map.of(
+                                "subscriptionId", sub.getId(),
+                                "medicineName", medicine.getMedicineName(),
+                                "quantity", sub.getQuantity()
+                        ));
+                    }
                 }
             }
         }
 
+        // P3: Invalidate cached medicine catalog after restock
+        medicineService.evictMedicineCaches();
+
         Medicine refreshed = medicineRepository.findById(medicine.getId()).orElse(medicine);
+
+        // P4: Broadcast restock event to clinical staff command centers
+        if (sseNotificationService != null) {
+            sseNotificationService.sendToStaff("INVENTORY_RESTOCKED", java.util.Map.of(
+                    "medicineId", medicine.getId(),
+                    "medicineName", medicine.getMedicineName(),
+                    "quantityRestocked", request.getQuantity(),
+                    "availableQuantity", refreshed.getAvailableQuantity(),
+                    "deficitsResolved", deficitsResolved
+            ));
+        }
 
         String msg = String.format("Successfully restocked %d units of %s. Current stock: %d (Available: %d, Reserved: %d). %d waiting subscriber deficits fulfilled.",
                 request.getQuantity(), medicine.getMedicineName(), refreshed.getStockQuantity(), refreshed.getAvailableQuantity(), refreshed.getReservedQuantity(), deficitsResolved);

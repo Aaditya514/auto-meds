@@ -4,6 +4,8 @@ import com.automeds.dto.MedicineDTO;
 import com.automeds.entity.Medicine;
 import com.automeds.exception.ResourceNotFoundException;
 import com.automeds.repository.MedicineRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,7 +14,8 @@ import java.util.List;
 /**
  * // EDUCATIONAL CODE EXPLANATION
  * Class: MedicineService
- * Description: Application component class containing configuration, exceptions, or scheduling logic.
+ * Description: Medicine catalog lookup and generic alternative matching service with
+ * high-performance Caffeine in-memory caching (P3).
  */
 public class MedicineService {
 
@@ -22,18 +25,21 @@ public class MedicineService {
         this.medicineRepository = medicineRepository;
     }
 
+    @Cacheable(value = "medicines", key = "'all'")
     public List<MedicineDTO> getAllActiveMedicines() {
         return medicineRepository.findByActive(1).stream()
                 .map(this::convertToDTO)
                 .toList();
     }
 
+    @Cacheable(value = "medicine_by_id", key = "#id")
     public MedicineDTO getMedicineById(Long id) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine", "id", id));
         return convertToDTO(medicine);
     }
 
+    @Cacheable(value = "medicines_search", key = "#query")
     public List<MedicineDTO> searchMedicines(String query) {
         if (query == null || query.trim().isEmpty()) {
             return getAllActiveMedicines();
@@ -41,6 +47,11 @@ public class MedicineService {
         return medicineRepository.searchMedicines(query.trim()).stream()
                 .map(this::convertToDTO)
                 .toList();
+    }
+
+    @CacheEvict(value = {"medicines", "medicines_search", "medicine_by_id"}, allEntries = true)
+    public void evictMedicineCaches() {
+        // Automatically clears catalog and search caches when updates, restocks, or additions occur
     }
 
     /**

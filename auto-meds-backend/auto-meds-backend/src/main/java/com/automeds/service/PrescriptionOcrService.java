@@ -90,6 +90,82 @@ public class PrescriptionOcrService {
     }
 
     /**
+     * Process an already stored prescription file from disk asynchronously (P0).
+     */
+    public PrescriptionOcrDTO processPrescriptionPath(Path filePath, String originalFilename) {
+        PrescriptionOcrDTO result = new PrescriptionOcrDTO();
+        result.setFileName(originalFilename != null ? originalFilename : filePath.getFileName().toString());
+
+        String extractedText = extractTextFromPath(filePath, originalFilename);
+        result.setRawExtractedText(extractedText);
+
+        // Extract metadata
+        extractDoctorMetadata(extractedText, result);
+
+        // Extract and match candidate medicines
+        List<Medicine> allCatalog = medicineRepository.findByActive(1);
+        List<PrescriptionOcrCandidateDTO> candidates = extractAndMatchMedicines(extractedText, allCatalog);
+        result.setCandidates(candidates);
+
+        // Determine overall confidence
+        if (candidates.isEmpty()) {
+            result.setConfidenceOverall(0.0);
+            result.setStatus("MANUAL_REVIEW_REQUIRED");
+        } else {
+            double avgScore = candidates.stream()
+                    .mapToDouble(PrescriptionOcrCandidateDTO::getConfidenceScore)
+                    .average()
+                    .orElse(0.0);
+            result.setConfidenceOverall(BigDecimal.valueOf(avgScore).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            result.setStatus(avgScore >= 0.80 ? "PROCESSED" : "PARTIALLY_MATCHED");
+        }
+
+        return result;
+    }
+
+    private String extractTextFromPath(Path filePath, String originalFilename) {
+        String fileName = originalFilename != null ? originalFilename.toLowerCase() : filePath.getFileName().toString().toLowerCase();
+        if (fileName.endsWith(".txt")) {
+            try {
+                return Files.readString(filePath, StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                log.warn("Could not read text file: {}", e.getMessage());
+            }
+        }
+        if (fileName.endsWith(".pdf")) {
+            try (InputStream is = Files.newInputStream(filePath); PDDocument document = PDDocument.load(is)) {
+                PDFTextStripper stripper = new PDFTextStripper();
+                String text = stripper.getText(document);
+                if (text != null && text.trim().length() > 20) {
+                    return text.trim();
+                }
+                if (document.getNumberOfPages() > 0) {
+                    PDFRenderer renderer = new PDFRenderer(document);
+                    BufferedImage bim = renderer.renderImageWithDPI(0, 200);
+                    Path tempImg = Files.createTempFile("ocr_pdf_page_", ".png");
+                    try {
+                        ImageIO.write(bim, "PNG", tempImg.toFile());
+                        return performOcr(tempImg);
+                    } finally {
+                        Files.deleteIfExists(tempImg);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("PDFBox could not extract text from PDF file {}: {}", fileName, e.getMessage());
+            }
+        }
+
+        // Image files
+        try {
+            return performOcr(filePath);
+        } catch (Exception e) {
+            log.error("Failed to perform OCR on image {}: {}", fileName, e.getMessage());
+        }
+
+        return "";
+    }
+
+    /**
      * Serialize PrescriptionOcrDTO to JSON string for persistent audit storage.
      */
     public String toJson(PrescriptionOcrDTO dto) {
