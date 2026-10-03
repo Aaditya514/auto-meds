@@ -52,16 +52,35 @@ export class CartComponent implements OnInit {
     });
   }
 
+  removingItemId: number | null = null;
+
   removeItem(itemId: number): void {
+    if (this.removingItemId === itemId) return;
+    this.removingItemId = itemId;
+    this.errorMessage = '';
+
     this.cartService.removeItem(itemId).subscribe({
-      next: (data) => this.cart = data
+      next: (data) => {
+        this.cart = data;
+        this.removingItemId = null;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || err.message || 'Failed to remove item from cart.';
+        this.removingItemId = null;
+        setTimeout(() => this.errorMessage = '', 5000);
+      }
     });
   }
 
   clearCart(): void {
     if (confirm('Are you sure you want to clear your cart?')) {
+      this.errorMessage = '';
       this.cartService.clearCart().subscribe({
-        next: () => this.loadCart()
+        next: () => this.loadCart(),
+        error: (err) => {
+          this.errorMessage = err.error?.message || err.message || 'Failed to clear cart.';
+          setTimeout(() => this.errorMessage = '', 5000);
+        }
       });
     }
   }

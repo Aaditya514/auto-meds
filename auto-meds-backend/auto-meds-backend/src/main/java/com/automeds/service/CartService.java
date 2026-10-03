@@ -165,14 +165,22 @@ public class CartService {
             throw new BadRequestException("Unauthorized access to cart item.");
         }
 
+        // Remove from parent collection to satisfy JPA orphanRemoval
+        if (cart.getItems() != null) {
+            cart.getItems().removeIf(item -> item.getId() != null && item.getId().equals(itemId));
+        }
+
         cartItemRepository.delete(cartItem);
-        return getCartByPatientId(patientId);
+        return convertToDTO(cart);
     }
 
     // Wraps execution inside a database transaction
     @Transactional
     public void clearCart(Long patientId) {
         Cart cart = getOrCreateCartForPatient(patientId);
+        if (cart.getItems() != null) {
+            cart.getItems().clear();
+        }
         cartItemRepository.deleteByCartId(cart.getId());
     }
 
