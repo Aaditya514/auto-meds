@@ -104,6 +104,8 @@ export class SubscriptionCreateComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.submitting) return; // Design Motion: Guard against double-tap
+
     if (this.subscriptionForm.invalid) {
       return;
     }

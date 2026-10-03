@@ -135,8 +135,8 @@
       </div>
 
       <div class="invite-form-actions">
-        <button class="btn-cancel" (click)="toggleInviteForm()">Cancel</button>
-        <button class="btn-send" (click)="submitInvite()" [disabled]="inviting">
+        <button class="btn-cancel" (click)="toggleInviteForm()" [disabled]="inviting">Cancel</button>
+        <button class="btn-send" (click)="submitInvite()" [disabled]="inviting" [class.btn-submitting]="inviting">
           <span *ngIf="!inviting">Send Invitation</span>
           <span *ngIf="inviting" class="loading-dots">Sending<span>.</span><span>.</span><span>.</span></span>
         </button>

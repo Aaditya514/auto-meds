@@ -144,7 +144,7 @@ export class AdminInventoryComponent implements OnInit {
   }
 
   submitRestock(): void {
-    if (!this.selectedMedForRestock || this.restockQuantity <= 0) return;
+    if (!this.selectedMedForRestock || this.restockQuantity <= 0 || this.restockLoading) return;
 
     this.restockLoading = true;
     const req: RestockRequest = {

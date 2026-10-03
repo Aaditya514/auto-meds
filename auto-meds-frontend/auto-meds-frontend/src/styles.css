@@ -401,13 +401,28 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
 }
 
-/* ── Buttons & CTAs ──────────────────────────────────────────────────────── */
+/* ── Buttons & CTAs (Design Motion Critical Action System) ───────────────── */
 .btn {
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.88rem;
   padding: 9px 18px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+/* Tactile Micro-Press Feedback */
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Double-Tap Lockout & Morphing State */
+.btn-submitting,
+.btn:disabled.btn-submitting {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.82 !important;
+  transform: none !important;
 }
 
 .btn-pharma-primary,

@@ -112,6 +112,18 @@ Avatars are not just static circular images or generic colored placeholders; the
 
 ---
 
+## 2.5. Preventing Double-Tap on Critical Submit Buttons (The 3-Layer Defense)
+
+Accidental double-taps on high-stakes buttons (Checkout Payments, Prescription Submissions, Warehouse Restocks) cause duplicate orders, double charges, and concurrent state corruption. Modeled after **Design Motion's Double-Tap Prevention System**, AutoMeds implements a strict **3-Layer Defense Architecture**:
+
+| Defense Layer | Engineering Mechanism | AutoMeds Implementation |
+| :--- | :--- | :--- |
+| **Layer 1: UI Motion & Tactile Feedback** | The moment the button is tapped, it instantly morphs into a processing state with micro-press physics, inline spinner, and disabled pointer events so subsequent clicks physically cannot fire. | `.btn:active:not(:disabled)` provides a tactile `scale(0.98)` press; `.btn-submitting` locks `pointer-events: none !important; cursor: not-allowed;` with morphing labels ("Processing Secure Order...", "Allocating & Restocking..."). |
+| **Layer 2: Frontend Logic Guard** | Even if rapid-fire mouse clicks register before DOM re-renders, the event handler immediately rejects subsequent invocations. | Explicit early return `if (this.submitting) return;` placed at line 1 of every critical handler (`onInitiateOrder()`, `submitRestock()`, `approve()`, `submitInvite()`). |
+| **Layer 3: State Recovery on Error** | If an asynchronous request fails or times out, the button must gracefully recover rather than locking the user out permanently. | `error: () => this.submitting = false;` in every RxJS subscription pipeline, ensuring the button re-enables for immediate retry. |
+
+---
+
 ## 3. Component Anatomy
 
 ### 3.1. Clinical Cards (`.card-pharma`)

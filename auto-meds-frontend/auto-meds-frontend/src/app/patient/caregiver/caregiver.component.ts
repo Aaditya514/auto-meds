@@ -140,6 +140,8 @@ export class CaregiverComponent implements OnInit {
   }
 
   submitInvite(): void {
+    if (this.inviting) return; // Design Motion: Guard against double-tap
+
     if (!this.inviteForm.caregiverEmail || !this.inviteForm.relationshipLabel) {
       this.inviteError = 'Email and relationship label are required.';
       return;
@@ -188,6 +190,7 @@ export class CaregiverComponent implements OnInit {
   // ── Pending Invitation Actions (Caregiver Inbound) ────────────────────────
 
   acceptPendingInvitation(accessId: number, fromUrl = false): void {
+    if (this.processingId === accessId) return; // Design Motion: Guard against double-tap
     this.processingId = accessId;
     this.caregiverService.respondToInvitation({ accessId, action: 'ACCEPT' }).subscribe({
       next: () => {
@@ -212,6 +215,7 @@ export class CaregiverComponent implements OnInit {
   }
 
   declinePendingInvitation(accessId: number): void {
+    if (this.processingId === accessId) return; // Guard against double-tap
     if (!confirm('Decline this caregiver invitation?')) {
       return;
     }

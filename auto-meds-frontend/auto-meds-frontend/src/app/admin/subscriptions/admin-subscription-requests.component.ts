@@ -45,6 +45,7 @@ export class AdminSubscriptionRequestsComponent implements OnInit {
   prescriptionPreviewUrl: SafeResourceUrl | null = null;
   prescriptionZoom = 1.0;
   prescriptionRotation = 0;
+  approvingIds = new Set<number>();
 
   constructor(
     private adminService: AdminService,
@@ -316,7 +317,7 @@ export class AdminSubscriptionRequestsComponent implements OnInit {
   }
 
   submitActionDialog(): void {
-    if (!this.activeDialogReqId || !this.activeDialogType) return;
+    if (!this.activeDialogReqId || !this.activeDialogType || this.dialogSubmitting) return;
     if (!this.dialogInputText || !this.dialogInputText.trim()) {
       alert('Please enter a note/reason before submitting.');
       return;
@@ -365,10 +366,14 @@ export class AdminSubscriptionRequestsComponent implements OnInit {
     this.message = '';
     this.errorMessage = '';
 
+    if (this.approvingIds.has(req.id)) return; // Design Motion: Guard against double-tap
+
     if (!req.selectedMedicineIds || req.selectedMedicineIds.length === 0) {
       alert('Please select at least 1 medicine from the inventory catalog to assign to this prescription subscription before approving.');
       return;
     }
+
+    this.approvingIds.add(req.id);
 
     const assignments = req.selectedMedicineIds.map(mId => {
       const details = req.medicineDetails ? req.medicineDetails[mId] : null;
@@ -382,13 +387,17 @@ export class AdminSubscriptionRequestsComponent implements OnInit {
 
     this.adminService.approveSubscription(req.id, assignments).subscribe({
       next: (res) => {
+        this.approvingIds.delete(req.id);
         this.message = `Successfully APPROVED request #${req.id} and assigned ${req.selectedMedicineIds.length} medicine(s).`;
         if (this.auditModalOpen && this.activeModalReq?.id === req.id) {
           this.closeAuditModal();
         }
         this.loadRequests();
       },
-      error: (err) => this.errorMessage = err.message || 'Failed to approve subscription.'
+      error: (err) => {
+        this.approvingIds.delete(req.id);
+        this.errorMessage = err.message || 'Failed to approve subscription.';
+      }
     });
   }
 

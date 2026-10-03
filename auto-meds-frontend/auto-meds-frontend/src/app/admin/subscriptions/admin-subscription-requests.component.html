@@ -263,8 +263,11 @@
             <button type="button" 
                     (click)="approve(req)" 
                     class="btn btn-sm btn-success fw-bold px-4 shadow-sm" 
-                    [disabled]="!req.selectedMedicineIds || req.selectedMedicineIds.length === 0">
-              <i class="bi bi-check-circle-fill me-1"></i> APPROVE ({{ req.selectedMedicineIds ? req.selectedMedicineIds.length : 0 }})
+                    [disabled]="!req.selectedMedicineIds || req.selectedMedicineIds.length === 0 || approvingIds.has(req.id)"
+                    [class.btn-submitting]="approvingIds.has(req.id)">
+              <span *ngIf="approvingIds.has(req.id)" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!approvingIds.has(req.id)" class="bi bi-check-circle-fill me-1"></i>
+              {{ approvingIds.has(req.id) ? 'Approving...' : 'APPROVE (' + (req.selectedMedicineIds ? req.selectedMedicineIds.length : 0) + ')' }}
             </button>
           </div>
         </div>
@@ -334,8 +337,13 @@
             </td>
             <td class="cell-actions">
               <div class="d-flex flex-column gap-1">
-                <button type="button" (click)="approve(req); $event.stopPropagation()" class="btn btn-sm btn-success fw-bold">
-                  APPROVE ({{ req.selectedMedicineIds.length }})
+                <button type="button" 
+                        (click)="approve(req); $event.stopPropagation()" 
+                        [disabled]="!req.selectedMedicineIds || req.selectedMedicineIds.length === 0 || approvingIds.has(req.id)"
+                        [class.btn-submitting]="approvingIds.has(req.id)"
+                        class="btn btn-sm btn-success fw-bold">
+                  <span *ngIf="approvingIds.has(req.id)" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ approvingIds.has(req.id) ? 'Approving...' : 'APPROVE (' + req.selectedMedicineIds.length + ')' }}
                 </button>
                 <button type="button" (click)="openClarificationDialog(req.id); $event.stopPropagation()" class="btn btn-sm btn-outline-warning">Clarify</button>
                 <button type="button" (click)="openRejectDialog(req.id); $event.stopPropagation()" class="btn btn-sm btn-outline-danger">Reject</button>

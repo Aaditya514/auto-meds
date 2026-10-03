@@ -335,9 +335,13 @@
           <button type="button" class="btn btn-secondary" (click)="closeRestockModal()" [disabled]="restockLoading">
             Cancel
           </button>
-          <button type="button" class="btn btn-primary fw-semibold" (click)="submitRestock()" [disabled]="restockLoading || restockQuantity <= 0">
+          <button type="button" 
+                  class="btn btn-primary fw-semibold" 
+                  (click)="submitRestock()" 
+                  [disabled]="restockLoading || restockQuantity <= 0"
+                  [class.btn-submitting]="restockLoading">
             <span *ngIf="restockLoading" class="spinner-border spinner-border-sm me-1"></span>
-            Confirm & Fulfill Queue
+            {{ restockLoading ? 'Allocating & Restocking...' : 'Confirm & Fulfill Queue' }}
           </button>
         </div>
       </div>

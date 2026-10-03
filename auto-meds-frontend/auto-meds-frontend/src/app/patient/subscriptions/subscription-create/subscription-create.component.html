@@ -153,10 +153,12 @@
 
           <!-- Actions -->
           <div class="d-flex gap-3">
-            <a routerLink="/subscriptions" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
-            <button [disabled]="submitting || subscriptionForm.invalid" class="btn btn-pharma-primary flex-fill py-2 fs-5">
+            <a routerLink="/subscriptions" class="btn btn-outline-secondary px-4 py-2" [class.disabled]="submitting">Cancel</a>
+            <button [disabled]="submitting || subscriptionForm.invalid" 
+                    [class.btn-submitting]="submitting" 
+                    class="btn btn-pharma-primary flex-fill py-2 fs-5">
               <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
-              Submit Prescription to Pharmacist
+              {{ submitting ? 'Uploading & Submitting...' : 'Submit Prescription to Pharmacist' }}
             </button>
           </div>
         </form>

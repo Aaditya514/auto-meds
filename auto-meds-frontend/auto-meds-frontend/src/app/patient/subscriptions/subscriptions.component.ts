@@ -77,6 +77,8 @@ export class SubscriptionsComponent implements OnInit {
 
   // Phase 4: Emergency 5-Day Bridge Supply
   requestBridgeSupply(sub: Subscription): void {
+    if (this.actionLoading) return; // Design Motion: Guard against double-tap
+
     if (!confirm(`Request an immediate 5-Day Emergency Bridge Supply for ${sub.medicineName}? An expedited order will be dispatched while your prescription renewal is processed.`)) {
       return;
     }
@@ -109,7 +111,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   submitSnooze(): void {
-    if (!this.selectedSubForSnooze) return;
+    if (!this.selectedSubForSnooze || this.actionLoading) return;
     this.actionLoading = true;
     const sub = this.selectedSubForSnooze;
     this.subscriptionService.snoozeSubscription(sub.id, this.selectedSnoozeDays).subscribe({
@@ -137,6 +139,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   submitSyncRefills(): void {
+    if (this.actionLoading) return;
     this.actionLoading = true;
     this.subscriptionService.syncRefills(this.selectedPillboxDay).subscribe({
       next: (subs) => {

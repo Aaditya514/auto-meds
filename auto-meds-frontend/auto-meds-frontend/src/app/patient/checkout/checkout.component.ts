@@ -149,6 +149,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   onInitiateOrder(): void {
+    if (this.submitting) return; // Design Motion: Guard against double-tap
+
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       return;
@@ -194,7 +196,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   confirmCardOtp(): void {
-    if (!this.pendingOrderId) return;
+    if (!this.pendingOrderId || this.processingPayment) return; // Guard against duplicate OTP submit
     this.processingPayment = true;
 
     const cardVal = this.cardForm.value;

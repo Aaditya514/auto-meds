@@ -251,10 +251,12 @@
           </div>
 
           <!-- Checkout Button -->
-          <button [disabled]="submitting || checkoutForm.invalid || (hasCriticalAlerts() && !safetyAcknowledged)" class="btn btn-pharma-primary w-100 py-3 fs-5 shadow-sm">
+          <button [disabled]="submitting || checkoutForm.invalid || (hasCriticalAlerts() && !safetyAcknowledged)" 
+                  [class.btn-submitting]="submitting" 
+                  class="btn btn-pharma-primary w-100 py-3 fs-5 shadow-sm">
             <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
             <i *ngIf="!submitting" class="bi bi-lock-fill me-1"></i>
-            {{ selectedPaymentTab === 'CARD' ? 'PROCEED TO 3D SECURE PAY ₹' + cart.totalAmount : 'PAY & PLACE ORDER (₹' + cart.totalAmount + ')' }}
+            {{ submitting ? 'Processing Secure Order...' : (selectedPaymentTab === 'CARD' ? 'PROCEED TO 3D SECURE PAY ₹' + cart.totalAmount : 'PAY & PLACE ORDER (₹' + cart.totalAmount + ')') }}
           </button>
         </form>
       </div>
@@ -344,9 +346,12 @@
       <button class="btn btn-outline-secondary w-50 py-2" (click)="cancelOtp()" [disabled]="processingPayment">
         Cancel
       </button>
-      <button class="btn btn-pharma-primary w-50 py-2 fw-bold" (click)="confirmCardOtp()" [disabled]="processingPayment || !cardOtp">
+      <button class="btn btn-pharma-primary w-50 py-2 fw-bold" 
+              (click)="confirmCardOtp()" 
+              [disabled]="processingPayment || !cardOtp"
+              [class.btn-submitting]="processingPayment">
         <span *ngIf="processingPayment" class="spinner-border spinner-border-sm me-1"></span>
-        Confirm &amp; Authorize
+        {{ processingPayment ? 'Authorizing...' : 'Confirm & Authorize' }}
       </button>
     </div>
   </div>
