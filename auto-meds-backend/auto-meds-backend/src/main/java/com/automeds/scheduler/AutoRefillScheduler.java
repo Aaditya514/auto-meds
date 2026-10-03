@@ -8,6 +8,7 @@ import com.automeds.repository.MedicineRepository;
 import com.automeds.repository.SubscriptionRepository;
 import com.automeds.service.NotificationService;
 import com.automeds.service.OrderService;
+import com.automeds.service.SmsService;
 import com.automeds.service.SubscriptionService;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
@@ -44,16 +45,18 @@ public class AutoRefillScheduler {
     private final OrderService orderService;
     private final SubscriptionService subscriptionService;
     private final NotificationService notificationService;
+    private final SmsService smsService;
 
     @Value("${automeds.refill-buffer-days:5}")
     private int refillBufferDays;
 
-    public AutoRefillScheduler(SubscriptionRepository subscriptionRepository, MedicineRepository medicineRepository, OrderService orderService, SubscriptionService subscriptionService, NotificationService notificationService) {
+    public AutoRefillScheduler(SubscriptionRepository subscriptionRepository, MedicineRepository medicineRepository, OrderService orderService, SubscriptionService subscriptionService, NotificationService notificationService, SmsService smsService) {
         this.subscriptionRepository = subscriptionRepository;
         this.medicineRepository = medicineRepository;
         this.orderService = orderService;
         this.subscriptionService = subscriptionService;
         this.notificationService = notificationService;
+        this.smsService = smsService;
     }
 
     /**
@@ -271,6 +274,15 @@ public class AutoRefillScheduler {
             subscriptionRepository.save(sub);
 
             logger.info("Auto-refill order #{} created successfully for subscription #{}", refillOrder.getId(), sub.getId());
+
+            // H1: SMS confirmation to patient on refill execution
+            String patientPhone = sub.getPatient().getPhone();
+            smsService.sendRefillConfirmationSms(
+                    patientPhone,
+                    sub.getPatient().getName() != null ? sub.getPatient().getName() : sub.getPatient().getFullName(),
+                    medicine.getMedicineName(),
+                    sub.getQuantity()
+            );
         } else {
             // Out of Stock Handling -> Find Same Composition + Same Strength Alternatives
             logger.warn("Medicine #{} ({}) out of stock for subscription #{}. Searching alternatives...", medicine.getId(), medicine.getMedicineName(), sub.getId());
@@ -291,6 +303,12 @@ public class AutoRefillScheduler {
                         "Subscribed Medicine Out of Stock — Alternatives Available",
                         "Your subscribed medicine " + medicine.getMedicineName() + " (" + medicine.getBrandName() + ") is currently out of stock. Available in-stock alternatives with SAME composition & strength: " + altNames + ". Please log in to choose an alternative.",
                         "WARNING"
+                );
+                // H1: SMS stock alert to patient
+                smsService.sendStockAlertSms(
+                        sub.getPatient().getPhone(),
+                        sub.getPatient().getName() != null ? sub.getPatient().getName() : sub.getPatient().getFullName(),
+                        medicine.getMedicineName()
                 );
             } else {
                 notificationService.createNotification(

@@ -33,6 +33,8 @@ public class MedicineDTO {
     private String genericAlternativeName;
     private BigDecimal genericAlternativePrice;
     private String genericSavingsText;
+    private String batchNumber;
+    private Boolean nearExpiry; // true when expiryDate is within 90 days
 
     public MedicineDTO() {
     }
@@ -271,6 +273,22 @@ public class MedicineDTO {
 
     public void setGenericSavingsText(String genericSavingsText) {
         this.genericSavingsText = genericSavingsText;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
+    }
+
+    public Boolean getNearExpiry() {
+        return nearExpiry;
+    }
+
+    public void setNearExpiry(Boolean nearExpiry) {
+        this.nearExpiry = nearExpiry;
     }
 
     @Override

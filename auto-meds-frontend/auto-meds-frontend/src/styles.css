@@ -702,3 +702,190 @@ h6.text-white {
   z-index: 10;
   box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.18);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   M1 — ACCESSIBILITY LAYER (WCAG AA)
+   Applied system-wide. No component changes needed.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Minimum Touch Target Size (iOS HIG / Material 3: 44×44px) ─────────── */
+button,
+[role="button"],
+a,
+input[type="checkbox"],
+input[type="radio"],
+select,
+.btn,
+.tab-btn,
+.action-btn,
+.nav-link,
+.clickable {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Inline icon-only buttons get padding instead of forced width */
+button.icon-btn,
+[role="button"].icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 2. WCAG AA Focus Indicator ───────────────────────────────────────────── */
+/* Removes the default ugly browser outline and replaces with a high-contrast ring */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid #0284c7;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Dark-surface focus ring (on dark backgrounds the blue ring may be invisible) */
+.dark-surface :focus-visible,
+.pharma-banner :focus-visible,
+.modal-header :focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+/* ── 3. Font-Size User Preference Tokens ─────────────────────────────────── */
+/* Default (normal): 1× scale */
+:root {
+  --a11y-font-scale: 1;
+}
+
+/* Large text mode: set [data-font-size="large"] on <html> via JS toggle */
+[data-font-size="large"] {
+  --a11y-font-scale: 1.2;
+}
+
+/* Extra-large mode for elderly users */
+[data-font-size="xlarge"] {
+  --a11y-font-scale: 1.45;
+}
+
+/* Apply scale to all text elements */
+body {
+  font-size: calc(var(--type-body-size) * var(--a11y-font-scale));
+}
+
+h1, .type-display   { font-size: calc(var(--type-h1-size)      * var(--a11y-font-scale)); }
+h2                  { font-size: calc(var(--type-h2-size)       * var(--a11y-font-scale)); }
+h3                  { font-size: calc(var(--type-h3-size)       * var(--a11y-font-scale)); }
+p, li, td, th, span { font-size: calc(var(--type-body-size)     * var(--a11y-font-scale)); }
+small, .text-sm     { font-size: calc(var(--type-body-sm-size)  * var(--a11y-font-scale)); }
+
+/* ── 4. Sufficient Colour Contrast (WCAG AA ≥ 4.5:1) ─────────────────────── */
+/* Override any low-contrast muted text in body copy */
+.text-muted,
+.meta-text,
+.label-muted {
+  /* #64748b on #ffffff = 4.54:1 — just passes AA */
+  color: #4b5563 !important; /* #4b5563 on #ffffff = 7.0:1 — comfortable */
+}
+
+.text-light,
+.helper-text {
+  color: #6b7280 !important; /* 5.2:1 on white — passes AA */
+}
+
+/* Ensure danger text meets contrast on white backgrounds */
+.text-danger,
+.danger-label {
+  color: #b91c1c !important; /* 7.2:1 on white */
+}
+
+/* ── 5. Reduced Motion Preference ─────────────────────────────────────────── */
+/* Respect the OS "reduce motion" accessibility setting */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── 6. High Contrast Mode Support ───────────────────────────────────────── */
+@media (forced-colors: active) {
+  /* Let the OS forced-colours override our custom colours */
+  * {
+    forced-color-adjust: auto;
+  }
+
+  /* Ensure button borders are visible in Windows High Contrast mode */
+  button,
+  .btn,
+  input,
+  select {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* ── 7. Skip-to-Main Link (screen reader / keyboard users) ────────────────── */
+.skip-to-main {
+  position: absolute;
+  top: -9999px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0284c7;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  z-index: 99999;
+  white-space: nowrap;
+  transition: top 0.2s ease;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* ── 8. Form Label & Error Association ───────────────────────────────────── */
+/* Ensure form inputs have visible labels and error messages */
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--text-main);
+  font-size: calc(var(--type-body-sm-size) * var(--a11y-font-scale));
+}
+
+.field-error,
+[aria-live="polite"] {
+  color: #b91c1c;
+  font-size: calc(0.8rem * var(--a11y-font-scale));
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── 9. Near-Expiry Badge (H5 visual indicator in admin dashboard) ─────────── */
+.badge-near-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.badge-near-expiry::before {
+  content: "⏰";
+  font-size: 0.7rem;
+}
+

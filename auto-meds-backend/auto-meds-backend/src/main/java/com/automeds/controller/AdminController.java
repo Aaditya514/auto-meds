@@ -138,4 +138,10 @@ public class AdminController {
     public ResponseEntity<com.automeds.dto.RestockResponseDTO> restockMedicine(@Valid @RequestBody com.automeds.dto.RestockRequestDTO request) {
         return ResponseEntity.ok(adminService.restockMedicine(request));
     }
+
+    // Near-expiry dashboard widget — returns medicines expiring within 90 days, earliest first
+    @GetMapping("/inventory/near-expiry")
+    public ResponseEntity<List<MedicineDTO>> getNearExpiryMedicines() {
+        return ResponseEntity.ok(adminService.getNearExpiryMedicines());
+    }
 }

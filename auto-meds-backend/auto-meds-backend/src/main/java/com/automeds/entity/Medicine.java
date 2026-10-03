@@ -75,6 +75,10 @@ public class Medicine {
     @Column(name = "expiry_date")
     private LocalDateTime expiryDate;
 
+    // Manufacturer batch number for traceability and recall management
+    @Column(name = "batch_number", length = 50)
+    private String batchNumber;
+
     // Maps this field to a database table column
     @Column(nullable = false)
     private Integer active; // 1 = true, 0 = false
@@ -232,6 +236,14 @@ public class Medicine {
 
     public void setExpiryDate(LocalDateTime expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
     }
 
     public Integer getActive() {

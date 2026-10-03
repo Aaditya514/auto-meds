@@ -100,4 +100,11 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
      */
     @Query("SELECT m FROM Medicine m WHERE m.active = 1 AND (m.stockQuantity - m.reservedQuantity) <= m.reorderThreshold")
     List<Medicine> findMedicinesNeedingReorder();
+
+    /**
+     * Near-Expiry Alert: medicines expiring within the next N days.
+     * Used by the admin dashboard to flag stock that should be prioritised for dispatch or written off.
+     */
+    @Query("SELECT m FROM Medicine m WHERE m.active = 1 AND m.expiryDate IS NOT NULL AND m.expiryDate <= :threshold ORDER BY m.expiryDate ASC")
+    List<Medicine> findNearExpiryMedicines(@Param("threshold") java.time.LocalDateTime threshold);
 }

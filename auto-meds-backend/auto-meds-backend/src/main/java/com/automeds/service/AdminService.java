@@ -229,6 +229,7 @@ public class AdminService {
         medicine.setDescription(dto.getDescription());
         medicine.setManufacturer(dto.getManufacturer());
         medicine.setExpiryDate(dto.getExpiryDate());
+        medicine.setBatchNumber(dto.getBatchNumber());
         medicine.setSymptoms(dto.getSymptoms());
         medicine.setActive(1);
 
@@ -253,6 +254,9 @@ public class AdminService {
         medicine.setDescription(dto.getDescription());
         medicine.setManufacturer(dto.getManufacturer());
         medicine.setSymptoms(dto.getSymptoms());
+        if (dto.getBatchNumber() != null) {
+            medicine.setBatchNumber(dto.getBatchNumber());
+        }
         if (dto.getExpiryDate() != null) {
             medicine.setExpiryDate(dto.getExpiryDate());
         }
@@ -379,6 +383,18 @@ public class AdminService {
         });
 
         return alerts;
+    }
+
+    /**
+     * Near-Expiry Dashboard Widget: returns medicines expiring within the next 90 days,
+     * sorted by earliest expiry first. Gives pharmacy owners advance notice to prioritise dispatch.
+     */
+    @Transactional(readOnly = true)
+    public List<MedicineDTO> getNearExpiryMedicines() {
+        java.time.LocalDateTime threshold = java.time.LocalDateTime.now().plusDays(90);
+        return medicineRepository.findNearExpiryMedicines(threshold).stream()
+                .map(medicineService::convertToDTO)
+                .toList();
     }
 
     /**

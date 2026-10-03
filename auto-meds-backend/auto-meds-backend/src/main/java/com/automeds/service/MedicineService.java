@@ -104,6 +104,14 @@ public class MedicineService {
         );
 
         dto.setSymptoms(medicine.getSymptoms());
+        dto.setBatchNumber(medicine.getBatchNumber());
+
+        // Near-expiry flag: true when stock expires within 90 days
+        if (medicine.getExpiryDate() != null) {
+            dto.setNearExpiry(medicine.getExpiryDate().isBefore(java.time.LocalDateTime.now().plusDays(90)));
+        } else {
+            dto.setNearExpiry(false);
+        }
 
         // Check for bio-equivalent generic cost-savings
         if (medicine.getComposition() != null && !medicine.getComposition().isBlank()) {
