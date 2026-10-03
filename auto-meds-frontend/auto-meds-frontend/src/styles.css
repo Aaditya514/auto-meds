@@ -41,6 +41,42 @@
   --purple-bg: #faf5ff;
   --purple-border: #e9d5ff;
   --purple-text: #6b21a8;
+
+  /* ── Typography System Tokens (Design Motion Standard) ── */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  --type-display-size: 2.25rem;
+  --type-display-lh: 1.15;
+  --type-display-ls: -0.035em;
+  
+  --type-h1-size: 1.75rem;
+  --type-h1-lh: 1.2;
+  --type-h1-ls: -0.025em;
+  
+  --type-h2-size: 1.35rem;
+  --type-h2-lh: 1.25;
+  --type-h2-ls: -0.02em;
+  
+  --type-h3-size: 1.15rem;
+  --type-h3-lh: 1.3;
+  --type-h3-ls: -0.015em;
+  
+  --type-body-size: 0.9375rem;
+  --type-body-lh: 1.55;
+  
+  --type-body-sm-size: 0.84rem;
+  --type-body-sm-lh: 1.5;
+  
+  --type-micro-size: 0.72rem;
+  --type-micro-ls: 0.05em;
+
+  /* ── Motion System Tokens ── */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-modal: 280ms;
 }
 
 /* ── Base Styles ─────────────────────────────────────────────────────────── */
@@ -58,6 +94,35 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-main);
   letter-spacing: -0.025em;
   font-weight: 700;
+}
+
+/* ── Typography System Utilities (Design Motion) ────────────────────────── */
+.text-display {
+  font-size: var(--type-display-size);
+  line-height: var(--type-display-lh);
+  letter-spacing: var(--type-display-ls);
+  font-weight: 750;
+  color: var(--text-main);
+}
+
+.text-subhead {
+  color: var(--text-muted);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-lh);
+}
+
+.text-micro-header {
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-micro-ls);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.font-tabular,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 /* ── Brand Gradient ──────────────────────────────────────────────────────── */

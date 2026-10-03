@@ -50,6 +50,38 @@
 
 ---
 
+## 2.1. Typography as a System (Design Motion Principles)
+
+Typography is not an afterthought or arbitrary font selection; it is a **rule-based, mathematical hierarchy** ensuring instant clinical scannability, accessibility, and zero visual friction:
+
+| Level | Size | Line Height | Tracking (Letter Spacing) | Weight | Usage |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Display** | `2.25rem` (36px) | `1.15` | `-0.035em` | `750` | Hero headlines, portal metric anchors |
+| **Heading 1** | `1.75rem` (28px) | `1.20` | `-0.025em` | `700` | Screen primary headers |
+| **Heading 2** | `1.35rem` (22px) | `1.25` | `-0.020em` | `700` | Section headers, card group titles |
+| **Heading 3** | `1.15rem` (18px) | `1.30` | `-0.015em` | `650` | Medicine names, order modal titles |
+| **Body (Base)** | `0.9375rem` (15px) | `1.55` | `normal` | `400` / `500` | Descriptions, instructions, clinical notes |
+| **Body Small** | `0.84rem` (13.5px) | `1.50` | `normal` | `400` / `550` | Subtitles, secondary table cells |
+| **Micro / Label** | `0.72rem` (11.5px) | `1.30` | `+0.05em` | `700` (Uppercase) | Table headers, category tags, timestamps |
+| **Tabular Numbers** | Inherited | Inherited | `-0.01em` | `600` / `750` | Prices (`₹`), batch stock counts, dates |
+
+### Rules of the Type System:
+1. **Headings contract; microcopy expands**: Headings above 20px receive negative letter-spacing (`-0.02em` to `-0.035em`) to feel tight and cohesive. Microcopy under 12px in uppercase receives positive letter-spacing (`+0.04em` to `+0.06em`) to ensure legibility.
+2. **Tabular Numerals**: Every numeric value (prices, inventory counts, percentages, order dates) strictly applies `font-variant-numeric: tabular-nums` to eliminate jittering during real-time updates and scanning.
+3. **Contrast Hierarchy**: Never use pure black on pure white. Primary text is `#0F172A` (deep slate), secondary text is `#475569`, and tertiary metadata is `#64748B`.
+
+---
+
+## 2.2. Motion as a System (Intentional Dynamics)
+
+Motion is treated with the same systematic rigor as typography. Animations are functional, never decorative:
+
+* **Spring Easing**: `cubic-bezier(0.16, 1, 0.3, 1)` — used for card hover lifts, modal entries, and button clicks to provide a crisp, organic physical feel.
+* **Fast Duration (`150ms`)**: Micro-interactions, hover highlights, checkbox toggles.
+* **Base Duration (`220ms`)**: Card elevation transitions, accordion collapses, filter pill switches.
+* **Modal Duration (`280ms`)**: Backdrop fades, split-screen triage sheets, dialog pop-ins.
+
+
 ## 3. Component Anatomy
 
 ### 3.1. Clinical Cards (`.card-pharma`)
