@@ -16,59 +16,55 @@
 
   <!-- Metric Summary Cards -->
   <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card card-pharma p-3 bg-white border-start border-4 border-success">
-        <div class="d-flex align-items-center">
-          <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle me-3">
-            <i class="bi bi-capsule-pill fs-3"></i>
-          </div>
-          <div>
-            <span class="text-muted small fw-semibold">Active Subscriptions</span>
-            <h3 class="fw-bold mb-0">{{ activeSubscriptions.length }}</h3>
+    <div class="col-6 col-lg-3">
+      <div class="metric-summary-card">
+        <div class="metric-summary-top">
+          <span class="metric-summary-label">Active Subscriptions</span>
+          <div class="metric-summary-icon icon-emerald">
+            <i class="bi bi-capsule-pill"></i>
           </div>
         </div>
+        <div class="metric-summary-value">{{ activeSubscriptions.length }}</div>
+        <div class="metric-summary-sub">Continuous Care</div>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card card-pharma p-3 bg-white border-start border-4 border-warning">
-        <div class="d-flex align-items-center">
-          <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-circle me-3">
-            <i class="bi bi-calendar-event fs-3"></i>
-          </div>
-          <div>
-            <span class="text-muted small fw-semibold">Upcoming Refills</span>
-            <h3 class="fw-bold mb-0">{{ upcomingRefills.length }}</h3>
+    <div class="col-6 col-lg-3">
+      <div class="metric-summary-card">
+        <div class="metric-summary-top">
+          <span class="metric-summary-label">Upcoming Refills</span>
+          <div class="metric-summary-icon icon-purple">
+            <i class="bi bi-calendar2-week"></i>
           </div>
         </div>
+        <div class="metric-summary-value">{{ upcomingRefills.length }}</div>
+        <div class="metric-summary-sub">Next 5-Day Window</div>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card card-pharma p-3 bg-white border-start border-4 border-primary">
-        <div class="d-flex align-items-center">
-          <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-circle me-3">
-            <i class="bi bi-bag-check fs-3"></i>
-          </div>
-          <div>
-            <span class="text-muted small fw-semibold">Recent Orders</span>
-            <h3 class="fw-bold mb-0">{{ recentOrders.length }}</h3>
+    <div class="col-6 col-lg-3">
+      <div class="metric-summary-card">
+        <div class="metric-summary-top">
+          <span class="metric-summary-label">Recent Orders</span>
+          <div class="metric-summary-icon icon-blue">
+            <i class="bi bi-bag-check"></i>
           </div>
         </div>
+        <div class="metric-summary-value">{{ recentOrders.length }}</div>
+        <div class="metric-summary-sub">Prescriptions & Refills</div>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card card-pharma p-3 bg-white border-start border-4 border-info">
-        <div class="d-flex align-items-center">
-          <div class="p-3 bg-info bg-opacity-10 text-info rounded-circle me-3">
-            <i class="bi bi-bell fs-3"></i>
-          </div>
-          <div>
-            <span class="text-muted small fw-semibold">Notifications</span>
-            <h3 class="fw-bold mb-0">{{ notifications.length }}</h3>
+    <div class="col-6 col-lg-3">
+      <div class="metric-summary-card">
+        <div class="metric-summary-top">
+          <span class="metric-summary-label">Caregiver Sync</span>
+          <div class="metric-summary-icon icon-amber">
+            <i class="bi bi-people"></i>
           </div>
         </div>
+        <div class="metric-summary-value">{{ notifications.length }}</div>
+        <div class="metric-summary-sub">Alerts & WhatsApp Sync</div>
       </div>
     </div>
   </div>
