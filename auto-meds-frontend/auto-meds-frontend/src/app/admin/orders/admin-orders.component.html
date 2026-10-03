@@ -113,8 +113,15 @@
               </span>
             </td>
             <td>
-              <div class="fw-bold text-dark">{{ order.patientName }}</div>
-              <span class="text-muted small">{{ order.patientEmail }}</span>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-pharma avatar-sm avatar-patient">
+                  {{ (order.patientName ? order.patientName.charAt(0) : 'P') | uppercase }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark">{{ order.patientName }}</div>
+                  <span class="text-muted small">{{ order.patientEmail }}</span>
+                </div>
+              </div>
             </td>
             <td class="text-end cell-currency">₹{{ order.totalAmount }}</td>
             <td>

@@ -98,6 +98,20 @@ Data tables are not static HTML grids or spreadsheet replicas; they are **intera
 
 ---
 
+## 2.4. Avatar UI & Motion System (Design Motion Principles)
+
+Avatars are not just static circular images or generic colored placeholders; they represent **living clinical identity and presence**. Modeled after **Design Motion's Avatar UI System**, every avatar in AutoMeds follows these 5 rules:
+
+| Aspect | Senior-Designer Rule | AutoMeds Implementation |
+| :--- | :--- | :--- |
+| **1. Mathematical Size Hierarchy** | Standardized geometric scale prevents erratic icon sizes across contexts. | `.avatar-xs` (`24px`), `.avatar-sm` (`32px`), `.avatar-md` (`40px`), `.avatar-lg` (`56px`), `.avatar-xl` (`76px`). |
+| **2. Role-Based Pastel Color Tokens** | Eradicate generic saturated circles. Use high-contrast clinical pastel palettes with 1.5px subtle tinted borders. | `.avatar-patient` (Teal `#F0FDFA` / `#0D9488`), `.avatar-pharmacist` (Sky `#F0F9FF` / `#0284C7`), `.avatar-caregiver` (Purple `#FAF5FF` / `#7C3AED`), `.avatar-admin` (Slate `#F8FAFC` / `#0F172A`). |
+| **3. Layered Status Badges & Separation Rings** | Status dots (Online, Busy, Pending) must never bleed directly into the avatar background. They require a `2px` white separation ring. | `.avatar-status-dot` with `2px solid #ffffff` and `box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12)`. Supported states: `.avatar-status-online` (Emerald), `.avatar-status-busy` (Amber), `.avatar-status-offline` (Slate). |
+| **4. Group Overlap & Stacking Choreography** | Stacks of avatars (patients + caregivers) must overlap cleanly with negative margin and pop outwards on hover. | `.avatar-group` with `-8px` negative margin and `2px` white borders. Hover triggers `transform: translateY(-3px) scale(1.12); z-index: 10;`. |
+| **5. Spring-Eased Micro-Motion** | Tactile organic response confirming user interaction without visual distraction. | Smooth spring easing (`cubic-bezier(0.16, 1, 0.3, 1)`) with `150ms` duration on hover. |
+
+---
+
 ## 3. Component Anatomy
 
 ### 3.1. Clinical Cards (`.card-pharma`)

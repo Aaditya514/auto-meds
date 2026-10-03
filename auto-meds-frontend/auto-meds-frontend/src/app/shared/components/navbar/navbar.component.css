@@ -43,19 +43,8 @@
   color: #0284c7 !important;
 }
 
-.avatar-circle {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.85rem;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
-  border: 2px solid #ffffff;
+.avatar-pharma {
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-spring);
 }
 
 .cart-icon-btn {

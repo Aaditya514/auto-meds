@@ -56,8 +56,9 @@
             <td><span class="cell-id">#{{ p.id }}</span></td>
             <td>
               <div class="d-flex align-items-center gap-2">
-                <div class="patient-avatar">
+                <div class="avatar-pharma avatar-sm avatar-patient position-relative">
                   {{ getInitial(p.name) }}
+                  <span class="avatar-status-dot avatar-status-online" title="Active Patient Account"></span>
                 </div>
                 <div>
                   <div class="fw-bold text-dark">{{ p.name }}</div>

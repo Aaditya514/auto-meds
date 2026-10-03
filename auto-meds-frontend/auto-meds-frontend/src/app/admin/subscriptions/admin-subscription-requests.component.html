@@ -290,8 +290,15 @@
           <tr *ngFor="let req of filteredRequests">
             <td><span class="cell-id">#{{ req.id }}</span></td>
             <td>
-              <div class="fw-bold text-dark">{{ req.patientName }}</div>
-              <span class="text-muted small">{{ req.patientEmail }}</span>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-pharma avatar-sm avatar-patient">
+                  {{ (req.patientName ? req.patientName.charAt(0) : 'P') | uppercase }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark">{{ req.patientName }}</div>
+                  <span class="text-muted small">{{ req.patientEmail }}</span>
+                </div>
+              </div>
             </td>
             <td>
               <button *ngIf="req.prescriptionId" (click)="viewPrescription(req.prescriptionId)" class="btn btn-sm btn-outline-info">

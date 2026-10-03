@@ -505,13 +505,131 @@ h1, h2, h3, h4, h5, h6 {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Avatar UI & Motion System (Design Motion Principles) ─────────────────── */
+.avatar-pharma,
 .avatar-circle {
-  width: 32px;
-  height: 32px;
   border-radius: 50%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.85rem;
+  user-select: none;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-spring), box-shadow var(--dur-fast) var(--ease-spring);
+}
+
+/* Size Scale */
+.avatar-xs {
+  width: 24px;
+  height: 24px;
+  font-size: 0.68rem;
+}
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+  font-size: 0.82rem;
+}
+
+.avatar-md {
+  width: 40px;
+  height: 40px;
+  font-size: 0.95rem;
+}
+
+.avatar-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 1.25rem;
+}
+
+.avatar-xl {
+  width: 76px;
+  height: 76px;
+  font-size: 1.75rem;
+}
+
+/* Clinical Role & Semantic Color Themes */
+.avatar-patient {
+  background-color: #f0fdfa !important;
+  color: #0d9488 !important;
+  border: 1.5px solid #99f6e4 !important;
+}
+
+.avatar-pharmacist,
+.avatar-doctor {
+  background-color: #f0f9ff !important;
+  color: #0284c7 !important;
+  border: 1.5px solid #bae6fd !important;
+}
+
+.avatar-caregiver {
+  background-color: #faf5ff !important;
+  color: #7c3aed !important;
+  border: 1.5px solid #e9d5ff !important;
+}
+
+.avatar-admin {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+
+/* Interactive Motion */
+.avatar-interactive:hover,
+.avatar-pharma:hover {
+  transform: scale(1.05);
+}
+
+/* Layered Presence Status Badging */
+.avatar-status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26%;
+  height: 26%;
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+
+.avatar-status-online {
+  background-color: #10b981;
+}
+
+.avatar-status-busy {
+  background-color: #f59e0b;
+}
+
+.avatar-status-offline {
+  background-color: #94a3b8;
+}
+
+/* Avatar Group / Stack with Negative Margins and Spring Hover */
+.avatar-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.avatar-group .avatar-pharma,
+.avatar-group .avatar-circle {
+  margin-left: -8px;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: transform var(--dur-fast) var(--ease-spring), z-index var(--dur-fast) ease, box-shadow var(--dur-fast) var(--ease-spring);
+}
+
+.avatar-group .avatar-pharma:first-child,
+.avatar-group .avatar-circle:first-child {
+  margin-left: 0;
+}
+
+.avatar-group .avatar-pharma:hover,
+.avatar-group .avatar-circle:hover {
+  transform: translateY(-3px) scale(1.12);
+  z-index: 10;
+  box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.18);
 }

@@ -30,8 +30,9 @@
         <!-- Profile Header / Identity Banner -->
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4 mb-4 gap-3">
           <div class="d-flex align-items-center">
-            <div class="profile-avatar-circle bg-primary text-white d-flex align-items-center justify-content-center fs-2 fw-bold me-3 shadow-sm">
+            <div class="avatar-pharma avatar-xl avatar-patient me-3 shadow-sm position-relative">
               {{ (user.name ? user.name.charAt(0) : 'U') | uppercase }}
+              <span class="avatar-status-dot avatar-status-online" title="Identity Verified &amp; Active"></span>
             </div>
             <div>
               <h3 class="fw-bold mb-1 text-dark">{{ user.name }}</h3>

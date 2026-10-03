@@ -78,10 +78,17 @@
               {{ log.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}
             </td>
             <td>
-              <div class="fw-bold text-dark">{{ log.actorName }}</div>
-              <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 10px;">
-                {{ log.actorRole }}
-              </span>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-pharma avatar-xs" [ngClass]="log.actorRole === 'ADMIN' ? 'avatar-admin' : (log.actorRole === 'PHARMACIST' ? 'avatar-pharmacist' : 'avatar-patient')">
+                  {{ (log.actorName ? log.actorName.charAt(0) : 'A') | uppercase }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ log.actorName }}</div>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 9.5px;">
+                    {{ log.actorRole }}
+                  </span>
+                </div>
+              </div>
             </td>
             <td>
               <span [class]="getActionBadgeClass(log.action)" style="font-size: 11px;">

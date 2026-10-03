@@ -34,6 +34,10 @@ export class AuthService {
     return this.currentUserValue?.role === 'ADMIN';
   }
 
+  public isPharmacist(): boolean {
+    return this.isAdmin();
+  }
+
   public isPatient(): boolean {
     return this.currentUserValue?.role === 'PATIENT';
   }

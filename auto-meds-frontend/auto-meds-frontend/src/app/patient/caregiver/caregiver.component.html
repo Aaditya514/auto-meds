@@ -51,7 +51,10 @@
     <div class="pending-cards-list">
       <div class="pending-card" *ngFor="let inv of pendingInvitations">
         <div class="pending-card-main">
-          <div class="avatar avatar-patient">{{ getInitial(inv.patientName, 'P') }}</div>
+          <div class="avatar-pharma avatar-lg avatar-patient position-relative me-3">
+            {{ getInitial(inv.patientName, 'P') }}
+            <span class="avatar-status-dot avatar-status-busy" title="Pending Invitation"></span>
+          </div>
           <div class="pending-details">
             <div class="patient-line">
               <span class="patient-name">{{ inv.patientName }}</span>
@@ -180,7 +183,10 @@
     <div class="cards-grid" *ngIf="!loadingCaregivers && caregivers.length > 0">
       <div class="caregiver-card" *ngFor="let cg of caregivers">
         <div class="card-header">
-          <div class="avatar">{{ getInitial(cg.caregiverName, '?') }}</div>
+          <div class="avatar-pharma avatar-md avatar-caregiver position-relative me-3">
+            {{ getInitial(cg.caregiverName, '?') }}
+            <span class="avatar-status-dot" [ngClass]="cg.status === 'ACTIVE' ? 'avatar-status-online' : 'avatar-status-busy'" [title]="cg.status"></span>
+          </div>
           <div class="card-info">
             <h4>{{ cg.caregiverName }}</h4>
             <p class="card-email">{{ cg.caregiverEmail }}</p>
@@ -269,7 +275,10 @@
     <div class="cards-grid" *ngIf="!loadingPatients && delegatedPatients.length > 0">
       <div class="patient-card" *ngFor="let patient of delegatedPatients">
         <div class="card-header">
-          <div class="avatar avatar-patient">{{ getInitial(patient.patientName, '?') }}</div>
+          <div class="avatar-pharma avatar-md avatar-patient position-relative me-3">
+            {{ getInitial(patient.patientName, '?') }}
+            <span class="avatar-status-dot avatar-status-online" title="Delegation Active"></span>
+          </div>
           <div class="card-info">
             <h4>{{ patient.patientName }}</h4>
             <p class="card-email">{{ patient.patientEmail }}</p>
