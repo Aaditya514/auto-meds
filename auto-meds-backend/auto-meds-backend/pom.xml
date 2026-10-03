@@ -125,6 +125,19 @@
             <artifactId>pdfbox</artifactId>
             <version>2.0.30</version>
         </dependency>
+
+        <!-- Spring Boot Actuator — /actuator/health, /actuator/metrics endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Micrometer Prometheus Registry — exposes /actuator/prometheus for Grafana -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <repositories>

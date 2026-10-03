@@ -32,6 +32,8 @@ import { DispensingSlipModalComponent } from './shared/components/dispensing-sli
 
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
+import { CorrelationIdInterceptor } from './core/interceptors/correlation-id.interceptor';
+import { CaregiverComponent } from './patient/caregiver/caregiver.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +58,8 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
     AdminSubscriptionRequestsComponent,
     AdminOrdersComponent,
     AdminUsersComponent,
-    AdminAuditLogsComponent
+    AdminAuditLogsComponent,
+    CaregiverComponent
   ],
   imports: [
     BrowserModule,
@@ -67,7 +70,8 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: CorrelationIdInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })

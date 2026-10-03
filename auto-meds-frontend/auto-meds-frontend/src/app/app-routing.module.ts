@@ -13,6 +13,7 @@ import { SubscriptionsComponent } from './patient/subscriptions/subscriptions.co
 import { SubscriptionCreateComponent } from './patient/subscriptions/subscription-create/subscription-create.component';
 import { OrdersComponent } from './patient/orders/orders.component';
 import { ProfileComponent } from './patient/profile/profile.component';
+import { CaregiverComponent } from './patient/caregiver/caregiver.component';
 
 import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
 import { AdminMedicinesComponent } from './admin/medicines/admin-medicines.component';
@@ -46,6 +47,8 @@ const routes: Routes = [
   { path: 'subscriptions/:id', component: SubscriptionsComponent, canActivate: [AuthGuard] },
   { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  { path: 'caregiver', component: CaregiverComponent, canActivate: [AuthGuard] },
+  { path: 'caregiver/accept/:id', component: CaregiverComponent, canActivate: [AuthGuard] },
 
   // Admin Routes
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'ADMIN' } },

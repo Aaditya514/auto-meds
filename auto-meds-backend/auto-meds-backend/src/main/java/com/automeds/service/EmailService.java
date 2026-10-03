@@ -152,4 +152,31 @@ public class EmailService {
             }
         }
     }
+
+    /**
+     * Sends an HTML-formatted email (e.g. caregiver invitations, rich notifications).
+     * In development (no SMTP config), the subject and length are logged to console.
+     */
+    public void sendHtmlEmail(String toEmail, String subject, String htmlBody) {
+        logger.info("=== HTML EMAIL ============================================");
+        logger.info("TO: {}", toEmail);
+        logger.info("SUBJECT: {}", subject);
+        logger.info("HTML BODY: {} chars", htmlBody != null ? htmlBody.length() : 0);
+        logger.info("==========================================================");
+
+        if (mailSender != null) {
+            try {
+                org.springframework.mail.javamail.MimeMessageHelper helper =
+                    new org.springframework.mail.javamail.MimeMessageHelper(
+                        mailSender.createMimeMessage(), true, "UTF-8");
+                helper.setTo(toEmail);
+                helper.setSubject(subject);
+                helper.setText(htmlBody, true);
+                mailSender.send(helper.getMimeMessage());
+                logger.info(">>> HTML email sent via SMTP to {} <<<", toEmail);
+            } catch (Exception e) {
+                logger.warn(">>> HTML email dispatch failed: {} <<<", e.getMessage());
+            }
+        }
+    }
 }

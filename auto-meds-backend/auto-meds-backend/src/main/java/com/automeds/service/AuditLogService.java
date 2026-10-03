@@ -70,4 +70,17 @@ public class AuditLogService {
         }
         return auditLogRepository.searchAuditLogs(query.trim());
     }
+
+    /**
+     * Convenience overload for service-layer audit logging when the full actor name
+     * is not readily available (e.g. background processing or proxy operations).
+     * Actor name defaults to actorId.toString().
+     */
+    @Transactional
+    public AuditLog log(Long actorId, String actorRole, String action,
+                        String resourceType, Long resourceId, String details) {
+        String actorName = actorId != null ? actorId.toString() : "SYSTEM";
+        return recordLog(actorId, actorName, actorRole, action,
+                         resourceType, resourceId, details, "internal");
+    }
 }

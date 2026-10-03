@@ -84,8 +84,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 // Public catalog search and medicine lookup
                 .requestMatchers(HttpMethod.GET, "/api/medicines/**").permitAll()
-                // Public health probes and error controller
-                .requestMatchers("/actuator/health", "/error").permitAll()
+                // Public health probes, error controller, and Prometheus metrics scrape endpoint
+                .requestMatchers("/actuator/health", "/actuator/prometheus", "/actuator/info", "/error").permitAll()
                 // Admin & Pharmacist procurement, restock operations, and compliance audit trail
                 .requestMatchers("/api/admin/procurement/**", "/api/admin/audit-logs/**", "/api/audit-logs/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_PHARMACIST")
                 // Admin specific management endpoints
@@ -94,6 +94,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/pharmacist/**", "/api/prescriptions/verify/**", "/api/clinical/**", "/api/clinical-safety/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_PHARMACIST", "ROLE_PATIENT")
                 // Patient specific operations
                 .requestMatchers("/api/cart/**").hasAuthority("ROLE_PATIENT")
+                // Caregiver proxy endpoints — WhatsApp webhook is open; all other caregiver routes require auth
+                .requestMatchers("/api/caregiver/whatsapp-command").permitAll()
+                .requestMatchers("/api/caregiver/**").authenticated()
                 // Authenticated patient and staff operations
                 .requestMatchers("/api/orders/**", "/api/payments/**", "/api/subscriptions/**", "/api/prescriptions/**").hasAnyAuthority("ROLE_PATIENT", "ROLE_ADMIN", "ROLE_PHARMACIST")
                 .requestMatchers("/api/notifications/**").authenticated()
