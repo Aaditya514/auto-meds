@@ -102,8 +102,9 @@ export class CaregiverComponent implements OnInit {
         this.inviteForm = { caregiverEmail: '', relationshipLabel: '', permissions: 'NOTIFICATIONS,PAY_ON_BEHALF', notifyPhone: '' };
         this.loadCaregivers();
       },
-      error: (err: { error?: { detail?: string } }) => {
-        this.inviteError = err?.error?.detail || 'Failed to send invitation. Please try again.';
+      error: (err: Error | { error?: { detail?: string } }) => {
+        const msg = (err as Error).message || (err as any)?.error?.detail;
+        this.inviteError = msg || 'Failed to send invitation. Please try again.';
         this.inviting = false;
       }
     });
@@ -122,8 +123,8 @@ export class CaregiverComponent implements OnInit {
         this.processingId = null;
         this.loadCaregivers();
       },
-      error: (err: { error?: { detail?: string } }) => {
-        this.actionError = err?.error?.detail || 'Failed to revoke access.';
+      error: (err: Error | { error?: { detail?: string } }) => {
+        this.actionError = (err as Error).message || (err as any)?.error?.detail || 'Failed to revoke access.';
         this.processingId = null;
       }
     });
@@ -140,8 +141,8 @@ export class CaregiverComponent implements OnInit {
         this.loadCaregivers();
         this.loadDelegatedPatients();
       },
-      error: (err: { error?: { detail?: string } }) => {
-        this.actionError = err?.error?.detail || 'Failed to accept invitation.';
+      error: (err: Error | { error?: { detail?: string } }) => {
+        this.actionError = (err as Error).message || (err as any)?.error?.detail || 'Failed to accept invitation.';
         this.processingId = null;
       }
     });
