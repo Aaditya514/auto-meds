@@ -255,10 +255,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.75rem;
 }
 
-/* ── Modern Clinical Data Tables ─────────────────────────────────────────── */
+/* ── Data Table as a System (Design Motion Principles) ─────────────────────── */
 .table-responsive {
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 14px;
+  overflow: auto;
+  border: 1px solid var(--border-light);
+  background-color: var(--surface-white);
 }
 
 .table {
@@ -266,30 +268,137 @@ h1, h2, h3, h4, h5, h6 {
   border-collapse: separate;
   border-spacing: 0;
   margin-bottom: 0;
+  width: 100%;
 }
 
+/* Tip 2: Hairlines & Eliminated Zebra Striping */
 .table thead th {
   background-color: #f8fafc;
   color: var(--text-muted);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 14px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--border-light);
   border-top: none;
+  white-space: nowrap;
 }
 
 .table tbody td {
-  padding: 16px;
+  padding: 14px 16px;
   vertical-align: middle;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 0.9rem;
-  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--border-subtle);
+  border-top: none;
+  font-size: 0.88rem;
+  transition: background-color var(--dur-fast) var(--ease-spring);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Tip 6: Intentional Interaction & Motion Hover State */
+.table-hover tbody tr {
+  transition: background-color var(--dur-fast) var(--ease-spring);
 }
 
 .table-hover tbody tr:hover td {
   background-color: #f8fafc;
+}
+
+/* Tip 4: Pinned / Sticky Headers */
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background-color: #f8fafc;
+  box-shadow: 0 1px 0 var(--border-light);
+}
+
+/* Tip 1: Numeric & Financial Alignment */
+.table th.text-end,
+.table td.text-end,
+.table .cell-numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.table th.text-center,
+.table td.text-center,
+.table .cell-center {
+  text-align: center;
+}
+
+.table .cell-id {
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  letter-spacing: -0.01em;
+}
+
+.table .cell-currency {
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Tip 3: Adjustable Row Density Tokens */
+.table-compact thead th {
+  padding: 9px 12px;
+  font-size: 0.69rem;
+}
+
+.table-compact tbody td {
+  padding: 10px 12px;
+  font-size: 0.82rem;
+}
+
+.table-comfortable thead th {
+  padding: 16px 20px;
+  font-size: 0.74rem;
+}
+
+.table-comfortable tbody td {
+  padding: 17px 20px;
+  font-size: 0.90rem;
+}
+
+/* Tip 5: Cell Data Management & Truncation */
+.cell-truncate {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.cell-truncate-sm {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.cell-truncate-lg {
+  max-width: 360px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.cell-actions {
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* ── Buttons & CTAs ──────────────────────────────────────────────────────── */

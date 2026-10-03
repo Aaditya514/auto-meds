@@ -37,10 +37,10 @@
   </div>
 
   <!-- Patients Table Card -->
-  <div *ngIf="!loading && filteredPatients.length > 0" class="card card-pharma p-0 bg-white shadow-sm border-0 overflow-hidden">
+  <div *ngIf="!loading && filteredPatients.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
     <div class="table-responsive">
-      <table class="table align-middle table-hover mb-0">
-        <thead class="table-light">
+      <table class="table table-sticky align-middle table-hover mb-0">
+        <thead>
           <tr>
             <th style="width: 80px;">ID</th>
             <th>Patient Identity</th>
@@ -48,12 +48,12 @@
             <th>Shipping Address</th>
             <th>City &amp; State</th>
             <th>Clinical Safety Profile</th>
-            <th>Registered</th>
+            <th style="width: 130px;">Registered</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of filteredPatients">
-            <td class="text-muted font-monospace small">#{{ p.id }}</td>
+            <td><span class="cell-id">#{{ p.id }}</span></td>
             <td>
               <div class="d-flex align-items-center gap-2">
                 <div class="patient-avatar">
@@ -72,13 +72,13 @@
               </div>
             </td>
             <td class="small">
-              <span *ngIf="p.address" class="text-dark">{{ p.address }}</span>
+              <span *ngIf="p.address" class="text-dark cell-truncate-lg" [title]="p.address">{{ p.address }}</span>
               <span *ngIf="!p.address" class="text-muted fst-italic">Not provided</span>
             </td>
             <td class="small">
               <span *ngIf="p.city" class="fw-semibold text-dark">{{ p.city }}</span>
               <span *ngIf="p.state" class="text-muted">, {{ p.state }}</span>
-              <span *ngIf="p.pincode" class="text-muted small d-block">PIN: {{ p.pincode }}</span>
+              <span *ngIf="p.pincode" class="text-muted small d-block tabular-nums">PIN: {{ p.pincode }}</span>
               <span *ngIf="!p.city && !p.state" class="text-muted fst-italic">—</span>
             </td>
             <td>
@@ -98,7 +98,7 @@
                 </span>
               </div>
             </td>
-            <td class="small text-muted">
+            <td class="small text-muted tabular-nums">
               {{ p.createdAt ? (p.createdAt | date:'mediumDate') : 'Verified' }}
             </td>
           </tr>

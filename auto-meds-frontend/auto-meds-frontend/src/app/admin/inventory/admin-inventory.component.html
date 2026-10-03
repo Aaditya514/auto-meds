@@ -60,47 +60,50 @@
       <p class="text-muted small mt-2">Loading warehouse inventory records...</p>
     </div>
 
-    <div *ngIf="!loading && filteredMedicines.length > 0" class="card card-pharma p-3 bg-white shadow-sm border-0">
+    <div *ngIf="!loading && filteredMedicines.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
       <div class="table-responsive">
-        <table class="table align-middle table-hover mb-0">
-          <thead class="table-light">
+        <table class="table table-sticky align-middle table-hover mb-0">
+          <thead>
             <tr>
-              <th>ID</th>
-              <th>Medicine & Brand</th>
-              <th>Composition & Strength</th>
-              <th>Price</th>
-              <th class="text-center">Total Stock</th>
-              <th class="text-center">🔒 Reserved (Subs)</th>
-              <th class="text-center">🟢 Available (Walk-in)</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
+              <th style="width: 70px;">ID</th>
+              <th>Medicine &amp; Brand</th>
+              <th>Composition &amp; Strength</th>
+              <th class="text-end" style="width: 100px;">Price</th>
+              <th class="text-end" style="width: 110px;">Total Stock</th>
+              <th class="text-center" style="width: 130px;">🔒 Soft-Locked</th>
+              <th class="text-center" style="width: 150px;">🟢 Available</th>
+              <th style="width: 120px;">Status</th>
+              <th class="text-end" style="width: 190px;">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let med of filteredMedicines">
-              <td><strong>#{{ med.id }}</strong></td>
+              <td><span class="cell-id">#{{ med.id }}</span></td>
               <td>
                 <div class="fw-bold text-dark">{{ med.medicineName }}</div>
-                <span class="badge bg-secondary bg-opacity-10 text-secondary small">{{ med.brandName }}</span>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary small fw-semibold">{{ med.brandName }}</span>
               </td>
-              <td class="small">{{ med.composition }} - <strong>{{ med.strength }}</strong></td>
-              <td class="fw-bold text-primary">₹{{ med.price }}</td>
+              <td>
+                <div class="cell-truncate text-dark small" [title]="med.composition">{{ med.composition }}</div>
+                <div><span class="badge bg-light text-dark border small mt-1">{{ med.strength }}</span></div>
+              </td>
+              <td class="text-end cell-currency">₹{{ med.price }}</td>
               
               <!-- Total Physical Stock -->
-              <td class="text-center fw-bold fs-6">
+              <td class="text-end fw-bold fs-6 tabular-nums">
                 {{ med.stockQuantity }}
               </td>
 
               <!-- 5-Day Soft-Locked Subscriptions -->
               <td class="text-center">
-                <span class="badge rounded-pill px-2 py-1" [ngClass]="(med.reservedQuantity || 0) > 0 ? 'bg-primary text-white' : 'bg-light text-muted border'">
+                <span class="badge rounded-pill px-2 py-1 tabular-nums" [ngClass]="(med.reservedQuantity || 0) > 0 ? 'bg-primary text-white' : 'bg-light text-muted border'">
                   <i class="bi bi-lock-fill me-1"></i>{{ med.reservedQuantity || 0 }}
                 </span>
               </td>
 
               <!-- Available to Sell -->
               <td class="text-center">
-                <span class="badge rounded-pill fs-6 px-3 py-1 fw-bold" [ngClass]="{
+                <span class="badge rounded-pill fs-6 px-3 py-1 fw-bold tabular-nums" [ngClass]="{
                   'bg-success text-white': (med.availableQuantity ?? med.stockQuantity) > 10,
                   'bg-warning text-dark': (med.availableQuantity ?? med.stockQuantity) > 0 && (med.availableQuantity ?? med.stockQuantity) <= 10,
                   'bg-danger text-white': (med.availableQuantity ?? med.stockQuantity) === 0
@@ -121,8 +124,8 @@
               </td>
 
               <!-- Actions -->
-              <td class="text-end">
-                <div class="btn-group">
+              <td class="cell-actions">
+                <div class="btn-group btn-group-sm">
                   <button (click)="openRestockModal(med)" class="btn btn-sm btn-outline-primary" title="Replenish batch via FEFO restock">
                     <i class="bi bi-plus-circle me-1"></i> Restock
                   </button>
@@ -173,38 +176,38 @@
           </div>
         </div>
 
-        <div *ngIf="deficitSubscriptions.length > 0" class="table-responsive">
-          <table class="table align-middle table-hover mb-0">
-            <thead class="table-light">
+        <div *ngIf="deficitSubscriptions.length > 0" class="table-responsive border-0">
+          <table class="table table-sticky align-middle table-hover mb-0">
+            <thead>
               <tr>
-                <th>Sub ID</th>
+                <th style="width: 80px;">Sub ID</th>
                 <th>Patient</th>
                 <th>Prescribed Medicine</th>
-                <th class="text-center">Quantity Needed</th>
-                <th class="text-center">Current Available</th>
-                <th>Refill Dispatch</th>
-                <th class="text-end">Procurement Action</th>
+                <th class="text-end" style="width: 140px;">Quantity Needed</th>
+                <th class="text-end" style="width: 140px;">Current Available</th>
+                <th style="width: 150px;">Refill Due</th>
+                <th class="text-end" style="width: 180px;">Procurement Action</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let def of deficitSubscriptions">
-                <td><strong>#{{ def.subscriptionId }}</strong></td>
+                <td><span class="cell-id">#{{ def.subscriptionId }}</span></td>
                 <td>
                   <div class="fw-semibold text-dark">{{ def.patientName }}</div>
                   <small class="text-muted">{{ def.patientEmail }}</small>
                 </td>
                 <td class="fw-bold text-dark">{{ def.medicineName }}</td>
-                <td class="text-center fw-bold text-danger">{{ def.quantityNeeded }} units</td>
-                <td class="text-center text-muted">{{ def.currentAvailableStock }} units</td>
+                <td class="text-end fw-bold text-danger tabular-nums">{{ def.quantityNeeded }} units</td>
+                <td class="text-end text-muted tabular-nums">{{ def.currentAvailableStock }} units</td>
                 <td>
                   <span class="badge" [ngClass]="def.daysUntilRefill <= 2 ? 'bg-danger' : 'bg-warning text-dark'">
                     Due in {{ def.daysUntilRefill }} day(s)
                   </span>
                 </td>
-                <td class="text-end">
+                <td class="cell-actions">
                   <button (click)="openRestockModal({ id: def.medicineId, name: def.medicineName, suggestedReorderPackSize: def.quantityNeeded * 2 })" 
                           class="btn btn-sm btn-danger fw-semibold">
-                    <i class="bi bi-lightning-fill me-1"></i> Restock & Fulfill
+                    <i class="bi bi-lightning-fill me-1"></i> Restock &amp; Fulfill
                   </button>
                 </td>
               </tr>
@@ -214,15 +217,15 @@
       </div>
 
       <!-- Section 2: Reorder & Procurement Alerts -->
-      <div class="card card-pharma p-3 bg-white shadow-sm border-0">
-        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <div class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
           <div>
             <h5 class="fw-bold mb-0 text-dark">
               <i class="bi bi-bell-fill text-warning me-2"></i>Procurement Reorder Alerts
             </h5>
             <small class="text-muted">Medicines at or below threshold (&le; Reorder Limit).</small>
           </div>
-          <span class="badge bg-warning text-dark fs-6">{{ procurementAlerts.length }} Item(s) to Restock</span>
+          <span class="badge bg-warning text-dark fs-6 tabular-nums">{{ procurementAlerts.length }} Item(s) to Restock</span>
         </div>
 
         <div *ngIf="procurementAlerts.length === 0" class="text-center py-4">
@@ -230,18 +233,18 @@
           <p class="text-muted mb-0">All medicine inventory levels are healthy and above their reorder thresholds.</p>
         </div>
 
-        <div *ngIf="procurementAlerts.length > 0" class="table-responsive">
-          <table class="table align-middle table-hover mb-0">
-            <thead class="table-light">
+        <div *ngIf="procurementAlerts.length > 0" class="table-responsive border-0">
+          <table class="table table-sticky align-middle table-hover mb-0">
+            <thead>
               <tr>
-                <th>Urgency</th>
-                <th>Medicine & Brand</th>
-                <th>Composition & Strength</th>
-                <th class="text-center">Available Stock</th>
-                <th class="text-center">Threshold</th>
-                <th class="text-center">Suggested Pack</th>
-                <th class="text-center">Waiting Deficits</th>
-                <th class="text-end">Action</th>
+                <th style="width: 140px;">Urgency</th>
+                <th>Medicine &amp; Brand</th>
+                <th>Composition &amp; Strength</th>
+                <th class="text-end" style="width: 120px;">Available Stock</th>
+                <th class="text-end" style="width: 110px;">Threshold</th>
+                <th class="text-end" style="width: 130px;">Suggested Pack</th>
+                <th class="text-center" style="width: 120px;">Waiting Deficits</th>
+                <th class="text-end" style="width: 160px;">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -257,18 +260,21 @@
                 </td>
                 <td>
                   <div class="fw-bold text-dark">{{ alert.medicineName }}</div>
-                  <span class="badge bg-secondary bg-opacity-10 text-secondary small">{{ alert.brandName }}</span>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary small fw-semibold">{{ alert.brandName }}</span>
                 </td>
-                <td class="small">{{ alert.composition }} - <strong>{{ alert.strength }}</strong></td>
-                <td class="text-center fw-bold text-danger">{{ alert.availableQuantity }}</td>
-                <td class="text-center text-muted">{{ alert.reorderThreshold }}</td>
-                <td class="text-center fw-bold text-primary">{{ alert.suggestedReorderPackSize }} units</td>
+                <td>
+                  <div class="cell-truncate text-dark small" [title]="alert.composition">{{ alert.composition }}</div>
+                  <div><span class="badge bg-light text-dark border small mt-1">{{ alert.strength }}</span></div>
+                </td>
+                <td class="text-end fw-bold text-danger tabular-nums">{{ alert.availableQuantity }}</td>
+                <td class="text-end text-muted tabular-nums">{{ alert.reorderThreshold }}</td>
+                <td class="text-end fw-bold text-primary tabular-nums">{{ alert.suggestedReorderPackSize }} units</td>
                 <td class="text-center">
-                  <span class="badge" [ngClass]="alert.deficitSubscriptionsCount > 0 ? 'bg-danger' : 'bg-light text-muted'">
+                  <span class="badge tabular-nums" [ngClass]="alert.deficitSubscriptionsCount > 0 ? 'bg-danger' : 'bg-light text-muted'">
                     {{ alert.deficitSubscriptionsCount }}
                   </span>
                 </td>
-                <td class="text-end">
+                <td class="cell-actions">
                   <button (click)="openRestockModal(alert)" class="btn btn-sm btn-outline-success fw-semibold">
                     <i class="bi bi-box-arrow-in-down me-1"></i> Restock ({{ alert.suggestedReorderPackSize }})
                   </button>

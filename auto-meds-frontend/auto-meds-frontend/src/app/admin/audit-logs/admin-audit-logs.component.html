@@ -57,24 +57,24 @@
   </div>
 
   <!-- Audit Table -->
-  <div *ngIf="!loading && filteredLogs.length > 0" class="card card-pharma p-0 bg-white shadow-sm border-0 overflow-hidden">
+  <div *ngIf="!loading && filteredLogs.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
     <div class="table-responsive">
-      <table class="table align-middle table-hover mb-0">
-        <thead class="table-light">
+      <table class="table table-compact table-sticky align-middle table-hover mb-0">
+        <thead>
           <tr>
             <th style="width: 70px;">ID</th>
             <th style="width: 170px;">Timestamp</th>
             <th style="width: 180px;">Actor / Identity</th>
-            <th style="width: 220px;">Event Action</th>
+            <th style="width: 200px;">Event Action</th>
             <th style="width: 130px;">Resource</th>
-            <th>Clinical & Audit Details</th>
-            <th style="width: 120px;">IP Address</th>
+            <th>Clinical &amp; Audit Details</th>
+            <th class="text-end" style="width: 130px;">IP Address</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let log of filteredLogs">
-            <td class="text-muted font-monospace small">#{{ log.id }}</td>
-            <td class="small text-muted font-monospace">
+            <td><span class="cell-id">#{{ log.id }}</span></td>
+            <td class="small text-muted font-monospace tabular-nums">
               {{ log.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}
             </td>
             <td>
@@ -96,7 +96,7 @@
             <td class="small text-dark">
               {{ log.details }}
             </td>
-            <td class="small text-muted font-monospace">
+            <td class="text-end small text-muted font-monospace tabular-nums">
               {{ log.ipAddress || '127.0.0.1' }}
             </td>
           </tr>

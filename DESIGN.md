@@ -81,6 +81,22 @@ Motion is treated with the same systematic rigor as typography. Animations are f
 * **Base Duration (`220ms`)**: Card elevation transitions, accordion collapses, filter pill switches.
 * **Modal Duration (`280ms`)**: Backdrop fades, split-screen triage sheets, dialog pop-ins.
 
+---
+
+## 2.3. Data Table as a System (6 UX Principles)
+
+Data tables are not static HTML grids or spreadsheet replicas; they are **interactive data systems**. Modeled after **Design Motion's 6 Data Table UX Principles**, all tabular data across AutoMeds adheres strictly to:
+
+| Principle | Senior-Designer Rule | AutoMeds Implementation |
+| :--- | :--- | :--- |
+| **1. Right-Align Numbers & Financials** | Numbers, currency amounts (`₹`), unit quantities, and dates must be right-aligned so decimal points and digits vertically align for instant comparison. Header titles for numeric columns must also be right-aligned. | `.text-end`, `.cell-numeric`, `.cell-currency`, and `.tabular-nums` on Price, Stock, Qty, and Subtotal columns. |
+| **2. Hairlines & Hover States** | Eradicate heavy alternating zebra striping which creates visual noise and competes with clinical data. Use ultra-clean `1px` slate hairlines (`#F1F5F9`) paired with a spring-eased hover highlight state (`#F8FAFC`). | `.table` has single bottom borders (`#F1F5F9`), `.table-hover` uses `transition: background-color 150ms var(--ease-spring)`. |
+| **3. Systematic Row Densities** | Provide calibrated density rhythms rather than arbitrary padding. Compact for high-density ledgers; Standard/Comfortable for clinical directories. | `.table-compact` (`9px 12px` padding, `0.82rem` font) for Audit Logs & Batch Slips; standard (`14px 16px`) for Orders & Medicines. |
+| **4. Pinned / Sticky Headers** | Keep column headers fixed in place during vertical scrolling so clinicians never lose column context in deep record sets. | `.table-sticky thead th` with `position: sticky; top: 0; z-index: 5; background: #F8FAFC; box-shadow: 0 1px 0 #E2E8F0;`. |
+| **5. Cell Data Management (Truncation & Tooltips)** | Prevent multi-line cell text blowout that distorts table row heights and misaligns the visual grid. | `.cell-truncate` (`max-width: 220px; text-overflow: ellipsis`) and `.cell-truncate-lg` with `[title]` attribute for composition and addresses. |
+| **6. Intentional Interaction & Motion** | Far-right grouped action buttons (`.cell-actions`), spring-eased hover states (`var(--ease-spring)`), clear sorting affordances, and zero-state completeness with contextual reset CTAs. | Grouped `.btn-group-sm`, micro-header tracking (`letter-spacing: 0.05em`), and explicit empty states for all 8 tables. |
+
+---
 
 ## 3. Component Anatomy
 

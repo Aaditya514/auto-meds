@@ -273,22 +273,22 @@
   </div>
 
   <!-- COMPACT TABLE VIEW (ALTERNATIVE MODE) -->
-  <div *ngIf="viewMode === 'table' && !loading && filteredRequests.length > 0" class="card p-3 bg-white shadow-sm border-0 rounded-4">
+  <div *ngIf="viewMode === 'table' && !loading && filteredRequests.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
     <div class="table-responsive">
-      <table class="table align-middle mb-0">
-        <thead class="table-light">
+      <table class="table table-sticky align-middle table-hover mb-0">
+        <thead>
           <tr>
-            <th>Request #</th>
+            <th style="width: 80px;">Request #</th>
             <th>Patient Details</th>
-            <th>Prescription</th>
-            <th>Dosage</th>
+            <th style="width: 130px;">Prescription</th>
+            <th>Dosage &amp; Cadence</th>
             <th>Assigned Medicines (Multi-Select)</th>
-            <th>Actions</th>
+            <th class="text-end" style="width: 140px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let req of filteredRequests">
-            <td><strong>#{{ req.id }}</strong></td>
+            <td><span class="cell-id">#{{ req.id }}</span></td>
             <td>
               <div class="fw-bold text-dark">{{ req.patientName }}</div>
               <span class="text-muted small">{{ req.patientEmail }}</span>
@@ -301,7 +301,7 @@
             </td>
             <td>
               <div><span class="badge bg-success bg-opacity-10 text-success fw-bold me-1">{{ req.dosage }}</span> {{ req.frequency }}</div>
-              <span class="small text-muted">{{ req.quantity }} units</span>
+              <span class="small text-muted tabular-nums">{{ req.quantity }} units</span>
             </td>
             <td style="min-width: 320px;">
               <div class="p-2 border rounded-3 bg-light">
@@ -319,13 +319,13 @@
                   <div *ngFor="let m of getFilteredMedicines(req)" class="form-check py-1 px-2 border-bottom">
                     <input class="form-check-input" type="checkbox" [id]="'tblCheck_' + req.id + '_' + m.id" [checked]="isMedicineSelected(req, m.id)" (change)="toggleMedicineSelection(req, m.id)">
                     <label class="form-check-label small" [for]="'tblCheck_' + req.id + '_' + m.id">
-                      <strong>{{ m.medicineName }}</strong> <span class="text-muted">({{ m.brandName }})</span> [₹{{ m.price }}]
+                      <strong>{{ m.medicineName }}</strong> <span class="text-muted">({{ m.brandName }})</span> <span class="tabular-nums">[₹{{ m.price }}]</span>
                     </label>
                   </div>
                 </div>
               </div>
             </td>
-            <td>
+            <td class="cell-actions">
               <div class="d-flex flex-column gap-1">
                 <button type="button" (click)="approve(req); $event.stopPropagation()" class="btn btn-sm btn-success fw-bold">
                   APPROVE ({{ req.selectedMedicineIds.length }})
