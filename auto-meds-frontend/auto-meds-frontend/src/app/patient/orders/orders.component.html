@@ -12,14 +12,14 @@
       <div class="card card-pharma p-4 bg-white shadow-sm border-0">
         <div class="row align-items-center">
           <div class="col-md-3">
-            <div class="d-flex align-items-center gap-1 flex-wrap">
-              <span class="badge" [ngClass]="order.orderType === 'SUBSCRIPTION_REFILL' ? 'bg-teal text-success bg-opacity-10 border border-success' : 'bg-primary bg-opacity-10 text-primary border border-primary'">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge-order-type" [ngClass]="order.orderType === 'SUBSCRIPTION_REFILL' ? 'badge-refill' : 'badge-onetime'">
                 {{ order.orderType === 'SUBSCRIPTION_REFILL' ? 'AUTOMATIC REFILL' : 'ONE-TIME PURCHASE' }}
               </span>
-              <span *ngIf="order.prescriptionId" class="badge bg-info bg-opacity-10 text-primary border border-info" title="Dual-audited by Pharmacist and validated against doctor prescription">
+              <span *ngIf="order.prescriptionId" class="badge-rx-verified" title="Dual-audited by Pharmacist and validated against doctor prescription">
                 <i class="bi bi-shield-check me-1"></i>Rx Verified
               </span>
-              <span *ngIf="order.isBridgeSupply" class="badge bg-danger bg-opacity-10 text-danger border border-danger">
+              <span *ngIf="order.isBridgeSupply" class="badge-bridge-supply">
                 <i class="bi bi-shield-plus me-1"></i>5-Day Bridge
               </span>
             </div>
@@ -82,23 +82,23 @@
         <h6 class="fw-bold mb-3">Delivery Timeline Progress</h6>
         <div class="d-flex justify-content-between text-center position-relative mb-4">
           <div class="flex-fill">
-            <div class="p-2 rounded-circle d-inline-block bg-primary text-white mb-1"><i class="bi bi-cart-check"></i></div>
+            <div class="timeline-step-icon timeline-step-completed"><i class="bi bi-cart-check"></i></div>
             <div class="small fw-bold">Placed</div>
           </div>
           <div class="flex-fill">
-            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="['APPROVED','PACKED','DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'bg-primary text-white' : 'bg-light text-muted'"><i class="bi bi-check2-circle"></i></div>
+            <div class="timeline-step-icon" [ngClass]="['APPROVED','PACKED','DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'timeline-step-completed' : 'timeline-step-inactive'"><i class="bi bi-check2-circle"></i></div>
             <div class="small">Approved</div>
           </div>
           <div class="flex-fill">
-            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="['PACKED','DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'bg-primary text-white' : 'bg-light text-muted'"><i class="bi bi-box"></i></div>
+            <div class="timeline-step-icon" [ngClass]="['PACKED','DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'timeline-step-completed' : 'timeline-step-inactive'"><i class="bi bi-box"></i></div>
             <div class="small">Packed</div>
           </div>
           <div class="flex-fill">
-            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="['DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'bg-primary text-white' : 'bg-light text-muted'"><i class="bi bi-truck"></i></div>
+            <div class="timeline-step-icon" [ngClass]="['DISPATCHED','OUT_FOR_DELIVERY','DELIVERED'].includes(selectedOrder.orderStatus) ? 'timeline-step-active' : 'timeline-step-inactive'"><i class="bi bi-truck"></i></div>
             <div class="small">Dispatched</div>
           </div>
           <div class="flex-fill">
-            <div class="p-2 rounded-circle d-inline-block mb-1" [ngClass]="selectedOrder.orderStatus === 'DELIVERED' ? 'bg-success text-white' : 'bg-light text-muted'"><i class="bi bi-house-door"></i></div>
+            <div class="timeline-step-icon" [ngClass]="selectedOrder.orderStatus === 'DELIVERED' ? 'timeline-step-completed' : 'timeline-step-inactive'"><i class="bi bi-house-door"></i></div>
             <div class="small fw-bold">Delivered</div>
           </div>
         </div>

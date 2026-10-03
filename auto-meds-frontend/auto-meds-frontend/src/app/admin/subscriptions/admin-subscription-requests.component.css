@@ -1,29 +1,37 @@
 /* Admin Subscription Requests & Medicine Auditor Styles */
 
 .card-request-audit {
-  border: 1px solid rgba(13, 110, 253, 0.15);
-  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
   background: #ffffff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
 .card-request-audit:hover {
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08), 0 6px 12px -4px rgba(0, 0, 0, 0.04);
 }
 
 .card-header-bar {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   padding: 1rem 1.25rem;
 }
 
 .prescription-preview-box {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px dashed #38bdf8;
+  background-color: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.prescription-preview-box:hover {
+  border-color: #0284c7;
+  background-color: #f0f9ff;
 }
 
 /* Multi-Select Medicine Selector Styling */

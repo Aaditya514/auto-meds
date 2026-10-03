@@ -13,6 +13,8 @@ export class AdminOrdersComponent implements OnInit {
   orders: Order[] = [];
   loading = true;
   message = '';
+  searchQuery = '';
+  statusFilter = 'ALL';
 
   // Dispensing Slip Modal
   selectedDispensingSlip: DispensingSlip | null = null;
@@ -22,6 +24,24 @@ export class AdminOrdersComponent implements OnInit {
   statusOptions = [
     'PENDING', 'APPROVED', 'PACKED', 'DISPATCHED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REJECTED'
   ];
+
+  get filteredOrders(): Order[] {
+    let result = this.orders;
+    if (this.statusFilter !== 'ALL') {
+      result = result.filter(o => o.orderStatus === this.statusFilter);
+    }
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      result = result.filter(o => 
+        String(o.id).includes(q) ||
+        o.patientName?.toLowerCase().includes(q) ||
+        o.patientEmail?.toLowerCase().includes(q) ||
+        o.orderType?.toLowerCase().includes(q) ||
+        o.paymentStatus?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }
 
   constructor(
     private adminService: AdminService,

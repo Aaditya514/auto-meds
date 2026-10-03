@@ -1,45 +1,61 @@
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+<div class="container-fluid py-4 px-lg-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3">
     <div>
-      <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-capsule text-primary me-2"></i>Medicine Management</h3>
-      <p class="text-muted small mb-0">Add, edit, deactivate & manage active pharmaceutical formulations</p>
+      <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-capsule text-primary me-2"></i>Medicine Catalog Management</h3>
+      <p class="text-muted small mb-0">Add, edit, deactivate & manage active pharmaceutical formulations, composition molecules, and therapeutic classes.</p>
     </div>
-    <button (click)="openAddModal()" class="btn btn-pharma-primary">
-      <i class="bi bi-plus-lg me-1"></i> Add New Medicine
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <div class="input-group input-group-sm" style="min-width: 260px;">
+        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+        <input 
+          type="text" 
+          class="form-control border-start-0 ps-0" 
+          placeholder="Search by name, brand, composition, category..." 
+          [(ngModel)]="searchQuery">
+        <button *ngIf="searchQuery" (click)="searchQuery = ''" class="btn btn-outline-secondary" type="button">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <button (click)="openAddModal()" class="btn btn-pharma-primary btn-sm px-3 text-nowrap">
+        <i class="bi bi-plus-lg me-1"></i> Add New Medicine
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4">
+  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm">
     <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+    <button type="button" class="btn-close" (click)="message = ''"></button>
   </div>
 
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted small mt-2">Loading catalog formulations...</p>
   </div>
 
-  <div *ngIf="!loading && medicines.length > 0" class="card card-pharma p-3 bg-white shadow-sm border-0">
+  <div *ngIf="!loading && filteredMedicines.length > 0" class="card card-pharma p-0 bg-white shadow-sm border-0 overflow-hidden">
     <div class="table-responsive">
-      <table class="table align-middle mb-0">
+      <table class="table align-middle table-hover mb-0">
         <thead class="table-light">
           <tr>
-            <th>ID</th>
+            <th style="width: 70px;">ID</th>
             <th>Medicine Name</th>
             <th>Brand</th>
-            <th>Composition</th>
-            <th>Strength</th>
+            <th>Composition & Strength</th>
             <th>Therapeutic Class & Disease Indications</th>
             <th>Price</th>
             <th>Stock</th>
-            <th>Actions</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let med of medicines">
+          <tr *ngFor="let med of filteredMedicines">
             <td><strong>#{{ med.id }}</strong></td>
             <td class="fw-bold text-dark">{{ med.medicineName }}</td>
             <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ med.brandName }}</span></td>
-            <td>{{ med.composition }}</td>
-            <td><strong>{{ med.strength }}</strong></td>
+            <td>
+              <div class="text-dark small">{{ med.composition }}</div>
+              <span class="badge bg-light text-dark border small mt-1">{{ med.strength }}</span>
+            </td>
             <td>
               <div class="mb-1" *ngIf="med.category">
                 <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold">{{ med.category }}</span>
@@ -51,13 +67,13 @@
               </div>
               <span *ngIf="getSymptomsList(med.symptoms).length === 0 && !med.category" class="text-muted small italic">No tags assigned</span>
             </td>
-            <td class="fw-bold text-primary">₹{{ med.price }}</td>
+            <td class="fw-bold text-dark font-monospace">₹{{ med.price }}</td>
             <td>
               <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'">
-                {{ med.stockQuantity }}
+                {{ med.stockQuantity }} units
               </span>
             </td>
-            <td>
+            <td class="text-end">
               <div class="btn-group btn-group-sm">
                 <button (click)="openEditModal(med)" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i> Edit</button>
                 <button (click)="deactivate(med.id)" class="btn btn-outline-danger"><i class="bi bi-slash-circle me-1"></i> Deactivate</button>

@@ -84,7 +84,7 @@
     <div *ngIf="!loading && activeSubscriptions.length > 0">
       <div class="row g-3">
         <div class="col-md-6 col-lg-4" *ngFor="let sub of activeSubscriptions">
-          <div class="card h-100 border-0 bg-light p-3 shadow-sm rounded-3">
+          <div class="card active-med-card h-100 d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <h5 class="fw-bold text-primary mb-0">{{ sub.medicineName }}</h5>
               <span class="badge badge-active">ACTIVE</span>

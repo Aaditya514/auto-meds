@@ -3,7 +3,7 @@
     <a class="navbar-brand fw-bold d-flex align-items-center" routerLink="/">
       <i class="bi bi-prescription2 text-primary fs-3 me-2"></i>
       <span class="brand-gradient fs-4">Auto-Meds</span>
-      <span *ngIf="authService.isAdmin()" class="badge bg-secondary ms-2 text-uppercase fs-6">Admin</span>
+      <span *ngIf="authService.isAdmin()" class="badge text-uppercase ms-2 fw-semibold" style="background-color: #0f172a; color: #f8fafc; font-size: 0.7rem; letter-spacing: 0.06em; padding: 0.35rem 0.65rem; border-radius: 6px;">Pharmacist Portal</span>
     </a>
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -59,9 +59,9 @@
       <ul class="navbar-nav ms-auto align-items-center">
         <!-- Patient Cart Icon -->
         <li class="nav-item me-3" *ngIf="authService.isPatient()">
-          <a class="nav-link position-relative btn btn-outline-primary border-0 rounded-circle p-2" routerLink="/cart">
+          <a class="nav-link position-relative cart-icon-btn p-0" routerLink="/cart" title="Shopping Cart">
             <i class="bi bi-cart3 fs-5"></i>
-            <span *ngIf="cartItemCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <span *ngIf="cartItemCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge">
               {{ cartItemCount }}
             </span>
           </a>

@@ -1,1 +1,86 @@
-/* Styles for admin-orders component */
+/* ── Admin Orders Management Styles ──────────────────────────────────────── */
+
+:host {
+  display: block;
+}
+
+.table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.order-id-badge {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0284c7;
+  font-size: 0.95rem;
+}
+
+.badge-order-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.type-refill {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+.type-onetime {
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+}
+
+.badge-four-eyes {
+  background-color: #f0fdfa;
+  border: 1px solid #99f6e4;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-bridge {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.status-select {
+  font-size: 0.84rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 150px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}

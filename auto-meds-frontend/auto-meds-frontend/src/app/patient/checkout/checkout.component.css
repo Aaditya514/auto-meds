@@ -1,10 +1,81 @@
+/* ── Patient Checkout & Payment Gateway Styling ───────────────────────────── */
+
+.card-pharma {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Clinical Safety & DDI Warning Card (Eliminating AI Slop border-start border-4) */
+.clinical-alert-card {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.clinical-alert-card.alert-danger-soft {
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+
+.clinical-alert-card.alert-danger-soft .alert-header {
+  background-color: #ffe4e6;
+  border-bottom: 1px solid #fecdd3;
+}
+
+.clinical-alert-card.alert-warning-soft {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+
+.clinical-alert-card.alert-warning-soft .alert-header {
+  background-color: #fef3c7;
+  border-bottom: 1px solid #fde68a;
+}
+
+.alert-header {
+  padding: 0.85rem 1.25rem;
+}
+
+.alert-item-box {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+
+/* Payment Method Tabs */
+.nav-pills .nav-link {
+  color: #475569;
+  font-weight: 550;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  transition: all 0.18s ease;
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+.nav-pills .nav-link:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.nav-pills .nav-link.active {
+  background-color: #ffffff !important;
+  color: #0284c7 !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
 .cursor-pointer {
   cursor: pointer;
   transition: all 0.15s ease-in-out;
 }
 
 .cursor-pointer:hover {
-  background-color: #e2e8f0 !important;
+  background-color: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
@@ -15,7 +86,8 @@
   width: 100vw;
   height: 100vh;
   background-color: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 1050;
 }
 

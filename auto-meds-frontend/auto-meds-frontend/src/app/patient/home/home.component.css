@@ -1,4 +1,4 @@
-/* ── Patient Home Metric Summary Cards ───────────────────────────────────── */
+/* ── Patient Home Metric Summary Cards & Portal ───────────────────────────── */
 
 .metric-summary-card {
   background-color: #ffffff;
@@ -61,4 +61,36 @@
   font-size: 0.76rem;
   color: #94a3b8;
   font-weight: 500;
+}
+
+/* Home Section Cards */
+.card-pharma {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.active-med-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.active-med-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.badge-active {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
 }

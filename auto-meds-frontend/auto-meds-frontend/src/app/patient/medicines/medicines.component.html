@@ -68,7 +68,7 @@
           <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
               <h5 class="fw-bold text-dark mb-1">{{ med.medicineName }}</h5>
-              <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold">{{ med.brandName }}</span>
+              <span class="badge-brand">{{ med.brandName }}</span>
             </div>
             <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'">
               <i [ngClass]="med.stockQuantity > 0 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'" class="me-1"></i>
@@ -120,7 +120,7 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
               <span class="text-muted small">Price: </span>
-              <span class="fs-4 fw-bold text-primary">₹{{ med.price }}</span>
+              <span class="price-tag">₹{{ med.price }}</span>
             </div>
             <div class="text-muted small">
               Stock: <strong>{{ med.stockQuantity }}</strong>
@@ -168,12 +168,12 @@
     <div class="modal-content border-0 shadow-lg rounded-4">
       
       <!-- Modal Header -->
-      <div class="modal-header bg-danger text-white border-0 py-3">
-        <h5 class="modal-title fw-bold d-flex align-items-center">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          {{ selectedOutMedicine.medicineName }} — OUT OF STOCK
+      <div class="modal-header border-bottom py-3" style="background-color: #fef2f2; border-color: #fee2e2 !important;">
+        <h5 class="modal-title fw-bold text-danger d-flex align-items-center mb-0">
+          <i class="bi bi-exclamation-octagon-fill me-2"></i>
+          {{ selectedOutMedicine.medicineName }} &mdash; Out of Stock
         </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeAlternativesModal()"></button>
+        <button type="button" class="btn-close" (click)="closeAlternativesModal()"></button>
       </div>
 
       <!-- Modal Body -->

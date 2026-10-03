@@ -1,25 +1,44 @@
-/* Styles for admin-medicines component */
+/* ── Admin Medicine Catalog Management ───────────────────────────────────── */
 
-.cursor-pointer {
-  cursor: pointer;
+:host {
+  display: block;
 }
 
-.cursor-pointer:hover {
-  opacity: 1 !important;
-  transform: scale(1.1);
+.table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
 }
 
-.btn-xs {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
-  line-height: 1.5;
-  border-radius: 0.2rem;
-  transition: all 0.15s ease-in-out;
+.table tbody tr:hover td {
+  background-color: #f8fafc;
 }
 
-.btn-xs:hover {
-  background-color: #0d6efd;
-  color: #ffffff;
-  border-color: #0d6efd;
-  transform: translateY(-1px);
+.category-tag {
+  background-color: #e0f2fe;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.symptom-tag {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.modal-content {
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
 }

@@ -1,21 +1,68 @@
+/* ── AutoMeds Enterprise Clinical Design System ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;750&display=swap');
+
 :root {
-  --primary-color: #0d6efd;
-  --primary-dark: #0a58ca;
+  /* Brand Core */
+  --primary-color: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-dark: #0f172a;
   --pharma-teal: #0d9488;
-  --pharma-green: #10b981;
+  --pharma-emerald: #10b981;
+  --pharma-purple: #8b5cf6;
+  --pharma-amber: #f59e0b;
+  --pharma-rose: #ef4444;
+
+  /* Neutrals */
   --pharma-bg: #f8fafc;
-  --dark-accent: #1e293b;
+  --surface-white: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --border-light: #e2e8f0;
+  --border-subtle: #f1f5f9;
+
+  /* Status Colors */
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-text: #065f46;
+
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-text: #92400e;
+
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --danger-text: #991b1b;
+
+  --info-bg: #f0f9ff;
+  --info-border: #bae6fd;
+  --info-text: #0369a1;
+
+  --purple-bg: #faf5ff;
+  --purple-border: #e9d5ff;
+  --purple-text: #6b21a8;
 }
 
+/* ── Base Styles ─────────────────────────────────────────────────────────── */
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--pharma-bg);
-  color: #334155;
+  color: var(--text-main);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-main);
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+/* ── Brand Gradient ──────────────────────────────────────────────────────── */
 .brand-gradient {
-  background: linear-gradient(135deg, #0d6efd 0%, #0d9488 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -24,94 +71,273 @@ body {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
+/* ── Glass Navbar ────────────────────────────────────────────────────────── */
 .navbar-pharma {
-  background: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  padding: 12px 0;
+  transition: all 0.2s ease;
 }
 
+.navbar-pharma .nav-link {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.navbar-pharma .nav-link:hover {
+  color: var(--primary-color);
+  background-color: #f0f9ff;
+}
+
+.navbar-pharma .nav-link.active {
+  color: var(--primary-color);
+  background-color: #e0f2fe;
+  font-weight: 600;
+}
+
+/* ── Card System ─────────────────────────────────────────────────────────── */
 .card-pharma {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--surface-white);
+  border: 1px solid var(--border-light) !important;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-pharma:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+  border-color: #cbd5e1 !important;
 }
 
-/* Status Badges */
-.badge-in-stock {
-  background-color: #dcfce7;
-  color: #15803d;
+/* ── Refined Status Badges (Anti-AI Slop: Soft Tints with High Contrast) ──── */
+.badge-in-stock,
+.badge-active,
+.badge-success-subtle {
+  background-color: var(--success-bg) !important;
+  border: 1px solid var(--success-border) !important;
+  color: var(--success-text) !important;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
-.badge-out-of-stock {
-  background-color: #fee2e2;
-  color: #b91c1c;
+.badge-pending,
+.badge-warning-subtle {
+  background-color: var(--warning-bg) !important;
+  border: 1px solid var(--warning-border) !important;
+  color: var(--warning-text) !important;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
-.badge-active {
-  background-color: #d1fae5;
-  color: #047857;
+.badge-out-of-stock,
+.badge-rejected,
+.badge-danger-subtle {
+  background-color: var(--danger-bg) !important;
+  border: 1px solid var(--danger-border) !important;
+  color: var(--danger-text) !important;
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
-.badge-pending {
-  background-color: #fef3c7;
-  color: #b45309;
+.badge-approved,
+.badge-info-subtle {
+  background-color: var(--info-bg) !important;
+  border: 1px solid var(--info-border) !important;
+  color: var(--info-text) !important;
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
-.badge-approved {
-  background-color: #e0f2fe;
-  color: #0369a1;
+.badge-purple-subtle {
+  background-color: var(--purple-bg) !important;
+  border: 1px solid var(--purple-border) !important;
+  color: var(--purple-text) !important;
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
 
-.badge-rejected {
-  background-color: #ffe4e6;
-  color: #be123c;
+.badge-expired,
+.badge-neutral-subtle {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
 }
 
-.badge-expired {
-  background-color: #f3f4f6;
-  color: #4b5563;
-  font-weight: 600;
-}
-
-/* Alternative Match Box */
-.alternative-match-card {
-  border: 2px dashed #0d9488;
-  background-color: #f0fdf4;
+/* ── Modern Clinical Data Tables ─────────────────────────────────────────── */
+.table-responsive {
   border-radius: 12px;
+  overflow: hidden;
+}
+
+.table {
+  color: var(--text-main);
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f8fafc;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+  border-top: none;
+}
+
+.table tbody td {
   padding: 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Form Styles */
-.form-control:focus, .form-select:focus {
-  border-color: var(--pharma-teal);
-  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25);
+.table-hover tbody tr:hover td {
+  background-color: #f8fafc;
 }
 
-.btn-pharma-primary {
-  background: linear-gradient(135deg, #0d6efd 0%, #0d9488 100%);
-  color: #fff;
-  border: none;
+/* ── Buttons & CTAs ──────────────────────────────────────────────────────── */
+.btn {
+  border-radius: 10px;
   font-weight: 600;
-  border-radius: 8px;
-  padding: 10px 20px;
+  font-size: 0.88rem;
+  padding: 9px 18px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-pharma-primary:hover {
-  background: linear-gradient(135deg, #0b5ed7 0%, #0f766e 100%);
-  color: #fff;
+.btn-pharma-primary,
+.btn-primary {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+}
+
+.btn-pharma-primary:hover,
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: #bae6fd;
+  background-color: #ffffff;
+}
+
+.btn-outline-primary:hover {
+  background-color: #f0f9ff;
+  border-color: var(--primary-color);
+  color: var(--primary-hover);
+}
+
+.btn-outline-danger {
+  color: #dc2626;
+  border-color: #fecaca;
+  background-color: #ffffff;
+}
+
+.btn-outline-danger:hover {
+  background-color: #fef2f2;
+  border-color: #dc2626;
+  color: #b91c1c;
+}
+
+.btn-outline-success {
+  color: #16a34a;
+  border-color: #bbf7d0;
+  background-color: #ffffff;
+}
+
+.btn-outline-success:hover {
+  background-color: #f0fdf4;
+  border-color: #16a34a;
+  color: #15803d;
+}
+
+/* ── Form Controls ───────────────────────────────────────────────────────── */
+.form-control, .form-select {
+  border: 1px solid var(--border-light);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  background-color: var(--surface-white);
+  transition: all 0.15s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+  outline: none;
+}
+
+/* ── Custom Tab Navigation ───────────────────────────────────────────────── */
+.nav-pills .nav-link {
+  border-radius: 9px;
+  padding: 9px 18px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover {
+  color: var(--primary-color);
+  background-color: #f0f9ff;
+}
+
+.nav-pills .nav-link.active {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+/* ── Utility Classes ─────────────────────────────────────────────────────── */
+.text-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
 }

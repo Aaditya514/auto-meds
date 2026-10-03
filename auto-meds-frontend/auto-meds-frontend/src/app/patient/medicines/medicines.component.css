@@ -1,30 +1,129 @@
-/* Styles for medicines component */
+/* ── Patient Medicines Catalog Styling ────────────────────────────────────── */
 
+.card-pharma {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  overflow: hidden;
+}
+
+.card-pharma:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08), 0 6px 12px -4px rgba(0, 0, 0, 0.04) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Symptom-based Discovery Filter Pills */
 .symptom-pill {
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
   color: #475569;
   border: 1px solid #e2e8f0;
-  font-weight: 500;
-  font-size: 0.825rem;
+  font-weight: 550;
+  font-size: 0.8rem;
   padding: 0.35rem 0.85rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .symptom-pill:hover {
-  background-color: #e2e8f0;
+  background-color: #f1f5f9;
   color: #0f172a;
+  border-color: #cbd5e1;
   transform: translateY(-1px);
 }
 
 .symptom-pill.active {
-  background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%);
+  background: #0284c7;
   color: #ffffff;
-  border-color: #0d6efd;
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+  border-color: #0284c7;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
 }
 
+/* In-Stock & Out-of-Stock Badges */
+.badge-in-stock {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-out-of-stock {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Brand Capsule */
+.badge-brand {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Formula Box */
+.formula-specs {
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  padding: 0.85rem;
+  font-size: 0.82rem;
+}
+
+.formula-specs .spec-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.formula-specs .spec-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Generic Savings Callout */
 .generic-savings-badge {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 1px solid #86efac;
-  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.08);
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.06);
+}
+
+/* Price Styling */
+.price-tag {
+  font-size: 1.4rem;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Alternative Match Card in Modal */
+.alternative-match-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.alternative-match-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }

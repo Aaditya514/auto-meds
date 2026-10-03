@@ -1,19 +1,78 @@
-/* Styles for subscriptions component */
+/* ── Patient Subscriptions Styling ────────────────────────────────────────── */
 
+.card-pharma {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  overflow: hidden;
+}
+
+.card-pharma:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08), 0 6px 12px -4px rgba(0, 0, 0, 0.04) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Status Badges */
+.badge-active {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.badge-pending {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.badge-rejected, .badge-expired {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+/* Emergency Bridge Supply Active Banner */
 .badge-bridge {
-  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
-  animation: pulseBridge 2s infinite ease-in-out;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-weight: 650;
+  font-size: 0.8rem;
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
 }
 
-@keyframes pulseBridge {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
+/* Refill Schedule Box */
+.refill-schedule-box {
+  background-color: #f0fdf4;
+  border: 1px solid #dcfce7;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  color: #166534;
 }
 
+/* Custom Modals (Snooze & Refill Sync) */
 .modal-backdrop-custom {
   position: fixed;
   top: 0;
@@ -21,7 +80,8 @@
   right: 0;
   bottom: 0;
   background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 1050;
   display: flex;
   align-items: center;
@@ -32,11 +92,12 @@
 .modal-card-custom {
   background: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e2e8f0;
   width: 100%;
   max-width: 480px;
   overflow: hidden;
-  animation: popInModal 0.2s ease-out;
+  animation: popInModal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes popInModal {

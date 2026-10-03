@@ -71,8 +71,8 @@
 
     <!-- Clinical Safety & DDI Warning Banner (Phase 5) -->
     <div *ngIf="!loading && clinicalAlerts.length > 0" class="mb-4">
-      <div class="card border-0 shadow-sm" [ngClass]="hasCriticalAlerts() ? 'border-start border-danger border-4' : 'border-start border-warning border-4'">
-        <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+      <div class="clinical-alert-card" [class.alert-danger-soft]="hasCriticalAlerts()" [class.alert-warning-soft]="!hasCriticalAlerts()">
+        <div class="alert-header d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center">
             <i class="bi fs-4 me-2" [ngClass]="hasCriticalAlerts() ? 'bi-exclamation-octagon-fill text-danger' : 'bi-exclamation-triangle-fill text-warning'"></i>
             <div>
@@ -82,7 +82,7 @@
               <small class="text-muted">Detected {{ clinicalAlerts.length }} potential pharmacological conflict(s) with your cart or profile</small>
             </div>
           </div>
-          <span class="badge" [ngClass]="hasCriticalAlerts() ? 'bg-danger' : 'bg-warning text-dark'">
+          <span class="badge" [ngClass]="hasCriticalAlerts() ? 'bg-danger text-white' : 'bg-warning text-dark'">
             {{ hasCriticalAlerts() ? 'HIGH CLINICAL RISK' : 'MODERATE PRECAUTION' }}
           </span>
         </div>

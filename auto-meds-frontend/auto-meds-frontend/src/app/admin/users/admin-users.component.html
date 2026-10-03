@@ -1,41 +1,116 @@
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+<div class="container-fluid py-4 px-lg-5">
+  <!-- Header & Toolbar -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-      <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-people text-primary me-2"></i>Patient Directory</h3>
-      <p class="text-muted small mb-0">View registered patients and delivery profile addresses</p>
+      <h3 class="fw-bold mb-1 text-dark">
+        <i class="bi bi-people text-primary me-2"></i>Patient & Clinical Directory
+      </h3>
+      <p class="text-muted small mb-0">
+        Registered patient profiles, delivery shipping destinations, and pharmacological allergy safety tags.
+      </p>
+    </div>
+
+    <!-- Search & Metric Capsule -->
+    <div class="d-flex align-items-center gap-2">
+      <div class="input-group input-group-sm" style="min-width: 280px;">
+        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+        <input 
+          type="text" 
+          class="form-control border-start-0 ps-0" 
+          placeholder="Search by name, email, phone, city, allergy..." 
+          [(ngModel)]="searchQuery">
+        <button *ngIf="searchQuery" (click)="searchQuery = ''" class="btn btn-outline-secondary" type="button">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+
+      <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
+        <i class="bi bi-person-check me-1"></i>{{ filteredPatients.length }} Patients
+      </span>
     </div>
   </div>
 
+  <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted small mt-2">Retrieving patient clinical records...</p>
   </div>
 
-  <div *ngIf="!loading && patients.length > 0" class="card card-pharma p-3 bg-white shadow-sm border-0">
+  <!-- Patients Table Card -->
+  <div *ngIf="!loading && filteredPatients.length > 0" class="card card-pharma p-0 bg-white shadow-sm border-0 overflow-hidden">
     <div class="table-responsive">
-      <table class="table align-middle mb-0">
+      <table class="table align-middle table-hover mb-0">
         <thead class="table-light">
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>City / State</th>
+            <th style="width: 80px;">ID</th>
+            <th>Patient Identity</th>
+            <th>Contact Details</th>
+            <th>Shipping Address</th>
+            <th>City &amp; State</th>
+            <th>Clinical Safety Profile</th>
             <th>Registered</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let p of patients">
-            <td><strong>#{{ p.id }}</strong></td>
-            <td class="fw-bold text-dark">{{ p.name }}</td>
-            <td>{{ p.email }}</td>
-            <td>{{ p.phone || 'N/A' }}</td>
-            <td class="small">{{ p.address || 'N/A' }}</td>
-            <td>{{ p.city }} {{ p.state ? ', ' + p.state : '' }}</td>
-            <td class="small text-muted">{{ p.createdAt | date:'mediumDate' }}</td>
+          <tr *ngFor="let p of filteredPatients">
+            <td class="text-muted font-monospace small">#{{ p.id }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="patient-avatar">
+                  {{ getInitial(p.name) }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark">{{ p.name }}</div>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 10px;">{{ p.role }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="small text-dark">{{ p.email }}</div>
+              <div class="small text-muted" *ngIf="p.phone">
+                <i class="bi bi-telephone me-1"></i>{{ p.phone }}
+              </div>
+            </td>
+            <td class="small">
+              <span *ngIf="p.address" class="text-dark">{{ p.address }}</span>
+              <span *ngIf="!p.address" class="text-muted fst-italic">Not provided</span>
+            </td>
+            <td class="small">
+              <span *ngIf="p.city" class="fw-semibold text-dark">{{ p.city }}</span>
+              <span *ngIf="p.state" class="text-muted">, {{ p.state }}</span>
+              <span *ngIf="p.pincode" class="text-muted small d-block">PIN: {{ p.pincode }}</span>
+              <span *ngIf="!p.city && !p.state" class="text-muted fst-italic">—</span>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1">
+                <div *ngIf="p.allergies" class="d-flex flex-wrap gap-1">
+                  <span class="badge-allergy" title="Known Drug Allergy">
+                    <i class="bi bi-shield-x me-1"></i>Allergy: {{ p.allergies }}
+                  </span>
+                </div>
+                <div *ngIf="p.chronicConditions" class="d-flex flex-wrap gap-1">
+                  <span class="badge-condition" title="Chronic Condition">
+                    <i class="bi bi-heart-pulse me-1"></i>{{ p.chronicConditions }}
+                  </span>
+                </div>
+                <span *ngIf="!p.allergies && !p.chronicConditions" class="text-muted small fst-italic">
+                  None reported
+                </span>
+              </div>
+            </td>
+            <td class="small text-muted">
+              {{ p.createdAt ? (p.createdAt | date:'mediumDate') : 'Verified' }}
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredPatients.length === 0" class="text-center py-5 bg-white rounded-3 shadow-sm border p-4">
+    <i class="bi bi-people text-muted display-4 mb-3 d-block"></i>
+    <h5 class="fw-bold text-dark">No patient records found.</h5>
+    <p class="text-muted small mb-0">No registered patients match your current search query "{{ searchQuery }}".</p>
   </div>
 </div>

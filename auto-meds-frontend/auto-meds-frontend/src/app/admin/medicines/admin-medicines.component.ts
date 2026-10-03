@@ -18,6 +18,22 @@ export class AdminMedicinesComponent implements OnInit {
   editingMedicineId: number | null = null;
   message = '';
   errorMessage = '';
+  searchQuery = '';
+
+  get filteredMedicines(): Medicine[] {
+    if (!this.searchQuery || !this.searchQuery.trim()) {
+      return this.medicines;
+    }
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.medicines.filter(m => 
+      m.medicineName?.toLowerCase().includes(q) ||
+      m.brandName?.toLowerCase().includes(q) ||
+      m.composition?.toLowerCase().includes(q) ||
+      m.category?.toLowerCase().includes(q) ||
+      m.symptoms?.toLowerCase().includes(q) ||
+      String(m.id).includes(q)
+    );
+  }
 
   // Disease Classification & Tagging State
   diseaseTags: string[] = [];
