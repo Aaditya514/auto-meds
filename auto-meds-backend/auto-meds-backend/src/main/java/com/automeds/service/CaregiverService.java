@@ -355,30 +355,30 @@ public class CaregiverService {
             return handleStatusCommand(patientId, patientName, delegation);
         } else if (rawCommand.equals("HI") || rawCommand.equals("HELLO") || rawCommand.equals("HEY")
                 || rawCommand.equals("HELP") || rawCommand.equals("MENU") || rawCommand.startsWith("START")) {
-            return "👋 *AutoMeds Caregiver Assistant*\n\n"
+            return "\uD83D\uDC4B *AutoMeds Caregiver Assistant*\n\n"
                     + "Linked Patient: *" + patientName + "*\n"
                     + "Your Access: *" + delegation.getPermissions() + "*\n\n"
                     + "Reply with any command below:\n"
-                    + "• *STATUS*   → View pending orders & subscription\n"
-                    + "• *CONFIRM*  → Approve & pay for pending refill\n"
-                    + "• *SKIP*     → Skip this refill cycle\n"
-                    + "• *SNOOZE*   → Delay refill by 7 days (or SNOOZE 14)\n"
-                    + "• *HELP*     → Show this menu";
+                    + "\u2022 *STATUS*   \u2192 View pending orders & subscription\n"
+                    + "\u2022 *CONFIRM*  \u2192 Approve & pay for pending refill\n"
+                    + "\u2022 *SKIP*     \u2192 Skip this refill cycle\n"
+                    + "\u2022 *SNOOZE*   \u2192 Delay refill by 7 days (or SNOOZE 14)\n"
+                    + "\u2022 *HELP*     \u2192 Show this menu";
         } else {
-            return "❓ Unknown command: '" + rawCommand + "'.\n\n"
+            return "\u2753 Unknown command: '" + rawCommand + "'.\n\n"
                     + "Reply with one of the following:\n"
-                    + "• *STATUS*   → Check patient status\n"
-                    + "• *CONFIRM*  → Approve pending refill\n"
-                    + "• *SKIP*     → Skip refill\n"
-                    + "• *SNOOZE*   → Delay refill by 7 days\n"
-                    + "• *HELP*     → Show help menu";
+                    + "\u2022 *STATUS*   \u2192 Check patient status\n"
+                    + "\u2022 *CONFIRM*  \u2192 Approve pending refill\n"
+                    + "\u2022 *SKIP*     \u2192 Skip refill\n"
+                    + "\u2022 *SNOOZE*   \u2192 Delay refill by 7 days\n"
+                    + "\u2022 *HELP*     \u2192 Show help menu";
         }
     }
 
     private String handleConfirmCommand(Long caregiverId, Long patientId, String patientName) {
         List<Order> pendingOrders = orderRepository.findByPatientIdAndPaymentStatus(patientId, "PENDING");
         if (pendingOrders.isEmpty()) {
-            return "✅ " + patientName + " has no pending orders to confirm right now.";
+            return "\u2705 " + patientName + " has no pending orders to confirm right now.";
         }
         Order order = pendingOrders.get(0); // most recent
         order.setPaymentStatus("PAID");
@@ -388,14 +388,14 @@ public class CaregiverService {
         auditLogService.log(caregiverId, "CAREGIVER", "WHATSAPP_CONFIRM",
                 "Order", order.getId(), "PatientId=" + patientId);
 
-        return "✅ Confirmed! Order #" + order.getId() + " for " + patientName
-                + " has been approved. Total: ₹" + order.getTotalAmount();
+        return "\u2705 Confirmed! Order #" + order.getId() + " for " + patientName
+                + " has been approved. Total: \u20B9" + order.getTotalAmount();
     }
 
     private String handleSkipCommand(Long caregiverId, Long patientId, String patientName) {
         List<Order> pendingOrders = orderRepository.findByPatientIdAndPaymentStatus(patientId, "PENDING");
         if (pendingOrders.isEmpty()) {
-            return "ℹ️ " + patientName + " has no pending orders to skip.";
+            return "\u2139\uFE0F " + patientName + " has no pending orders to skip.";
         }
         Order order = pendingOrders.get(0);
         order.setPaymentStatus("CANCELLED");
@@ -405,7 +405,7 @@ public class CaregiverService {
         auditLogService.log(caregiverId, "CAREGIVER", "WHATSAPP_SKIP",
                 "Order", order.getId(), "PatientId=" + patientId);
 
-        return "⏭️ Skipped! Order #" + order.getId() + " for " + patientName
+        return "\u23ED\uFE0F Skipped! Order #" + order.getId() + " for " + patientName
                 + " has been cancelled for this cycle.";
     }
 
@@ -415,7 +415,7 @@ public class CaregiverService {
         auditLogService.log(caregiverId, "CAREGIVER", "WHATSAPP_SNOOZE",
                 "Patient", patientId, "Days=" + days);
 
-        return "💤 Snoozed! " + patientName + "'s next refill has been delayed by "
+        return "\uD83D\uDCA4 Snoozed! " + patientName + "'s next refill has been delayed by "
                 + days + " days. We'll remind you again closer to the new date.";
     }
 
@@ -425,10 +425,10 @@ public class CaregiverService {
                 ? "No pending orders."
                 : pendingOrders.size() + " pending order(s). Send CONFIRM to approve.";
 
-        return "📊 *Status for " + patientName + "*:\n"
-                + "• *Pending orders*: " + orderSummary + "\n"
-                + "• *Access level*: " + delegation.getPermissions() + "\n"
-                + "• *Relationship*: " + delegation.getRelationshipLabel();
+        return "\uD83D\uDCCA *Status for " + patientName + "*:\n"
+                + "\u2022 *Pending orders*: " + orderSummary + "\n"
+                + "\u2022 *Access level*: " + delegation.getPermissions() + "\n"
+                + "\u2022 *Relationship*: " + delegation.getRelationshipLabel();
     }
 
     private int parseSnoozeDays(String command) {
