@@ -4,6 +4,7 @@ import com.automeds.dto.CaregiverDTO;
 import com.automeds.dto.OrderDTO;
 import com.automeds.security.UserPrincipal;
 import com.automeds.service.CaregiverService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -151,18 +152,52 @@ public class CaregiverController {
     // ── WhatsApp / SMS Webhook ────────────────────────────────────────────────
 
     /**
-     * POST /api/caregiver/whatsapp-command
-     * Inbound webhook from a WhatsApp / SMS gateway (e.g. Twilio, Gupshup, MSG91).
-     * Parses the caregiver's text command and executes the action on their behalf.
-     *
-     * Supported commands: CONFIRM, SKIP, SNOOZE [days], STATUS
-     *
-     * NOTE: In production, this endpoint should be secured with a gateway-specific
-     * shared secret or HMAC signature verification header (e.g. X-Twilio-Signature).
-     * For the development environment, it is open to any caller.
+     * POST /api/caregiver/whatsapp-command (Form-Urlencoded)
+     * Inbound webhook for Twilio WhatsApp sandbox and SMS gateways.
+     * Receives form parameters (From, Body, WaId, MessageSid) and returns TwiML XML
+     * so Twilio automatically sends the reply back to the user's phone on WhatsApp.
      */
-    @PostMapping("/whatsapp-command")
-    public ResponseEntity<Map<String, String>> processWhatsAppCommand(
+    @PostMapping(
+            value = "/whatsapp-command",
+            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, "application/x-www-form-urlencoded;charset=UTF-8"},
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, "text/xml;charset=UTF-8"}
+    )
+    public ResponseEntity<String> handleTwilioWhatsAppWebhook(@RequestParam Map<String, String> params) {
+        String from = params.get("From");
+        if (from == null) from = params.get("from");
+        if (from == null) from = params.get("WaId");
+
+        String body = params.get("Body");
+        if (body == null) body = params.get("body");
+
+        CaregiverDTO.WhatsAppCommandRequest req = new CaregiverDTO.WhatsAppCommandRequest();
+        req.setFrom(from);
+        req.setBody(body);
+        req.setMessageSid(params.get("MessageSid"));
+
+        String reply = caregiverService.processWhatsAppCommand(req);
+
+        String xmlSafeReply = escapeXml(reply);
+        String twiml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<Response>\n"
+                + "    <Message>" + xmlSafeReply + "</Message>\n"
+                + "</Response>";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/xml;charset=UTF-8"))
+                .body(twiml);
+    }
+
+    /**
+     * POST /api/caregiver/whatsapp-command (JSON)
+     * Inbound webhook for JSON clients (in-browser simulator, REST clients).
+     */
+    @PostMapping(
+            value = "/whatsapp-command",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, String>> handleJsonWhatsAppCommand(
             @RequestBody CaregiverDTO.WhatsAppCommandRequest request) {
 
         String reply = caregiverService.processWhatsAppCommand(request);
@@ -170,6 +205,15 @@ public class CaregiverController {
                 "reply", reply,
                 "from", request.getFrom() != null ? request.getFrom() : "unknown"
         ));
+    }
+
+    private String escapeXml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 
     /**

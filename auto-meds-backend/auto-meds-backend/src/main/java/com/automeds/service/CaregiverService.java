@@ -353,13 +353,25 @@ public class CaregiverService {
             return handleSnoozeCommand(caregiverId, patientId, patientName, days);
         } else if (rawCommand.startsWith("STATUS")) {
             return handleStatusCommand(patientId, patientName, delegation);
+        } else if (rawCommand.equals("HI") || rawCommand.equals("HELLO") || rawCommand.equals("HEY")
+                || rawCommand.equals("HELP") || rawCommand.equals("MENU") || rawCommand.startsWith("START")) {
+            return "👋 *AutoMeds Caregiver Assistant*\n\n"
+                    + "Linked Patient: *" + patientName + "*\n"
+                    + "Your Access: *" + delegation.getPermissions() + "*\n\n"
+                    + "Reply with any command below:\n"
+                    + "• *STATUS*   → View pending orders & subscription\n"
+                    + "• *CONFIRM*  → Approve & pay for pending refill\n"
+                    + "• *SKIP*     → Skip this refill cycle\n"
+                    + "• *SNOOZE*   → Delay refill by 7 days (or SNOOZE 14)\n"
+                    + "• *HELP*     → Show this menu";
         } else {
-            return "❓ Unknown command '" + rawCommand + "'.\n\n"
-                    + "Available commands:\n"
-                    + "  CONFIRM  → Pay for pending refill\n"
-                    + "  SKIP     → Skip this month's refill\n"
-                    + "  SNOOZE   → Delay refill by 7 days\n"
-                    + "  STATUS   → Check subscription status";
+            return "❓ Unknown command: '" + rawCommand + "'.\n\n"
+                    + "Reply with one of the following:\n"
+                    + "• *STATUS*   → Check patient status\n"
+                    + "• *CONFIRM*  → Approve pending refill\n"
+                    + "• *SKIP*     → Skip refill\n"
+                    + "• *SNOOZE*   → Delay refill by 7 days\n"
+                    + "• *HELP*     → Show help menu";
         }
     }
 
@@ -413,10 +425,10 @@ public class CaregiverService {
                 ? "No pending orders."
                 : pendingOrders.size() + " pending order(s). Send CONFIRM to approve.";
 
-        return "📊 Status for " + patientName + ":\n"
-                + "• Pending orders: " + orderSummary + "\n"
-                + "• Your access level: " + delegation.getPermissions() + "\n"
-                + "• Relationship: " + delegation.getRelationshipLabel();
+        return "📊 *Status for " + patientName + "*:\n"
+                + "• *Pending orders*: " + orderSummary + "\n"
+                + "• *Access level*: " + delegation.getPermissions() + "\n"
+                + "• *Relationship*: " + delegation.getRelationshipLabel();
     }
 
     private int parseSnoozeDays(String command) {
