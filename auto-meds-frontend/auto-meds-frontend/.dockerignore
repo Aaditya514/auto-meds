@@ -1,3 +1,11 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.*
+secrets.*
+
 node_modules
 .angular
 dist

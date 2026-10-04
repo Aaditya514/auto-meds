@@ -20,13 +20,16 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Value("${jwt.secret:REDACTED_JWT_SECRET}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration-ms:86400000}")
     private int jwtExpirationInMs;
 
     private Key getSigningKey() {
+        if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
+            throw new IllegalStateException("JWT secret key is not configured. Please supply JWT_SECRET environment variable.");
+        }
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 

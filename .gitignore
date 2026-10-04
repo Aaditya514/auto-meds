@@ -1,3 +1,20 @@
+# Environment and Secret Files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pkcs12
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.*
+secrets.*
+service-account*.json
+application-local.properties
+application-secret.properties
+
 # Target build artifacts
 **/target/
 **/dist/
