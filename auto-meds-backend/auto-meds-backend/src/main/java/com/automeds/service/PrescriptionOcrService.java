@@ -11,6 +11,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,6 +67,7 @@ public class PrescriptionOcrService {
     private static final Pattern DOSAGE_PATTERN = Pattern.compile("(\\b\\d+(?:\\.\\d+)?\\s*(?:mg|mcg|g|ml|IU)\\b)", Pattern.CASE_INSENSITIVE);
     private static final Pattern DURATION_PATTERN = Pattern.compile("(\\b(?:x|for)?\\s*(\\d+)\\s*(?:days?|weeks?|months?)\\b)", Pattern.CASE_INSENSITIVE);
 
+    @Autowired
     public PrescriptionOcrService(MedicineRepository medicineRepository, ObjectMapper objectMapper) {
         this.medicineRepository = medicineRepository;
         this.objectMapper = objectMapper;
