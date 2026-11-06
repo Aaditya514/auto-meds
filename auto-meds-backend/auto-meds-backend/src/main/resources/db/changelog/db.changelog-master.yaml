@@ -13,4 +13,6 @@ databaseChangeLog:
       file: db/changelog/changes/06-caregiver-access.sql
   - include:
       file: db/changelog/changes/07-batch-tracking.sql
+  - include:
+      file: db/changelog/changes/08-cart-timestamps.sql
 
