@@ -13,6 +13,7 @@ import com.automeds.service.SubscriptionService;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -54,7 +55,13 @@ public class AutoRefillScheduler {
         this(subscriptionRepository, medicineRepository, orderService, subscriptionService, notificationService, null);
     }
 
-    public AutoRefillScheduler(SubscriptionRepository subscriptionRepository, MedicineRepository medicineRepository, OrderService orderService, SubscriptionService subscriptionService, NotificationService notificationService, SmsService smsService) {
+    @Autowired
+    public AutoRefillScheduler(SubscriptionRepository subscriptionRepository,
+                               MedicineRepository medicineRepository,
+                               OrderService orderService,
+                               SubscriptionService subscriptionService,
+                               NotificationService notificationService,
+                               @Autowired(required = false) SmsService smsService) {
         this.subscriptionRepository = subscriptionRepository;
         this.medicineRepository = medicineRepository;
         this.orderService = orderService;
