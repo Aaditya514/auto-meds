@@ -11,4 +11,6 @@ databaseChangeLog:
       file: db/changelog/changes/05-compliance-payments.sql
   - include:
       file: db/changelog/changes/06-caregiver-access.sql
+  - include:
+      file: db/changelog/changes/07-batch-tracking.sql
 

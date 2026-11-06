@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS medicines (
     description TEXT,
     manufacturer VARCHAR(100),
     expiry_date TIMESTAMP,
+    batch_number VARCHAR(50),
     active INTEGER NOT NULL DEFAULT 1
 );
 --rollback DROP TABLE IF EXISTS medicines CASCADE;
