@@ -15,4 +15,6 @@ databaseChangeLog:
       file: db/changelog/changes/07-batch-tracking.sql
   - include:
       file: db/changelog/changes/08-cart-timestamps.sql
+  - include:
+      file: db/changelog/changes/09-seed-initial-data.sql
 

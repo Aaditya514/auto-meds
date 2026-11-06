@@ -16,3 +16,4 @@ ALTER TABLE cart ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_T
 --rollback ALTER TABLE carts DROP COLUMN IF EXISTS updated_at;
 --rollback ALTER TABLE cart DROP COLUMN IF EXISTS created_at;
 --rollback ALTER TABLE cart DROP COLUMN IF EXISTS updated_at;
+
