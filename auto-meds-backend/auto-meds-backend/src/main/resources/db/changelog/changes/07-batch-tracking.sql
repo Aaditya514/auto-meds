@@ -8,3 +8,4 @@
 --changeset automeds:07-medicines-batch-tracking
 ALTER TABLE medicines ADD COLUMN IF NOT EXISTS batch_number VARCHAR(50);
 --rollback ALTER TABLE medicines DROP COLUMN IF EXISTS batch_number;
+
