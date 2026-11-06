@@ -25,5 +25,6 @@ export interface PrescriptionOcrResult {
   prescriptionDate?: string;
   confidenceOverall: number;
   status: 'PROCESSED' | 'PARTIALLY_MATCHED' | 'MANUAL_REVIEW_REQUIRED';
+  ocrEngine?: string;
   candidates: PrescriptionOcrCandidate[];
 }

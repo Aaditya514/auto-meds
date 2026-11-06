@@ -1,0 +1,165 @@
+name: Auto-Meds CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # 1. Backend CI: Compile, Liquibase Migration Check & Unit/Integration Tests
+  # ============================================================================
+  backend-ci:
+    name: Backend Build & Test (Java 17 LTS)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: automeds
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Install Native Tesseract OCR Engine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+
+      - name: Build & Run Test Suite with Liquibase
+        working-directory: auto-meds-backend/auto-meds-backend
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/automeds
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          JWT_SECRET: c2VjdXJlX2p3dF9zZWNyZXRfa2V5X2Zvcl90ZXN0aW5nX2F1dG9tZWRzXzEyMzQ1Njc4OQ==
+          SPRING_LIQUIBASE_ENABLED: "true"
+        run: mvn clean verify
+
+      - name: Upload JaCoCo Code Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-coverage-report
+          path: auto-meds-backend/auto-meds-backend/target/site/jacoco/
+          retention-days: 7
+
+  # ============================================================================
+  # 2. Frontend CI: Lint & Angular 16 Production Bundle Build
+  # ============================================================================
+  frontend-ci:
+    name: Frontend Build & Bundle (Angular 16)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: auto-meds-frontend/auto-meds-frontend/package-lock.json
+
+      - name: Install NPM Dependencies
+        working-directory: auto-meds-frontend/auto-meds-frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Angular Production Distribution
+        working-directory: auto-meds-frontend/auto-meds-frontend
+        run: npm run build
+
+  # ============================================================================
+  # 3. Docker Image Verification: Multi-Stage Build Check
+  # ============================================================================
+  docker-check:
+    name: Docker Multi-Stage Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Backend Dockerfile Build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: automeds-backend:ci-test
+
+      - name: Validate Frontend Dockerfile Build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auto-meds-frontend/auto-meds-frontend
+          file: ./auto-meds-frontend/auto-meds-frontend/Dockerfile
+          push: false
+          tags: automeds-frontend:ci-test
+
+  # ============================================================================
+  # 4. CD: Automated Deployment to AWS EC2 Free Tier Server
+  # ============================================================================
+  deploy-aws:
+    name: Continuous Deployment (AWS EC2)
+    needs: [ backend-ci, frontend-ci, docker-check ]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            echo "=========================================================="
+            echo " Starting Deployment on AWS EC2..."
+            echo "=========================================================="
+            
+            # Navigate to workspace
+            cd auto-meds
+            
+            # Pull latest validated code from main branch
+            git pull origin main
+            
+            # Rebuild and start updated containers
+            docker compose up --build -d
+            
+            # Clean up dangling images to preserve 30GB EBS disk storage
+            docker image prune -f
+            
+            # Verify container health status
+            sleep 15
+            docker compose ps
+            echo "Deployment completed successfully!"
+

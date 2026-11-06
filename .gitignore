@@ -36,3 +36,5 @@ Thumbs.db
 **/uploads/prescriptions/*
 !**/uploads/prescriptions/.gitkeep
 *.ps1
+automeds-architecture*
+

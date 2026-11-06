@@ -4,12 +4,14 @@ import com.automeds.dto.PrescriptionOcrCandidateDTO;
 import com.automeds.dto.PrescriptionOcrDTO;
 import com.automeds.entity.Medicine;
 import com.automeds.repository.MedicineRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,11 +22,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -38,8 +45,18 @@ public class PrescriptionOcrService {
 
     private final MedicineRepository medicineRepository;
     private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
     private final boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
     private Path cachedScriptPath;
+
+    @Value("${nvidia.api.key:}")
+    private String nvidiaApiKey;
+
+    @Value("${nvidia.nemotron.model:nvidia/nemotron-parse}")
+    private String nemotronModel;
+
+    @Value("${nvidia.api.url:https://integrate.api.nvidia.com/v1}")
+    private String nvidiaApiUrl;
 
     // Regex patterns for clinical entities
     private static final Pattern DOCTOR_PATTERN = Pattern.compile("(?:(?:Dr|Doctor)\\.?\\s+([A-Za-z\\s\\.]+?)(?:,|\\r?\\n|MBBS|MD|MS|BAMS|$))", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
@@ -52,6 +69,15 @@ public class PrescriptionOcrService {
     public PrescriptionOcrService(MedicineRepository medicineRepository, ObjectMapper objectMapper) {
         this.medicineRepository = medicineRepository;
         this.objectMapper = objectMapper;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    }
+
+    public PrescriptionOcrService(MedicineRepository medicineRepository, ObjectMapper objectMapper,
+                                  String nvidiaApiKey, String nemotronModel, String nvidiaApiUrl) {
+        this(medicineRepository, objectMapper);
+        this.nvidiaApiKey = nvidiaApiKey;
+        this.nemotronModel = nemotronModel;
+        this.nvidiaApiUrl = nvidiaApiUrl;
     }
 
     /**
@@ -62,7 +88,7 @@ public class PrescriptionOcrService {
         PrescriptionOcrDTO result = new PrescriptionOcrDTO();
         result.setFileName(file.getOriginalFilename());
 
-        String extractedText = extractTextFromFile(file);
+        String extractedText = extractTextFromFile(file, result);
         result.setRawExtractedText(extractedText);
 
         // Extract metadata
@@ -96,7 +122,7 @@ public class PrescriptionOcrService {
         PrescriptionOcrDTO result = new PrescriptionOcrDTO();
         result.setFileName(originalFilename != null ? originalFilename : filePath.getFileName().toString());
 
-        String extractedText = extractTextFromPath(filePath, originalFilename);
+        String extractedText = extractTextFromPath(filePath, originalFilename, result);
         result.setRawExtractedText(extractedText);
 
         // Extract metadata
@@ -123,10 +149,11 @@ public class PrescriptionOcrService {
         return result;
     }
 
-    private String extractTextFromPath(Path filePath, String originalFilename) {
+    private String extractTextFromPath(Path filePath, String originalFilename, PrescriptionOcrDTO resultDto) {
         String fileName = originalFilename != null ? originalFilename.toLowerCase() : filePath.getFileName().toString().toLowerCase();
         if (fileName.endsWith(".txt")) {
             try {
+                if (resultDto != null) resultDto.setOcrEngine("Plaintext Digital File");
                 return Files.readString(filePath, StandardCharsets.UTF_8);
             } catch (Exception e) {
                 log.warn("Could not read text file: {}", e.getMessage());
@@ -137,6 +164,7 @@ public class PrescriptionOcrService {
                 PDFTextStripper stripper = new PDFTextStripper();
                 String text = stripper.getText(document);
                 if (text != null && text.trim().length() > 20) {
+                    if (resultDto != null) resultDto.setOcrEngine("PDFBox Digital Text Stripper");
                     return text.trim();
                 }
                 if (document.getNumberOfPages() > 0) {
@@ -145,7 +173,7 @@ public class PrescriptionOcrService {
                     Path tempImg = Files.createTempFile("ocr_pdf_page_", ".png");
                     try {
                         ImageIO.write(bim, "PNG", tempImg.toFile());
-                        return performOcr(tempImg);
+                        return performOcr(tempImg, resultDto);
                     } finally {
                         Files.deleteIfExists(tempImg);
                     }
@@ -157,12 +185,16 @@ public class PrescriptionOcrService {
 
         // Image files
         try {
-            return performOcr(filePath);
+            return performOcr(filePath, resultDto);
         } catch (Exception e) {
             log.error("Failed to perform OCR on image {}: {}", fileName, e.getMessage());
         }
 
         return "";
+    }
+
+    public String extractTextFromPath(Path filePath, String originalFilename) {
+        return extractTextFromPath(filePath, originalFilename, null);
     }
 
     /**
@@ -192,10 +224,11 @@ public class PrescriptionOcrService {
         }
     }
 
-    private String extractTextFromFile(MultipartFile file) {
+    private String extractTextFromFile(MultipartFile file, PrescriptionOcrDTO resultDto) {
         String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
         if (fileName.endsWith(".txt")) {
             try {
+                if (resultDto != null) resultDto.setOcrEngine("Plaintext Digital File");
                 return new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
             } catch (Exception e) {
                 log.warn("Could not read text file: {}", e.getMessage());
@@ -206,6 +239,7 @@ public class PrescriptionOcrService {
                 PDFTextStripper stripper = new PDFTextStripper();
                 String text = stripper.getText(document);
                 if (text != null && text.trim().length() > 20) {
+                    if (resultDto != null) resultDto.setOcrEngine("PDFBox Digital Text Stripper");
                     return text.trim();
                 }
                 // Scanned PDF with no digital text: render first page and perform OCR
@@ -215,7 +249,7 @@ public class PrescriptionOcrService {
                     Path tempImg = Files.createTempFile("ocr_pdf_page_", ".png");
                     try {
                         ImageIO.write(bim, "PNG", tempImg.toFile());
-                        return performOcr(tempImg);
+                        return performOcr(tempImg, resultDto);
                     } finally {
                         Files.deleteIfExists(tempImg);
                     }
@@ -234,7 +268,7 @@ public class PrescriptionOcrService {
             Path tempImg = Files.createTempFile("ocr_rx_scan_", suffix);
             try {
                 Files.write(tempImg, file.getBytes());
-                return performOcr(tempImg);
+                return performOcr(tempImg, resultDto);
             } finally {
                 Files.deleteIfExists(tempImg);
             }
@@ -245,30 +279,218 @@ public class PrescriptionOcrService {
         return "";
     }
 
+    public String extractTextFromFile(MultipartFile file) {
+        return extractTextFromFile(file, null);
+    }
+
     /**
-     * Unified cross-platform OCR dispatcher:
-     * - On Windows local dev: Runs high-speed Native Windows OCR (with Tesseract fallback).
-     * - In Linux / Docker / Cloud environments: Executes native Tesseract OCR engine.
+     * Unified multi-tier clinical OCR dispatcher:
+     * 1. NVIDIA Nemotron-3.5 Parse: High-precision AI vision model extracting text, tables & document layout.
+     * 2. Windows Native OCR: On-device Windows engine (local dev fallback).
+     * 3. Tesseract OCR: Standalone OCR engine for Linux / Docker environments.
      */
-    private String performOcr(Path imagePath) {
+    public String performOcr(Path imagePath) {
+        return performOcr(imagePath, null);
+    }
+
+    public String performOcr(Path imagePath, PrescriptionOcrDTO dto) {
         String result = "";
 
-        // 1. If running on Windows, try Native Windows OCR engine first
-        if (isWindows) {
-            result = performNativeWindowsOcr(imagePath);
+        // 1. Primary AI Engine: NVIDIA Nemotron-3.5 Parse
+        if (isNvidiaConfigured()) {
+            result = performNemotronParse(imagePath);
             if (result != null && !result.isBlank()) {
+                log.info("NVIDIA Nemotron-3.5 Parse successfully extracted {} characters from scan {}",
+                        result.length(), imagePath.getFileName());
+                if (dto != null) {
+                    dto.setOcrEngine("NVIDIA Nemotron-3.5 Parse");
+                }
                 return result;
             }
         }
 
-        // 2. Try Tesseract OCR (standard on Linux Docker / cross-platform)
+        // 2. Windows Native OCR local fallback
+        if (isWindows) {
+            result = performNativeWindowsOcr(imagePath);
+            if (result != null && !result.isBlank()) {
+                log.info("Windows Native OCR extracted {} characters from {}", result.length(), imagePath.getFileName());
+                if (dto != null) {
+                    dto.setOcrEngine("Windows Native OCR (Local Fallback)");
+                }
+                return result;
+            }
+        }
+
+        // 3. Tesseract OCR engine fallback (Linux Docker / cross-platform)
         result = performTesseractOcr(imagePath);
         if (result != null && !result.isBlank()) {
+            log.info("Tesseract OCR extracted {} characters from {}", result.length(), imagePath.getFileName());
+            if (dto != null) {
+                dto.setOcrEngine("Tesseract OCR (Local Fallback)");
+            }
             return result;
         }
 
         log.info("No optical text could be recognized from scan {}", imagePath.getFileName());
+        if (dto != null) {
+            dto.setOcrEngine("Local OCR (No text detected)");
+        }
         return "";
+    }
+
+    /**
+     * Executes optical extraction, table detection, and layout analysis with NVIDIA Nemotron Parse.
+     */
+    private String performNemotronParse(Path imagePath) {
+        if (!isNvidiaConfigured()) {
+            return "";
+        }
+        try {
+            byte[] imageBytes = Files.readAllBytes(imagePath);
+            if (imageBytes.length == 0) {
+                return "";
+            }
+
+            String fileName = imagePath.getFileName().toString().toLowerCase();
+            String mimeType = "image/png";
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+                mimeType = "image/jpeg";
+            } else if (fileName.endsWith(".webp")) {
+                mimeType = "image/webp";
+            }
+
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+            String dataUrl = "data:" + mimeType + ";base64," + base64Image;
+
+            Map<String, Object> imageUrlMap = Map.of("url", dataUrl);
+            Map<String, Object> imageContent = Map.of(
+                    "type", "image_url",
+                    "image_url", imageUrlMap
+            );
+
+            Map<String, Object> message = Map.of(
+                    "role", "user",
+                    "content", List.of(imageContent)
+            );
+
+            Map<String, Object> payload = Map.of(
+                    "model", getNemotronModel(),
+                    "messages", List.of(message),
+                    "temperature", 0.0
+            );
+
+            String requestJson = objectMapper.writeValueAsString(payload);
+            String endpoint = (nvidiaApiUrl != null && !nvidiaApiUrl.isBlank()) ? nvidiaApiUrl.trim() : "https://integrate.api.nvidia.com/v1";
+            endpoint = endpoint.endsWith("/") ? endpoint + "chat/completions" : endpoint + "/chat/completions";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + nvidiaApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(30))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestJson, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (response.statusCode() == 200) {
+                return parseNemotronResponse(response.body());
+            } else {
+                log.warn("NVIDIA Nemotron Parse API responded with status {}: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute NVIDIA Nemotron Parse on image {}: {}", imagePath, e.getMessage());
+        }
+        return "";
+    }
+
+    private String parseNemotronResponse(String responseJson) {
+        try {
+            JsonNode root = objectMapper.readTree(responseJson);
+            JsonNode choices = root.path("choices");
+            if (choices.isArray() && !choices.isEmpty()) {
+                JsonNode message = choices.get(0).path("message");
+
+                // 1. Inspect tool_calls (primary Nemotron Parse output structure)
+                JsonNode toolCalls = message.path("tool_calls");
+                if (toolCalls.isArray() && !toolCalls.isEmpty()) {
+                    for (JsonNode tc : toolCalls) {
+                        String argsStr = tc.path("function").path("arguments").asText();
+                        if (argsStr != null && !argsStr.isBlank()) {
+                            JsonNode parsedArgs = objectMapper.readTree(argsStr);
+                            StringBuilder sb = new StringBuilder();
+                            collectTextFromNodes(parsedArgs, sb);
+                            if (sb.length() > 0) {
+                                return sb.toString().trim();
+                            }
+                        }
+                    }
+                }
+
+                // 2. Fallback to message content
+                String content = message.path("content").asText(null);
+                if (content != null && !content.isBlank()) {
+                    return content.trim();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to parse Nemotron response JSON: {}", e.getMessage());
+        }
+        return "";
+    }
+
+    private void collectTextFromNodes(JsonNode node, StringBuilder sb) {
+        if (node.isArray()) {
+            for (JsonNode child : node) {
+                collectTextFromNodes(child, sb);
+            }
+        } else if (node.isObject()) {
+            JsonNode textNode = node.path("text");
+            if (!textNode.isMissingNode() && !textNode.isNull() && !textNode.asText().isBlank()) {
+                sb.append(textNode.asText().trim()).append("\n");
+            } else if (node.has("children")) {
+                collectTextFromNodes(node.path("children"), sb);
+            }
+        }
+    }
+
+    public boolean isNvidiaConfigured() {
+        return nvidiaApiKey != null && !nvidiaApiKey.isBlank();
+    }
+
+    public String getNemotronModel() {
+        return (nemotronModel != null && !nemotronModel.isBlank()) ? nemotronModel : "nvidia/nemotron-parse";
+    }
+
+    public String getMaskedApiKey() {
+        if (!isNvidiaConfigured()) {
+            return "Not Configured";
+        }
+        if (nvidiaApiKey.length() <= 10) {
+            return "******";
+        }
+        return nvidiaApiKey.substring(0, 7) + "..." + nvidiaApiKey.substring(nvidiaApiKey.length() - 4);
+    }
+
+    public boolean testNvidiaApiKey(String apiKey) {
+        String key = (apiKey != null && !apiKey.isBlank()) ? apiKey : this.nvidiaApiKey;
+        if (key == null || key.isBlank()) {
+            return false;
+        }
+        try {
+            String baseUrl = (nvidiaApiUrl != null && !nvidiaApiUrl.isBlank()) ? nvidiaApiUrl.trim() : "https://integrate.api.nvidia.com/v1";
+            String endpoint = baseUrl.endsWith("/") ? baseUrl + "models" : baseUrl + "/models";
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + key.trim())
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            return response.statusCode() == 200;
+        } catch (Exception e) {
+            log.warn("Error verifying NVIDIA API key: {}", e.getMessage());
+            return false;
+        }
     }
 
     private String performNativeWindowsOcr(Path imagePath) {
@@ -470,6 +692,12 @@ public class PrescriptionOcrService {
 
     private boolean isHeaderOrFooter(String line) {
         String lower = line.toLowerCase();
+        if (line.matches("^[\\|\\-\\s\\+:]+$")) {
+            return true;
+        }
+        if (lower.contains("medicine name") && (lower.contains("dosage") || lower.contains("frequency"))) {
+            return true;
+        }
         return lower.startsWith("doctor:") || lower.startsWith("date:") || lower.startsWith("clinic:")
                 || lower.startsWith("reg") || lower.startsWith("prescription document") || lower.equals("rx lines:");
     }
@@ -508,7 +736,8 @@ public class PrescriptionOcrService {
 
     private PrescriptionOcrCandidateDTO buildCandidate(String line, Medicine med, double score, List<Medicine> catalog) {
         PrescriptionOcrCandidateDTO candidate = new PrescriptionOcrCandidateDTO();
-        candidate.setDetectedText(line);
+        String cleanLine = line.replaceAll("^\\|\\s*", "").replaceAll("\\s*\\|$", "").replaceAll("\\s*\\|\\s*", " | ");
+        candidate.setDetectedText(cleanLine);
         candidate.setMedicineId(med.getId());
         candidate.setMedicineName(med.getMedicineName());
         candidate.setBrandName(med.getBrandName());

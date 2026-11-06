@@ -12,11 +12,21 @@ public class PrescriptionOcrDTO {
     private String prescriptionDate;
     private Double confidenceOverall;
     private String status; // PROCESSED, PARTIALLY_MATCHED, MANUAL_REVIEW_REQUIRED
+    private String ocrEngine;
     private List<PrescriptionOcrCandidateDTO> candidates = new ArrayList<>();
 
     public PrescriptionOcrDTO() {
         this.status = "PROCESSED";
         this.confidenceOverall = 0.0;
+        this.ocrEngine = "NVIDIA Nemotron-3.5 Parse";
+    }
+
+    public String getOcrEngine() {
+        return ocrEngine;
+    }
+
+    public void setOcrEngine(String ocrEngine) {
+        this.ocrEngine = ocrEngine;
     }
 
     public String getFileName() {

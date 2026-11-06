@@ -104,4 +104,20 @@ public class PrescriptionService {
     public List<Prescription> getPrescriptionsForPatient(Long patientId) {
         return prescriptionRepository.findByPatientIdOrderByUploadDateDesc(patientId);
     }
+
+    public boolean testNvidiaApiKey(String apiKey) {
+        return prescriptionOcrService.testNvidiaApiKey(apiKey);
+    }
+
+    public boolean isNvidiaConfigured() {
+        return prescriptionOcrService.isNvidiaConfigured();
+    }
+
+    public String getNemotronModel() {
+        return prescriptionOcrService.getNemotronModel();
+    }
+
+    public String getMaskedApiKey() {
+        return prescriptionOcrService.getMaskedApiKey();
+    }
 }

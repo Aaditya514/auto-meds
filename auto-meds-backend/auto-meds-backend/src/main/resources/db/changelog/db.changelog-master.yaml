@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/01-init-schema.sql
+  - include:
+      file: db/changelog/changes/02-inventory-soft-locking.sql
+  - include:
+      file: db/changelog/changes/03-sequences.sql
+  - include:
+      file: db/changelog/changes/04-resilience-ocr.sql
+  - include:
+      file: db/changelog/changes/05-compliance-payments.sql
+  - include:
+      file: db/changelog/changes/06-caregiver-access.sql
+

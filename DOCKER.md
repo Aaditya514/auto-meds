@@ -28,7 +28,7 @@
                       │  • Spring Boot 3 on Java 17 LTS        │
                       │  • Native Linux Tesseract OCR Engine   │
                       │  • Non-root system user (`automeds`)   │
-                      │  • Flyway DB Migrations (V1..V5)       │
+                      │  • Liquibase DB Migrations (Formatted SQL) │
                       │  • Spring Actuator Health Probes       │
                       └───────────────────┬────────────────────┘
                                           │
@@ -87,7 +87,7 @@ Once the health probes pass:
 ### C. Database (`automeds-postgres`)
 - **Base Image**: `postgres:16-alpine`.
 - **Features**:
-  - Automatically runs schema validation and Flyway migrations on initial boot.
+  - Automatically runs schema validation and Liquibase migrations on initial boot.
   - Health-checked using `pg_isready -U postgres -d automeds`.
   - Persists data to named volume `automeds-pgdata`.
 

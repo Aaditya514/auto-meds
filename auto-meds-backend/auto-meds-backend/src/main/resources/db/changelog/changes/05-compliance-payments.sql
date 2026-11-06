@@ -1,10 +1,6 @@
--- ============================================================================
--- Auto-Meds Schema Migration: V5__phase5_compliance_and_payments.sql
--- Description: Phase 5 Healthcare Compliance Auditing (HIPAA/CDSCO),
---              Payment Gateway Transaction Tracking, and Patient Allergy Profile.
--- ============================================================================
+--liquibase formatted sql
 
--- 1. Create Immutable Audit Logs Table for Clinical and Regulatory Compliance
+--changeset automeds:05-audit-logs
 CREATE TABLE IF NOT EXISTS audit_logs (
     id BIGSERIAL PRIMARY KEY,
     actor_id BIGINT,
@@ -22,7 +18,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC);
 
--- 2. Add Payment Gateway Transaction Reference and Dispensing Slip tracking to Orders
+--rollback DROP TABLE IF EXISTS audit_logs CASCADE;
+
+--changeset automeds:05-orders-payment-slip
 ALTER TABLE orders 
     ADD COLUMN IF NOT EXISTS transaction_id VARCHAR(100),
     ADD COLUMN IF NOT EXISTS payment_gateway_response TEXT,
@@ -31,11 +29,20 @@ ALTER TABLE orders
 
 CREATE INDEX IF NOT EXISTS idx_orders_transaction_id ON orders(transaction_id);
 
--- 3. Add Allergies and Chronic Conditions profile to Users for Clinical DDI / Allergy Interceptor
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS transaction_id;
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS payment_gateway_response;
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS paid_at;
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS dispensing_slip_code;
+
+--changeset automeds:05-users-allergies-conditions
 ALTER TABLE users 
     ADD COLUMN IF NOT EXISTS allergies VARCHAR(255),
     ADD COLUMN IF NOT EXISTS chronic_conditions VARCHAR(255);
 
--- 4. Seed sample audit log entry acknowledging system initialization of Phase 5 compliance
+--rollback ALTER TABLE users DROP COLUMN IF EXISTS allergies;
+--rollback ALTER TABLE users DROP COLUMN IF EXISTS chronic_conditions;
+
+--changeset automeds:05-seed-audit-init
 INSERT INTO audit_logs (actor_name, actor_role, action, resource_type, details)
 VALUES ('SYSTEM', 'SYSTEM_ADMIN', 'COMPLIANCE_ENGINE_INITIALIZED', 'SYSTEM', 'Auto-Meds Phase 5 Regulatory Compliance Audit Engine Activated');
+

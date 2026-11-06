@@ -30,6 +30,9 @@ public class SecurityConfig {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     private RateLimitingFilter rateLimitingFilter;
 
+    @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:*}")
+    private String allowedOrigins;
+
     public SecurityConfig() {
     }
 
@@ -47,7 +50,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:8080", "http://127.0.0.1:4200"));
+        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+            List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toList();
+            configuration.setAllowedOriginPatterns(origins);
+        } else {
+            configuration.setAllowedOriginPatterns(List.of("*"));
+        }
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
@@ -84,6 +95,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 // Public catalog search and medicine lookup
                 .requestMatchers(HttpMethod.GET, "/api/medicines/**").permitAll()
+                // Public prescription preview scan and OCR engine status probe
+                .requestMatchers(HttpMethod.POST, "/api/prescriptions/scan").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/prescriptions/ocr/status").permitAll()
                 // Public health probes, error controller, and Prometheus metrics scrape endpoint
                 .requestMatchers("/actuator/health", "/actuator/prometheus", "/actuator/info", "/error").permitAll()
                 // Admin & Pharmacist procurement, restock operations, and compliance audit trail

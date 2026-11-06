@@ -1,30 +1,35 @@
--- ============================================================================
--- Auto-Meds Schema Migration: V4__phase4_resilience_and_ocr.sql
--- Description: Phase 4 Persona UX, OCR Data, Order-Prescription Double Check,
---              Symptom Taxonomy, and Chronic Care Resilience (Bridge Supply & Snooze).
--- ============================================================================
+--liquibase formatted sql
 
--- 1. Add prescription reference, bridge supply flag, and dispensing notes to Orders
+--changeset automeds:04-orders-resilience
 ALTER TABLE orders 
     ADD COLUMN IF NOT EXISTS prescription_id BIGINT REFERENCES prescriptions(id),
     ADD COLUMN IF NOT EXISTS is_bridge_supply BOOLEAN NOT NULL DEFAULT FALSE,
     ADD COLUMN IF NOT EXISTS dispensing_notes VARCHAR(500);
 
--- 2. Add OCR extraction storage to Prescriptions
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS prescription_id;
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS is_bridge_supply;
+--rollback ALTER TABLE orders DROP COLUMN IF EXISTS dispensing_notes;
+
+--changeset automeds:04-prescriptions-ocr
 ALTER TABLE prescriptions 
     ADD COLUMN IF NOT EXISTS ocr_data TEXT;
 
--- 3. Add Bridge Supply tracking and Snooze tracking to Subscriptions
+--rollback ALTER TABLE prescriptions DROP COLUMN IF EXISTS ocr_data;
+
+--changeset automeds:04-subscriptions-bridge-snooze
 ALTER TABLE subscriptions 
     ADD COLUMN IF NOT EXISTS is_bridge_supply BOOLEAN NOT NULL DEFAULT FALSE,
     ADD COLUMN IF NOT EXISTS last_snooze_date TIMESTAMP,
     ADD COLUMN IF NOT EXISTS snooze_count INTEGER NOT NULL DEFAULT 0;
 
--- 4. Add Symptoms taxonomy to Medicines for ailment discovery
+--rollback ALTER TABLE subscriptions DROP COLUMN IF EXISTS is_bridge_supply;
+--rollback ALTER TABLE subscriptions DROP COLUMN IF EXISTS last_snooze_date;
+--rollback ALTER TABLE subscriptions DROP COLUMN IF EXISTS snooze_count;
+
+--changeset automeds:04-medicines-symptoms
 ALTER TABLE medicines 
     ADD COLUMN IF NOT EXISTS symptoms VARCHAR(255);
 
--- 5. Seed common symptom keywords into active catalog medicines
 UPDATE medicines SET symptoms = 'Diabetes, Blood Sugar, Type 2 Diabetes, High Glucose' 
     WHERE LOWER(medicine_name) LIKE '%metformin%' OR LOWER(composition) LIKE '%metformin%';
 
@@ -52,8 +57,11 @@ UPDATE medicines SET symptoms = 'Bacterial Infection, Sore Throat, Bronchitis, R
 UPDATE medicines SET symptoms = 'Pain, Swelling, Inflammation, Joint Pain, Muscle Pain' 
     WHERE LOWER(medicine_name) LIKE '%ibuprofen%' OR LOWER(composition) LIKE '%ibuprofen%';
 
--- 6. Link existing orders to their subscription's prescription if available (Data backfill)
+--rollback ALTER TABLE medicines DROP COLUMN IF EXISTS symptoms;
+
+--changeset automeds:04-link-orders-prescription
 UPDATE orders o
 SET prescription_id = s.prescription_id
 FROM subscriptions s
 WHERE o.subscription_id = s.id AND o.prescription_id IS NULL AND s.prescription_id IS NOT NULL;
+

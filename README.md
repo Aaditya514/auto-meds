@@ -107,7 +107,7 @@ Millions of patients suffering from chronic conditions (hypertension, diabetes, 
 │   └──────────────────┘  └──────────────────┘  └────────────────────┘   │
 │                                                                        │
 │   ┌────────────────────────────────────────────────────────────────┐   │
-│   │ Spring Data JPA + Hibernate ORM (Flyway Migrations)            │   │
+│   │ Spring Data JPA + Hibernate ORM (Liquibase Migrations)         │   │
 │   └───────────────────────────────┬────────────────────────────────┘   │
 └───────────────────────────────────┼────────────────────────────────────┘
                                     │ HikariCP Connection Pool
@@ -130,7 +130,7 @@ Millions of patients suffering from chronic conditions (hypertension, diabetes, 
 | :--- | :--- |
 | **Frontend** | Angular 16, TypeScript 5.1, RxJS 7.8, Bootstrap 5, Bootstrap Icons, WCAG AA Accessibility CSS |
 | **Backend** | Spring Boot 3.1.5, Java 17 LTS, Undertow Server, Spring Security 6, Spring Data JPA |
-| **Database** | PostgreSQL 14+, HikariCP Connection Pool, Flyway Database Migrations |
+| **Database** | PostgreSQL 14+, HikariCP Connection Pool, Liquibase Database Migrations |
 | **Caching & Scheduling** | Caffeine Cache, ShedLock (Distributed lock over JDBC) |
 | **Asynchronous & Realtime** | Spring `@Async` ThreadPoolTaskExecutor, Server-Sent Events (`SseEmitter`) |
 | **Integrations** | Twilio SMS API, Tesseract OCR Engine, JavaMailSender SMTP |
@@ -186,7 +186,7 @@ spring.datasource.password=your_password
 cd auto-meds-backend/auto-meds-backend
 mvn clean spring-boot:run
 ```
-> Boots on `http://localhost:8080`. Flyway automatically executes migrations and populates seed data.
+> Boots on `http://localhost:8080`. Liquibase automatically executes changelog migrations and populates seed data.
 
 #### 3. Start Frontend
 ```bash
@@ -310,7 +310,7 @@ Auto-Meds provides first-class support for elderly and low-vision patients:
 | **Prescription OCR** | Asynchronous Thread Pool | OCR text parsing (2–6s) runs in a background thread pool without blocking the HTTP request thread. |
 | **Real-time Notifications** | SSE over WebSocket | Lightweight, unidirectional server-to-client push; seamless integration with standard HTTP/HTTPS proxies. |
 | **SMS Gateway** | Twilio with toggle flag | Fallback mechanism for non-smartphone users; toggleable via environment variables for easy local testing. |
-| **Database Migrations** | Flyway Versioned Migrations | Declarative, reproducible database schema management ensuring identical environments across dev and production. |
+| **Database Migrations** | Liquibase Formatted SQL Changelogs | Declarative, reproducible database schema management with rollback support across environments. |
 
 ---
 

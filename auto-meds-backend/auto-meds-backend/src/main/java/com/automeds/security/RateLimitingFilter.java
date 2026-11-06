@@ -37,11 +37,22 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        if ("POST".equalsIgnoreCase(request.getMethod()) && request.getRequestURI().endsWith("/api/auth/login")) {
-            String clientIp = getClientIP(request);
-            long currentTime = System.currentTimeMillis();
+        String uri = request.getRequestURI();
+        boolean isLogin = "POST".equalsIgnoreCase(request.getMethod()) && uri.endsWith("/api/auth/login");
+        boolean isScan = "POST".equalsIgnoreCase(request.getMethod()) && uri.endsWith("/api/prescriptions/scan");
 
-            ClientRequestInfo info = ipRequestCounts.compute(clientIp, (key, existing) -> {
+        if (isLogin || isScan) {
+            String clientIp = getClientIP(request);
+            String bucketKey = (isLogin ? "login:" : "scan:") + clientIp;
+            long currentTime = System.currentTimeMillis();
+            int maxAllowed = isLogin ? MAX_REQUESTS_PER_MINUTE : 10;
+
+            // Evict stale entries if map exceeds 500 records to prevent memory leak on 1GB RAM instances
+            if (ipRequestCounts.size() > 500) {
+                ipRequestCounts.entrySet().removeIf(entry -> (currentTime - entry.getValue().windowStart) > 120_000);
+            }
+
+            ClientRequestInfo info = ipRequestCounts.compute(bucketKey, (key, existing) -> {
                 if (existing == null || (currentTime - existing.windowStart) > 60000) {
                     return new ClientRequestInfo(currentTime);
                 } else {
@@ -50,14 +61,17 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 }
             });
 
-            if (info.count.get() > MAX_REQUESTS_PER_MINUTE) {
+            if (info.count.get() > maxAllowed) {
                 response.setStatus(429); // 429 Too Many Requests
                 response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                String detailMsg = isLogin
+                        ? "Too many login attempts. Please wait 1 minute before trying again."
+                        : "Too many prescription scan requests. Please wait 1 minute before trying again.";
                 response.getWriter().write("{\"type\":\"https://automeds.com/errors/too-many-requests\"," +
                         "\"title\":\"Too Many Requests\"," +
                         "\"status\":429," +
-                        "\"detail\":\"Too many login attempts. Please wait 1 minute before trying again.\"," +
-                        "\"instance\":\"/api/auth/login\"}");
+                        "\"detail\":\"" + detailMsg + "\"," +
+                        "\"instance\":\"" + uri + "\"}");
                 return;
             }
         }

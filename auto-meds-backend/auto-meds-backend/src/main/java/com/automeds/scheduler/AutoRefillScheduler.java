@@ -50,6 +50,10 @@ public class AutoRefillScheduler {
     @Value("${automeds.refill-buffer-days:5}")
     private int refillBufferDays;
 
+    public AutoRefillScheduler(SubscriptionRepository subscriptionRepository, MedicineRepository medicineRepository, OrderService orderService, SubscriptionService subscriptionService, NotificationService notificationService) {
+        this(subscriptionRepository, medicineRepository, orderService, subscriptionService, notificationService, null);
+    }
+
     public AutoRefillScheduler(SubscriptionRepository subscriptionRepository, MedicineRepository medicineRepository, OrderService orderService, SubscriptionService subscriptionService, NotificationService notificationService, SmsService smsService) {
         this.subscriptionRepository = subscriptionRepository;
         this.medicineRepository = medicineRepository;

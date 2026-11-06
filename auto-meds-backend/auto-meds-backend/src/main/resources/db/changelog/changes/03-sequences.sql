@@ -1,5 +1,6 @@
--- V3: Ensure all entity ID columns have sequences attached for GenerationType.IDENTITY compatibility
+--liquibase formatted sql
 
+--changeset automeds:03-create-sequences
 CREATE SEQUENCE IF NOT EXISTS seq_cart_items START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS seq_carts START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS seq_users START WITH 1 INCREMENT BY 1;
@@ -29,3 +30,14 @@ SELECT setval('seq_order_items', COALESCE((SELECT MAX(id) FROM order_items), 0) 
 SELECT setval('seq_prescriptions', COALESCE((SELECT MAX(id) FROM prescriptions), 0) + 1, false);
 SELECT setval('seq_subscriptions', COALESCE((SELECT MAX(id) FROM subscriptions), 0) + 1, false);
 SELECT setval('seq_notifications', COALESCE((SELECT MAX(id) FROM notifications), 0) + 1, false);
+
+--rollback DROP SEQUENCE IF EXISTS seq_cart_items CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_carts CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_users CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_medicines CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_orders CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_order_items CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_prescriptions CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_subscriptions CASCADE;
+--rollback DROP SEQUENCE IF EXISTS seq_notifications CASCADE;
+

@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/prescriptions")
@@ -35,6 +36,30 @@ public class PrescriptionController {
     public PrescriptionController(PrescriptionService prescriptionService, FileStorageUtil fileStorageUtil) {
         this.prescriptionService = prescriptionService;
         this.fileStorageUtil = fileStorageUtil;
+    }
+
+    // Reports OCR Engine status and configuration
+    @GetMapping("/ocr/status")
+    public ResponseEntity<Map<String, Object>> getOcrEngineStatus() {
+        boolean configured = prescriptionService.isNvidiaConfigured();
+        String activeEngine = configured ? "NVIDIA Nemotron-3.5 Parse" : "Local OCR (Windows Native / Tesseract)";
+        return ResponseEntity.ok(Map.of(
+                "activeEngine", activeEngine,
+                "nvidiaConfigured", configured,
+                "model", prescriptionService.getNemotronModel(),
+                "maskedApiKey", prescriptionService.getMaskedApiKey()
+        ));
+    }
+
+    // Verifies NVIDIA API key against live NIM models catalog
+    @PostMapping("/ocr/verify-key")
+    public ResponseEntity<Map<String, Object>> verifyNvidiaApiKey(@RequestBody(required = false) Map<String, String> payload) {
+        String keyToTest = (payload != null && payload.containsKey("apiKey")) ? payload.get("apiKey") : null;
+        boolean valid = prescriptionService.testNvidiaApiKey(keyToTest);
+        return ResponseEntity.ok(Map.of(
+                "valid", valid,
+                "message", valid ? "NVIDIA Nemotron API Key is valid and authorized." : "NVIDIA API Key verification failed."
+        ));
     }
 
     // Direct OCR Scan endpoint: extracts text, doctor credentials, and candidate medicines

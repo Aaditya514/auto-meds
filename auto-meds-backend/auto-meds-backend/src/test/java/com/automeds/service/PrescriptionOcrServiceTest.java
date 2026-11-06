@@ -118,4 +118,61 @@ class PrescriptionOcrServiceTest {
         assertEquals("MCI-12345", parsed.getDoctorRegNumber());
         assertEquals(0.92, parsed.getConfidenceOverall());
     }
+
+    @Test
+    void testNemotronMarkdownTablePrescriptionParsing() {
+        // Output format produced by NVIDIA Nemotron-3.5 Parse with tables
+        String nemotronTableOutput = "APOLLO CLINIC & HEART INSTITUTE\n" +
+                "Dr. Rajesh Gupta, MD (Cardiology) - Reg No. MCI-99482\n" +
+                "Clinic: Apollo Health Center\n" +
+                "Date: 14/10/2026\n" +
+                "Rx Prescribed Medications:\n" +
+                "| Medicine Name | Dosage | Frequency | Duration |\n" +
+                "|---|---|---|---|\n" +
+                "| Metformin 500mg Tablet | 500mg | 1-0-1 | 30 days |\n" +
+                "| Amlodipine 5mg | 5mg | 1-0-0 | 30 days |\n";
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "nemotron_scan.txt",
+                "text/plain",
+                nemotronTableOutput.getBytes()
+        );
+
+        PrescriptionOcrDTO dto = ocrService.processPrescription(file);
+        assertNotNull(dto);
+        assertEquals("Dr. Rajesh Gupta", dto.getDoctorName());
+        assertEquals("MCI-99482", dto.getDoctorRegNumber());
+        assertEquals(2, dto.getCandidates().size());
+
+        PrescriptionOcrCandidateDTO metforminCand = dto.getCandidates().stream()
+                .filter(c -> c.getMedicineName().contains("Metformin"))
+                .findFirst().orElse(null);
+
+        assertNotNull(metforminCand);
+        assertEquals("Twice Daily", metforminCand.getFrequency());
+        assertEquals(30, metforminCand.getQuantity());
+
+        PrescriptionOcrCandidateDTO amlodipineCand = dto.getCandidates().stream()
+                .filter(c -> c.getMedicineName().contains("Amlodipine"))
+                .findFirst().orElse(null);
+
+        assertNotNull(amlodipineCand);
+        assertEquals("Once Daily", amlodipineCand.getFrequency());
+    }
+
+    @Test
+    void testNvidiaNemotronConfigurationAndMasking() {
+        PrescriptionOcrService configuredService = new PrescriptionOcrService(
+                medicineRepository,
+                objectMapper,
+                "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",
+                "nvidia/nemotron-parse",
+                "https://integrate.api.nvidia.com/v1"
+        );
+
+        assertTrue(configuredService.isNvidiaConfigured());
+        assertEquals("nvidia/nemotron-parse", configuredService.getNemotronModel());
+        assertEquals("nvapi-M...Ixhw", configuredService.getMaskedApiKey());
+    }
 }

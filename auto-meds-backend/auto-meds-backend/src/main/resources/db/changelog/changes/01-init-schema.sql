@@ -1,9 +1,6 @@
--- ============================================================================
--- Auto-Meds Baseline Schema: V1__init_schema.sql
--- Description: Core enterprise schema initialization with constraints and relations.
--- ============================================================================
+--liquibase formatted sql
 
--- 1. Users Table
+--changeset automeds:01-init-users
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -19,8 +16,9 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+--rollback DROP TABLE IF EXISTS users CASCADE;
 
--- 2. Medicines Catalog
+--changeset automeds:01-init-medicines
 CREATE TABLE IF NOT EXISTS medicines (
     id BIGSERIAL PRIMARY KEY,
     medicine_name VARCHAR(150) NOT NULL,
@@ -39,8 +37,9 @@ CREATE TABLE IF NOT EXISTS medicines (
     expiry_date TIMESTAMP,
     active INTEGER NOT NULL DEFAULT 1
 );
+--rollback DROP TABLE IF EXISTS medicines CASCADE;
 
--- 3. Prescriptions Table
+--changeset automeds:01-init-prescriptions
 CREATE TABLE IF NOT EXISTS prescriptions (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -55,8 +54,9 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     verified_by_id BIGINT REFERENCES users(id),
     verification_date TIMESTAMP
 );
+--rollback DROP TABLE IF EXISTS prescriptions CASCADE;
 
--- 4. Subscriptions Table
+--changeset automeds:01-init-subscriptions
 CREATE TABLE IF NOT EXISTS subscriptions (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -74,8 +74,9 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+--rollback DROP TABLE IF EXISTS subscriptions CASCADE;
 
--- 5. Orders Table
+--changeset automeds:01-init-orders
 CREATE TABLE IF NOT EXISTS orders (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES users(id),
@@ -89,8 +90,9 @@ CREATE TABLE IF NOT EXISTS orders (
     order_type VARCHAR(30) NOT NULL DEFAULT 'ONE_TIME',
     expected_delivery_date TIMESTAMP
 );
+--rollback DROP TABLE IF EXISTS orders CASCADE;
 
--- 6. Order Items Table
+--changeset automeds:01-init-order-items
 CREATE TABLE IF NOT EXISTS order_items (
     id BIGSERIAL PRIMARY KEY,
     order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
@@ -99,24 +101,32 @@ CREATE TABLE IF NOT EXISTS order_items (
     price NUMERIC(10, 2) NOT NULL,
     subtotal NUMERIC(10, 2) NOT NULL
 );
+--rollback DROP TABLE IF EXISTS order_items CASCADE;
 
--- 7. Cart Table
+--changeset automeds:01-init-carts
+CREATE TABLE IF NOT EXISTS carts (
+    id BIGSERIAL PRIMARY KEY,
+    patient_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS cart (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
 );
+--rollback DROP TABLE IF EXISTS carts CASCADE;
+--rollback DROP TABLE IF EXISTS cart CASCADE;
 
--- 8. Cart Items Table
+--changeset automeds:01-init-cart-items
 CREATE TABLE IF NOT EXISTS cart_items (
     id BIGSERIAL PRIMARY KEY,
-    cart_id BIGINT NOT NULL REFERENCES cart(id) ON DELETE CASCADE,
+    cart_id BIGINT NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
     medicine_id BIGINT NOT NULL REFERENCES medicines(id),
     quantity INTEGER NOT NULL DEFAULT 1,
     price_at_addition NUMERIC(10, 2) NOT NULL,
     CONSTRAINT unique_cart_medicine UNIQUE (cart_id, medicine_id)
 );
+--rollback DROP TABLE IF EXISTS cart_items CASCADE;
 
--- 9. Notifications Table
+--changeset automeds:01-init-notifications
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -126,8 +136,9 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+--rollback DROP TABLE IF EXISTS notifications CASCADE;
 
--- 10. Refresh Tokens Table (Dual-Token Security Gateway)
+--changeset automeds:01-init-refresh-tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id BIGSERIAL PRIMARY KEY,
     token VARCHAR(255) NOT NULL UNIQUE,
@@ -136,8 +147,9 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+--rollback DROP TABLE IF EXISTS refresh_tokens CASCADE;
 
--- 11. ShedLock Distributed Scheduler Lock Table
+--changeset automeds:01-init-shedlock
 CREATE TABLE IF NOT EXISTS shedlock (
     name VARCHAR(64) NOT NULL,
     lock_until TIMESTAMP NOT NULL,
@@ -145,3 +157,5 @@ CREATE TABLE IF NOT EXISTS shedlock (
     locked_by VARCHAR(255) NOT NULL,
     PRIMARY KEY (name)
 );
+--rollback DROP TABLE IF EXISTS shedlock CASCADE;
+

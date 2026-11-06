@@ -39,6 +39,9 @@ public class CaregiverController {
 
     private final CaregiverService caregiverService;
 
+    @org.springframework.beans.factory.annotation.Value("${automeds.twilio.webhook-token:}")
+    private String webhookToken;
+
     public CaregiverController(CaregiverService caregiverService) {
         this.caregiverService = caregiverService;
     }
@@ -162,7 +165,18 @@ public class CaregiverController {
             consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, "application/x-www-form-urlencoded;charset=UTF-8"},
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, "text/xml;charset=UTF-8"}
     )
-    public ResponseEntity<String> handleTwilioWhatsAppWebhook(@RequestParam Map<String, String> params) {
+    public ResponseEntity<String> handleTwilioWhatsAppWebhook(
+            @RequestParam Map<String, String> params,
+            @RequestHeader(value = "X-Webhook-Token", required = false) String headerToken) {
+
+        if (webhookToken != null && !webhookToken.isBlank()) {
+            String queryToken = params.get("token");
+            if (!webhookToken.equals(queryToken) && !webhookToken.equals(headerToken)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                        .body("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>Unauthorized Webhook Access</Message></Response>");
+            }
+        }
+
         String from = params.get("From");
         if (from == null) from = params.get("from");
         if (from == null) from = params.get("WaId");
