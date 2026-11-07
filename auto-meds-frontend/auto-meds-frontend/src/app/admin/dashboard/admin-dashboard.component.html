@@ -282,42 +282,69 @@
     <section class="pipeline-section">
       <div class="pipeline-card">
         <div class="pipeline-header">
-          <h4 class="pipeline-title">Autonomous Chronic Refill Lifecycle</h4>
+          <div class="d-flex align-items-center gap-2">
+            <h4 class="pipeline-title mb-0">Autonomous Chronic Refill Lifecycle</h4>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary small fw-semibold" style="font-size: 0.72rem;">Live 6-Phase Engine</span>
+          </div>
           <span class="pipeline-status">Phase 1 through Phase 6 Coordinated</span>
         </div>
         <div class="pipeline-stepper">
+          <!-- Phase 1 -->
           <div class="pipeline-step completed">
-            <div class="step-circle">1</div>
+            <div class="step-circle"><i class="bi bi-check-lg"></i></div>
             <div class="step-text">
-              <span class="step-name">5-Day Soft-Lock</span>
-              <span class="step-detail">Inventory reserved from public pool</span>
+              <span class="step-name">1. 5-Day Soft-Lock</span>
+              <span class="step-detail">Stock reserved from pool</span>
             </div>
           </div>
           <div class="pipeline-connector active"></div>
 
-          <div class="pipeline-step active">
-            <div class="step-circle">2</div>
+          <!-- Phase 2 -->
+          <div class="pipeline-step completed">
+            <div class="step-circle"><i class="bi bi-check-lg"></i></div>
             <div class="step-text">
-              <span class="step-name">Caregiver Cadence</span>
-              <span class="step-detail">WhatsApp / Email alert sent</span>
+              <span class="step-name">2. Caregiver Cadence</span>
+              <span class="step-detail">WhatsApp &amp; SMS alerts</span>
             </div>
           </div>
-          <div class="pipeline-connector"></div>
+          <div class="pipeline-connector active"></div>
 
-          <div class="pipeline-step">
+          <!-- Phase 3 -->
+          <div class="pipeline-step active">
             <div class="step-circle">3</div>
             <div class="step-text">
-              <span class="step-name">Pharmacist Verification</span>
-              <span class="step-detail">Slip code & interaction checked</span>
+              <span class="step-name">3. Clinical Review</span>
+              <span class="step-detail">Four-Eyes &amp; DDI check</span>
             </div>
           </div>
           <div class="pipeline-connector"></div>
 
+          <!-- Phase 4 -->
           <div class="pipeline-step">
             <div class="step-circle">4</div>
             <div class="step-text">
-              <span class="step-name">Dispatch & Fulfillment</span>
-              <span class="step-detail">Bridge supply & final delivery</span>
+              <span class="step-name">4. Batch FEFO Pick</span>
+              <span class="step-detail">Recall &amp; QR slip created</span>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+
+          <!-- Phase 5 -->
+          <div class="pipeline-step">
+            <div class="step-circle">5</div>
+            <div class="step-text">
+              <span class="step-name">5. Co-Pay Settlement</span>
+              <span class="step-detail">Payment &amp; audit logging</span>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+
+          <!-- Phase 6 -->
+          <div class="pipeline-step">
+            <div class="step-circle">6</div>
+            <div class="step-text">
+              <span class="step-name">6. Doorstep Dispatch</span>
+              <span class="step-detail">Bridge supply &amp; verify</span>
             </div>
           </div>
         </div>
