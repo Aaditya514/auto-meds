@@ -1,4 +1,4 @@
-<div class="container-fluid py-4 px-lg-5">
+<div class="container-fluid py-4 px-3 px-md-4">
   <!-- Top Navigation & Header -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3 gap-3">
     <div>
@@ -81,15 +81,15 @@
         <table class="table table-sticky align-middle table-hover mb-0">
           <thead>
             <tr>
-              <th style="width: 60px;">ID</th>
+              <th style="width: 48px;">ID</th>
               <th>Medicine &amp; Brand</th>
-              <th>Composition &amp; Strength</th>
-              <th class="text-end" style="width: 100px;">Price</th>
-              <th class="text-end" style="width: 105px;">Total Stock</th>
-              <th class="text-center" style="width: 125px;">🔒 Soft-Locked</th>
-              <th class="text-center" style="width: 135px;">🟢 Available</th>
-              <th style="width: 120px;">Status</th>
-              <th class="text-end text-nowrap" style="width: 125px;">Action</th>
+              <th style="max-width: 170px;">Composition &amp; Strength</th>
+              <th class="text-end" style="width: 80px;">Price</th>
+              <th class="text-end" style="width: 90px;">Total Stock</th>
+              <th class="text-center" style="width: 105px;">🔒 Soft-Locked</th>
+              <th class="text-center" style="width: 95px;">🟢 Available</th>
+              <th style="width: 95px;">Status</th>
+              <th class="text-end text-nowrap" style="width: 105px;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -100,7 +100,7 @@
                 <span class="badge bg-secondary bg-opacity-10 text-secondary small fw-semibold">{{ med.brandName }}</span>
               </td>
               <td>
-                <div class="cell-truncate text-dark small" [title]="med.composition">{{ med.composition }}</div>
+                <div class="cell-truncate text-dark small" style="max-width: 165px;" [title]="med.composition">{{ med.composition }}</div>
                 <div><span class="badge bg-light text-dark border small mt-1">{{ med.strength }}</span></div>
               </td>
               <td class="text-end cell-currency">₹{{ med.price }}</td>

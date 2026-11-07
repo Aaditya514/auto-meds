@@ -1,7 +1,7 @@
-<div class="container-fluid py-4 px-lg-5">
+<div class="container-fluid py-4 px-3 px-md-4">
   <!-- Header & Toolbar -->
-  <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 pb-3 border-bottom">
-    <div class="flex-grow-1" style="min-width: 0; max-width: 720px;">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+    <div>
       <h3 class="fw-bold mb-1 text-dark">
         <i class="bi bi-receipt text-primary me-2"></i>Pharmacist Orders Desk & Fulfillment
       </h3>
@@ -11,13 +11,13 @@
     </div>
 
     <!-- Search & Quick Metrics -->
-    <div class="d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
-      <div class="input-group input-group-sm" style="width: 260px; max-width: 100%;">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div class="input-group input-group-sm" style="width: 240px; max-width: 100%;">
         <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
         <input 
           type="text" 
           class="form-control border-start-0 ps-0" 
-          placeholder="Search by order ID, patient, type..." 
+          placeholder="Search orders..." 
           [(ngModel)]="searchQuery">
         <button *ngIf="searchQuery" (click)="searchQuery = ''" class="btn btn-outline-secondary" type="button">
           <i class="bi bi-x"></i>
@@ -94,13 +94,13 @@
       <table class="table table-sticky align-middle table-hover mb-0">
         <thead>
           <tr>
-            <th style="width: 85px;">Order ID</th>
+            <th style="width: 75px;">Order ID</th>
             <th>Patient Details</th>
-            <th class="text-end" style="width: 115px;">Total Amount</th>
+            <th class="text-end" style="width: 100px;">Total</th>
             <th>Prescription Verification</th>
-            <th style="width: 145px;">Date &amp; Payment</th>
-            <th style="width: 145px;">Current Status</th>
-            <th class="text-end text-nowrap" style="width: 180px;"><i class="bi bi-arrow-repeat me-1"></i> Update Status</th>
+            <th style="width: 130px;">Date &amp; Payment</th>
+            <th style="width: 130px;">Current Status</th>
+            <th class="text-end text-nowrap" style="width: 165px;"><i class="bi bi-arrow-repeat me-1"></i> Update Status</th>
           </tr>
         </thead>
         <tbody>
