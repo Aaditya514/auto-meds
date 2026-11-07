@@ -75,6 +75,8 @@ export class MedicinesComponent implements OnInit, OnDestroy {
       med.reservedQuantity = update.reservedQuantity;
       med.availableQuantity = update.availableQuantity;
       med.inStock = update.inStock;
+      // Refresh reference so template bindings re-evaluate immediately
+      this.medicines = [...this.medicines];
     }
 
     if (this.alternativeMedicines && this.alternativeMedicines.length > 0) {
@@ -84,6 +86,7 @@ export class MedicinesComponent implements OnInit, OnDestroy {
         alt.reservedQuantity = update.reservedQuantity;
         alt.availableQuantity = update.availableQuantity;
         alt.inStock = update.inStock;
+        this.alternativeMedicines = [...this.alternativeMedicines];
       }
     }
   }
@@ -167,6 +170,11 @@ export class MedicinesComponent implements OnInit, OnDestroy {
   }
 
   addToCart(medicine: Medicine): void {
+    if (!this.isMedicineInStock(medicine)) {
+      this.errorMessage = `${medicine.medicineName} is currently out of stock.`;
+      setTimeout(() => this.errorMessage = '', 4000);
+      return;
+    }
     this.message = '';
     this.errorMessage = '';
     this.cartService.addItem(medicine.id, 1).subscribe({
