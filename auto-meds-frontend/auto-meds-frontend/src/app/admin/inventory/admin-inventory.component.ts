@@ -29,7 +29,7 @@ export class AdminInventoryComponent implements OnInit, OnDestroy {
 
   // 1-Click Restock Modal State
   isRestockModalOpen = false;
-  selectedMedForRestock: { id: number; name: string; brand: string; suggestedPack?: number } | null = null;
+  selectedMedForRestock: { id: number; name: string; brand: string; currentStock?: number; suggestedPack?: number } | null = null;
   restockQuantity: number = 50;
   restockBatchNumber: string = '';
   restockExpiryDate: string = '';
@@ -156,7 +156,7 @@ export class AdminInventoryComponent implements OnInit, OnDestroy {
     });
   }
 
-  openRestockModal(med: { id?: number; medicineId?: number; medicineName?: string; name?: string; brandName?: string; brand?: string; suggestedReorderPackSize?: number }): void {
+  openRestockModal(med: { id?: number; medicineId?: number; medicineName?: string; name?: string; brandName?: string; brand?: string; stockQuantity?: number; suggestedReorderPackSize?: number }): void {
     const defaultBatch = 'BATCH-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900);
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 2);
@@ -167,6 +167,7 @@ export class AdminInventoryComponent implements OnInit, OnDestroy {
       id: targetId,
       name: med.medicineName || med.name || 'Medicine',
       brand: med.brandName || med.brand || '',
+      currentStock: med.stockQuantity,
       suggestedPack: med.suggestedReorderPackSize || 50
     };
     this.restockQuantity = this.selectedMedForRestock.suggestedPack || 50;
@@ -174,6 +175,24 @@ export class AdminInventoryComponent implements OnInit, OnDestroy {
     this.restockExpiryDate = defaultExpiry;
     this.restockFeedback = '';
     this.isRestockModalOpen = true;
+  }
+
+  setRestockQuantity(qty: number): void {
+    this.restockQuantity = Math.max(1, qty);
+  }
+
+  adjustRestockQuantity(delta: number): void {
+    this.restockQuantity = Math.max(1, (this.restockQuantity || 0) + delta);
+  }
+
+  regenerateBatchNumber(): void {
+    this.restockBatchNumber = 'BATCH-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900);
+  }
+
+  setExpiryPreset(years: number): void {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + years);
+    this.restockExpiryDate = d.toISOString().split('T')[0];
   }
 
   closeRestockModal(): void {

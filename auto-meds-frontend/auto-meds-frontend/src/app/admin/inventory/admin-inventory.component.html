@@ -43,15 +43,31 @@
   <!-- ================= TAB 1: MAIN WAREHOUSE INVENTORY ================= -->
   <div *ngIf="activeTab === 'inventory'">
     <!-- Filter Buttons Toolbar -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <span class="text-muted small fw-semibold">
         Showing {{ filteredMedicines.length }} of {{ medicines.length }} items
       </span>
-      <div class="btn-group">
-        <button (click)="applyFilter('ALL')" class="btn btn-sm btn-outline-secondary" [class.active]="currentFilter === 'ALL'">All</button>
-        <button (click)="applyFilter('IN_STOCK')" class="btn btn-sm btn-outline-success" [class.active]="currentFilter === 'IN_STOCK'">In Stock</button>
-        <button (click)="applyFilter('LOW_STOCK')" class="btn btn-sm btn-outline-warning text-dark" [class.active]="currentFilter === 'LOW_STOCK'">Low Stock (&le; Threshold)</button>
-        <button (click)="applyFilter('OUT_OF_STOCK')" class="btn btn-sm btn-outline-danger" [class.active]="currentFilter === 'OUT_OF_STOCK'">Out of Stock</button>
+      <div class="btn-group shadow-xs">
+        <button (click)="applyFilter('ALL')" 
+                class="btn btn-sm fw-semibold px-3" 
+                [ngClass]="currentFilter === 'ALL' ? 'btn-primary text-white active shadow-sm' : 'btn-outline-primary'">
+          <i class="bi bi-collection-fill me-1"></i> All
+        </button>
+        <button (click)="applyFilter('IN_STOCK')" 
+                class="btn btn-sm fw-semibold px-3" 
+                [ngClass]="currentFilter === 'IN_STOCK' ? 'btn-success text-white active shadow-sm' : 'btn-outline-success'">
+          <i class="bi bi-check-circle-fill me-1"></i> In Stock
+        </button>
+        <button (click)="applyFilter('LOW_STOCK')" 
+                class="btn btn-sm fw-semibold px-3" 
+                [ngClass]="currentFilter === 'LOW_STOCK' ? 'btn-warning text-dark active shadow-sm fw-bold' : 'btn-outline-warning text-dark'">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i> Low Stock (&le; Threshold)
+        </button>
+        <button (click)="applyFilter('OUT_OF_STOCK')" 
+                class="btn btn-sm fw-semibold px-3" 
+                [ngClass]="currentFilter === 'OUT_OF_STOCK' ? 'btn-danger text-white active shadow-sm' : 'btn-outline-danger'">
+          <i class="bi bi-x-circle-fill me-1"></i> Out of Stock
+        </button>
       </div>
     </div>
 
@@ -65,15 +81,15 @@
         <table class="table table-sticky align-middle table-hover mb-0">
           <thead>
             <tr>
-              <th style="width: 70px;">ID</th>
+              <th style="width: 60px;">ID</th>
               <th>Medicine &amp; Brand</th>
               <th>Composition &amp; Strength</th>
               <th class="text-end" style="width: 100px;">Price</th>
-              <th class="text-end" style="width: 110px;">Total Stock</th>
-              <th class="text-center" style="width: 130px;">🔒 Soft-Locked</th>
-              <th class="text-center" style="width: 150px;">🟢 Available</th>
+              <th class="text-end" style="width: 105px;">Total Stock</th>
+              <th class="text-center" style="width: 125px;">🔒 Soft-Locked</th>
+              <th class="text-center" style="width: 135px;">🟢 Available</th>
               <th style="width: 120px;">Status</th>
-              <th class="text-end" style="width: 190px;">Actions</th>
+              <th class="text-end text-nowrap" style="width: 125px;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -94,11 +110,19 @@
                 {{ med.stockQuantity }}
               </td>
 
-              <!-- 5-Day Soft-Locked Subscriptions -->
+              <!-- 5-Day Soft-Locked Subscriptions with Lock Button Beneath -->
               <td class="text-center">
-                <span class="badge rounded-pill px-2 py-1 tabular-nums" [ngClass]="(med.reservedQuantity || 0) > 0 ? 'bg-primary text-white' : 'bg-light text-muted border'">
-                  <i class="bi bi-lock-fill me-1"></i>{{ med.reservedQuantity || 0 }}
-                </span>
+                <div class="d-flex flex-column align-items-center">
+                  <span class="badge rounded-pill px-2 py-1 tabular-nums" [ngClass]="(med.reservedQuantity || 0) > 0 ? 'bg-primary text-white' : 'bg-light text-muted border'">
+                    <i class="bi bi-lock-fill me-1"></i>{{ med.reservedQuantity || 0 }}
+                  </span>
+                  <button (click)="openSoftLockModal(med)" 
+                          class="btn btn-xs btn-outline-warning text-dark fw-semibold py-0 px-2 rounded-pill mt-1" 
+                          style="font-size: 11px; line-height: 1.5;"
+                          title="Manually adjust or set soft-lock reserves">
+                    <i class="bi bi-lock-fill me-1"></i>Lock
+                  </button>
+                </div>
               </td>
 
               <!-- Available to Sell -->
@@ -123,22 +147,11 @@
                 </span>
               </td>
 
-              <!-- Actions -->
-              <td class="cell-actions">
-                <div class="btn-group btn-group-sm">
-                  <button (click)="openRestockModal(med)" class="btn btn-sm btn-outline-primary" title="Replenish batch via FEFO restock">
-                    <i class="bi bi-plus-circle me-1"></i> Restock
-                  </button>
-                  <button (click)="openSoftLockModal(med)" class="btn btn-sm btn-outline-warning text-dark fw-semibold" title="Manually adjust or add soft lock reserves">
-                    <i class="bi bi-lock-fill me-1"></i> Lock
-                  </button>
-                  <button (click)="updateStock(med, -1)" class="btn btn-sm btn-outline-secondary" [disabled]="med.stockQuantity <= 0" title="Decrement 1 unit">
-                    -1
-                  </button>
-                  <button (click)="updateStock(med, 1)" class="btn btn-sm btn-outline-secondary" title="Increment 1 unit">
-                    +1
-                  </button>
-                </div>
+              <!-- Action: Single Restock Button -->
+              <td class="text-end text-nowrap">
+                <button (click)="openRestockModal(med)" class="btn btn-sm btn-outline-primary fw-semibold px-3 text-nowrap" title="Replenish batch via FEFO restock">
+                  <i class="bi bi-plus-circle me-1"></i> Restock
+                </button>
               </td>
             </tr>
           </tbody>
@@ -303,32 +316,79 @@
         </div>
 
         <div class="modal-body p-4">
-          <div *ngIf="selectedMedForRestock" class="mb-3 p-3 bg-light rounded border">
-            <div class="text-muted small">Target Medicine:</div>
-            <h6 class="fw-bold text-dark mb-0">{{ selectedMedForRestock.name }}</h6>
-            <small *ngIf="selectedMedForRestock.brand" class="text-secondary">{{ selectedMedForRestock.brand }}</small>
+          <div *ngIf="selectedMedForRestock" class="mb-3 p-3 bg-light rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="text-muted small">Target Formulation:</div>
+                <h6 class="fw-bold text-dark mb-0">{{ selectedMedForRestock.name }}</h6>
+                <small *ngIf="selectedMedForRestock.brand" class="text-secondary">{{ selectedMedForRestock.brand }}</small>
+              </div>
+              <span class="badge bg-primary bg-opacity-10 text-primary">ID #{{ selectedMedForRestock.id }}</span>
+            </div>
+
+            <!-- Projected Stock Visualizer -->
+            <div class="row g-2 mt-2 pt-2 border-top text-center small" *ngIf="selectedMedForRestock.currentStock !== undefined">
+              <div class="col-6">
+                <span class="text-muted d-block" style="font-size: 11px;">Current Warehouse Stock</span>
+                <strong class="fs-6 text-dark">{{ selectedMedForRestock.currentStock }} units</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block" style="font-size: 11px;">Projected New Stock</span>
+                <strong class="fs-6 text-success">+{{ restockQuantity }} = {{ (selectedMedForRestock.currentStock || 0) + (restockQuantity || 0) }} units</strong>
+              </div>
+            </div>
           </div>
 
           <div *ngIf="restockFeedback" class="alert alert-danger small mb-3">
             <i class="bi bi-exclamation-triangle me-1"></i>{{ restockFeedback }}
           </div>
 
-          <!-- Quantity Input -->
+          <!-- Quantity Input with Quick Options & Stepper -->
           <div class="mb-3">
-            <label class="form-label fw-semibold small">Restock Quantity (Units):</label>
-            <input type="number" class="form-control" [(ngModel)]="restockQuantity" min="1" placeholder="e.g. 50">
-            <small class="text-muted">Suggested standard pack size: {{ selectedMedForRestock?.suggestedPack || 50 }} units.</small>
+            <label class="form-label fw-semibold small mb-1">Restock Quantity (Units):</label>
+            
+            <!-- Quick Option Preset Pills -->
+            <div class="d-flex align-items-center gap-1 mb-2 flex-wrap">
+              <span class="text-muted small me-1" style="font-size: 11px;">Quick Packs:</span>
+              <button type="button" (click)="setRestockQuantity(10)" class="btn btn-xs rounded-pill" [ngClass]="restockQuantity === 10 ? 'btn-primary text-white' : 'btn-outline-secondary'" style="font-size: 11px; padding: 1px 8px;">+10</button>
+              <button type="button" (click)="setRestockQuantity(25)" class="btn btn-xs rounded-pill" [ngClass]="restockQuantity === 25 ? 'btn-primary text-white' : 'btn-outline-secondary'" style="font-size: 11px; padding: 1px 8px;">+25</button>
+              <button type="button" (click)="setRestockQuantity(50)" class="btn btn-xs rounded-pill" [ngClass]="restockQuantity === 50 ? 'btn-primary text-white' : 'btn-outline-secondary'" style="font-size: 11px; padding: 1px 8px;">+50</button>
+              <button type="button" (click)="setRestockQuantity(100)" class="btn btn-xs rounded-pill" [ngClass]="restockQuantity === 100 ? 'btn-primary text-white' : 'btn-outline-secondary'" style="font-size: 11px; padding: 1px 8px;">+100</button>
+              <button type="button" (click)="setRestockQuantity(250)" class="btn btn-xs rounded-pill" [ngClass]="restockQuantity === 250 ? 'btn-primary text-white' : 'btn-outline-secondary'" style="font-size: 11px; padding: 1px 8px;">+250</button>
+            </div>
+
+            <!-- Stepper Controls -->
+            <div class="input-group">
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustRestockQuantity(-10)" [disabled]="restockQuantity <= 10">-10</button>
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustRestockQuantity(-1)" [disabled]="restockQuantity <= 1">-1</button>
+              <input type="number" class="form-control text-center fw-bold fs-5" [(ngModel)]="restockQuantity" min="1" placeholder="e.g. 50">
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustRestockQuantity(1)">+1</button>
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustRestockQuantity(10)">+10</button>
+            </div>
+            <small class="text-muted d-block mt-1">Suggested pack size: {{ selectedMedForRestock?.suggestedPack || 50 }} units.</small>
           </div>
 
-          <!-- Batch Number Input -->
+          <!-- Batch Number Input with Auto-generate option -->
           <div class="mb-3">
-            <label class="form-label fw-semibold small">Manufacturer Batch Number:</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label fw-semibold small mb-0">Manufacturer Batch Number:</label>
+              <button type="button" (click)="regenerateBatchNumber()" class="btn btn-link btn-xs p-0 text-decoration-none small text-primary" style="font-size: 11px;">
+                <i class="bi bi-arrow-clockwise me-1"></i>New Batch #
+              </button>
+            </div>
             <input type="text" class="form-control" [(ngModel)]="restockBatchNumber" placeholder="e.g. BATCH-2026-A1">
           </div>
 
-          <!-- Expiry Date Input (FEFO) -->
+          <!-- Expiry Date Input (FEFO) with Expiry Presets -->
           <div class="mb-3">
-            <label class="form-label fw-semibold small">Batch Expiry Date (FEFO Compliance):</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label fw-semibold small mb-0">Batch Expiry Date (FEFO Compliance):</label>
+              <div class="d-flex gap-2">
+                <button type="button" (click)="setExpiryPreset(1)" class="btn btn-link btn-xs p-0 text-decoration-none small text-secondary" style="font-size: 11px;">+1 Year</button>
+                <span class="text-muted small">&bull;</span>
+                <button type="button" (click)="setExpiryPreset(2)" class="btn btn-link btn-xs p-0 text-decoration-none small text-secondary" style="font-size: 11px;">+2 Years</button>
+              </div>
+            </div>
             <input type="date" class="form-control" [(ngModel)]="restockExpiryDate">
             <small class="text-muted">Enforces First-Expired, First-Out clinical dispensing rules.</small>
           </div>
