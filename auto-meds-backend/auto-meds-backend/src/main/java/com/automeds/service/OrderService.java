@@ -10,6 +10,7 @@ import com.automeds.exception.ResourceNotFoundException;
 import com.automeds.repository.MedicineRepository;
 import com.automeds.repository.OrderRepository;
 import com.automeds.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,14 +33,29 @@ public class OrderService {
     private final MedicineRepository medicineRepository;
     private final NotificationService notificationService;
     private final EmailService emailService;
+    private MedicineService medicineService;
+    private SseNotificationService sseNotificationService;
 
-    public OrderService(OrderRepository orderRepository, CartService cartService, UserRepository userRepository, MedicineRepository medicineRepository, NotificationService notificationService, EmailService emailService) {
+    public OrderService(OrderRepository orderRepository, CartService cartService, UserRepository userRepository,
+                        MedicineRepository medicineRepository, NotificationService notificationService,
+                        EmailService emailService) {
+        this(orderRepository, cartService, userRepository, medicineRepository, notificationService, emailService, null, null);
+    }
+
+    @Autowired
+    public OrderService(OrderRepository orderRepository, CartService cartService, UserRepository userRepository,
+                        MedicineRepository medicineRepository, NotificationService notificationService,
+                        EmailService emailService,
+                        @Autowired(required = false) MedicineService medicineService,
+                        @Autowired(required = false) SseNotificationService sseNotificationService) {
         this.orderRepository = orderRepository;
         this.cartService = cartService;
         this.userRepository = userRepository;
         this.medicineRepository = medicineRepository;
         this.notificationService = notificationService;
         this.emailService = emailService;
+        this.medicineService = medicineService;
+        this.sseNotificationService = sseNotificationService;
     }
     private static final String STATUS_PENDING = "PENDING";
 
@@ -117,6 +133,28 @@ public class OrderService {
                     "New Order #" + savedOrder.getId() + " received from " + patient.getName(), "INFO");
         }
 
+        // P4: Evict cached medicine catalog after stock deduction
+        if (medicineService != null) {
+            medicineService.evictMedicineCaches();
+        }
+
+        // P4: Real-time SSE push of decremented stock to pharmacist and patient channels
+        if (sseNotificationService != null) {
+            for (OrderItem item : savedOrder.getItems()) {
+                Medicine itemMed = item.getMedicine();
+                if (itemMed != null && itemMed.getId() != null) {
+                    medicineRepository.findById(itemMed.getId()).ifPresent(refreshedMed ->
+                            sseNotificationService.broadcastInventoryUpdate(
+                                    refreshedMed.getId(),
+                                    refreshedMed.getStockQuantity(),
+                                    refreshedMed.getReservedQuantity(),
+                                    refreshedMed.getAvailableQuantity()
+                            )
+                    );
+                }
+            }
+        }
+
         return convertToDTO(savedOrder);
     }
 
@@ -169,6 +207,20 @@ public class OrderService {
         notificationService.createNotification(patient.getId(), "Auto-Refill Order Generated", 
                 "Automatic refill Order #" + savedOrder.getId() + " generated for " + med.getMedicineName() + ". Total: ₹" + totalAmount, "SUCCESS");
         emailService.sendSubscriptionRefillEmail(patient, savedOrder);
+
+        if (medicineService != null) {
+            medicineService.evictMedicineCaches();
+        }
+        if (sseNotificationService != null) {
+            medicineRepository.findById(med.getId()).ifPresent(refreshedMed ->
+                    sseNotificationService.broadcastInventoryUpdate(
+                            refreshedMed.getId(),
+                            refreshedMed.getStockQuantity(),
+                            refreshedMed.getReservedQuantity(),
+                            refreshedMed.getAvailableQuantity()
+                    )
+            );
+        }
 
         return savedOrder;
     }

@@ -97,11 +97,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/medicines/**").permitAll()
                 // Public prescription preview scan and OCR engine status probe
                 .requestMatchers(HttpMethod.POST, "/api/prescriptions/scan").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/prescriptions/ocr/status").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/prescriptions/ocr/status", "/api/notifications/public-stream").permitAll()
                 // Public health probes, error controller, and Prometheus metrics scrape endpoint
                 .requestMatchers("/actuator/health", "/actuator/prometheus", "/actuator/info", "/error").permitAll()
-                // Admin & Pharmacist procurement, restock operations, and compliance audit trail
-                .requestMatchers("/api/admin/procurement/**", "/api/admin/audit-logs/**", "/api/audit-logs/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_PHARMACIST")
+                // Admin & Pharmacist procurement, warehouse inventory, restock operations, and compliance audit trail
+                .requestMatchers("/api/admin/procurement/**", "/api/admin/inventory/**", "/api/admin/audit-logs/**", "/api/audit-logs/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_PHARMACIST")
                 // Admin specific management endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 // Pharmacist and clinical endpoints

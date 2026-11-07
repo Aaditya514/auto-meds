@@ -10,6 +10,7 @@ import com.automeds.repository.MedicineRepository;
 import com.automeds.repository.OrderRepository;
 import com.automeds.repository.SubscriptionRepository;
 import com.automeds.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,8 @@ public class SubscriptionService {
     private final PrescriptionService prescriptionService;
     private final NotificationService notificationService;
     private final OrderRepository orderRepository;
+    private MedicineService medicineService;
+    private SseNotificationService sseNotificationService;
     private static final String ENTITY_SUBSCRIPTION = "Subscription";
     private static final String MSG_UNAUTHORIZED = "Unauthorized to modify this subscription.";
     private static final String MSG_SUB_FOR = "Your subscription for ";
@@ -45,12 +48,42 @@ public class SubscriptionService {
                                PrescriptionService prescriptionService, 
                                NotificationService notificationService,
                                OrderRepository orderRepository) {
+        this(subscriptionRepository, medicineRepository, userRepository, prescriptionService, notificationService, orderRepository, null, null);
+    }
+
+    @Autowired
+    public SubscriptionService(SubscriptionRepository subscriptionRepository, 
+                               MedicineRepository medicineRepository, 
+                               UserRepository userRepository, 
+                               PrescriptionService prescriptionService, 
+                               NotificationService notificationService,
+                               OrderRepository orderRepository,
+                               @Autowired(required = false) MedicineService medicineService,
+                               @Autowired(required = false) SseNotificationService sseNotificationService) {
         this.subscriptionRepository = subscriptionRepository;
         this.medicineRepository = medicineRepository;
         this.userRepository = userRepository;
         this.prescriptionService = prescriptionService;
         this.notificationService = notificationService;
         this.orderRepository = orderRepository;
+        this.medicineService = medicineService;
+        this.sseNotificationService = sseNotificationService;
+    }
+
+    private void notifyStockReleased(Medicine med) {
+        if (medicineService != null) {
+            medicineService.evictMedicineCaches();
+        }
+        if (sseNotificationService != null && med != null && med.getId() != null) {
+            medicineRepository.findById(med.getId()).ifPresent(refreshedMed ->
+                    sseNotificationService.broadcastInventoryUpdate(
+                            refreshedMed.getId(),
+                            refreshedMed.getStockQuantity(),
+                            refreshedMed.getReservedQuantity(),
+                            refreshedMed.getAvailableQuantity()
+                    )
+            );
+        }
     }
 
     // Wraps execution inside a database transaction
@@ -133,6 +166,7 @@ public class SubscriptionService {
         if ("RESERVED".equals(sub.getReservationStatus()) && sub.getMedicine() != null && sub.getQuantity() != null) {
             medicineRepository.releaseReservedStock(sub.getMedicine().getId(), sub.getQuantity());
             sub.setReservationStatus("NONE");
+            notifyStockReleased(sub.getMedicine());
         }
 
         sub.setStatus("CANCELLED");
@@ -162,6 +196,7 @@ public class SubscriptionService {
         if ("RESERVED".equals(sub.getReservationStatus()) && sub.getMedicine() != null && sub.getQuantity() != null) {
             medicineRepository.releaseReservedStock(sub.getMedicine().getId(), sub.getQuantity());
             sub.setReservationStatus("NONE");
+            notifyStockReleased(sub.getMedicine());
         }
 
         sub.setStatus("PAUSED");
@@ -343,6 +378,7 @@ public class SubscriptionService {
             medicineRepository.releaseReservedStock(sub.getMedicine().getId(), sub.getQuantity());
             sub.setReservationStatus("NONE");
             sub.setReservationDate(null);
+            notifyStockReleased(sub.getMedicine());
         }
 
         LocalDateTime baseDate = sub.getNextRefillDate() != null ? sub.getNextRefillDate() : LocalDateTime.now();

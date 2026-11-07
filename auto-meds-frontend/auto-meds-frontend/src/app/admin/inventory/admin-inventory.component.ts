@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MedicineService } from '../../core/services/medicine.service';
 import { AdminService, ProcurementAlert, DeficitSubscription, RestockRequest } from '../../core/services/admin.service';
+import { RealtimeService, InventoryUpdateEvent } from '../../core/services/realtime.service';
 import { Medicine } from '../../core/models/medicine.model';
 
 @Component({
@@ -9,7 +11,7 @@ import { Medicine } from '../../core/models/medicine.model';
   templateUrl: './admin-inventory.component.html',
   styleUrls: ['./admin-inventory.component.css']
 })
-export class AdminInventoryComponent implements OnInit {
+export class AdminInventoryComponent implements OnInit, OnDestroy {
   activeTab: 'inventory' | 'procurement' = 'inventory';
 
   medicines: Medicine[] = [];
@@ -17,6 +19,8 @@ export class AdminInventoryComponent implements OnInit {
   currentFilter: 'ALL' | 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' = 'ALL';
   loading = true;
   message = '';
+
+  private realtimeSub: Subscription | null = null;
 
   // Phase 3 Procurement & Deficit Queue State
   procurementAlerts: ProcurementAlert[] = [];
@@ -32,9 +36,17 @@ export class AdminInventoryComponent implements OnInit {
   restockLoading = false;
   restockFeedback = '';
 
+  // Manual Soft-Lock Modal State
+  isSoftLockModalOpen = false;
+  selectedMedForSoftLock: Medicine | null = null;
+  softLockQuantity: number = 0;
+  softLockLoading = false;
+  softLockFeedback = '';
+
   constructor(
     private medicineService: MedicineService,
     private adminService: AdminService,
+    private realtimeService: RealtimeService,
     private route: ActivatedRoute
   ) {}
 
@@ -47,6 +59,33 @@ export class AdminInventoryComponent implements OnInit {
 
     this.loadInventory();
     this.loadProcurementData();
+
+    // Connect to real-time staff SSE telemetry stream
+    this.realtimeService.connect();
+    this.realtimeSub = this.realtimeService.inventoryUpdates$.subscribe((update: InventoryUpdateEvent) => {
+      this.handleLiveInventoryUpdate(update);
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.realtimeSub) {
+      this.realtimeSub.unsubscribe();
+    }
+  }
+
+  private handleLiveInventoryUpdate(update: InventoryUpdateEvent): void {
+    const med = this.medicines.find(m => m.id === update.medicineId);
+    if (med) {
+      med.stockQuantity = update.stockQuantity;
+      med.reservedQuantity = update.reservedQuantity;
+      med.availableQuantity = update.availableQuantity;
+      med.inStock = update.inStock;
+      this.applyFilter(this.currentFilter);
+    }
+    // Also re-evaluate procurement alerts in background
+    if (this.activeTab === 'procurement') {
+      this.loadProcurementData();
+    }
   }
 
   switchTab(tab: 'inventory' | 'procurement'): void {
@@ -166,6 +205,56 @@ export class AdminInventoryComponent implements OnInit {
       error: (err) => {
         this.restockLoading = false;
         this.restockFeedback = err.error?.detail || 'Failed to complete batch restock.';
+      }
+    });
+  }
+
+  openSoftLockModal(med: Medicine): void {
+    this.selectedMedForSoftLock = med;
+    this.softLockQuantity = med.reservedQuantity || 0;
+    this.softLockFeedback = '';
+    this.isSoftLockModalOpen = true;
+  }
+
+  closeSoftLockModal(): void {
+    this.isSoftLockModalOpen = false;
+    this.selectedMedForSoftLock = null;
+    this.softLockFeedback = '';
+  }
+
+  adjustSoftLockQty(delta: number): void {
+    if (!this.selectedMedForSoftLock) return;
+    const target = (this.softLockQuantity || 0) + delta;
+    if (target >= 0 && target <= this.selectedMedForSoftLock.stockQuantity) {
+      this.softLockQuantity = target;
+    }
+  }
+
+  submitSoftLock(): void {
+    if (!this.selectedMedForSoftLock || this.softLockLoading) return;
+    if (this.softLockQuantity < 0) {
+      this.softLockFeedback = 'Soft-locked quantity cannot be negative.';
+      return;
+    }
+    if (this.softLockQuantity > this.selectedMedForSoftLock.stockQuantity) {
+      this.softLockFeedback = `Cannot reserve ${this.softLockQuantity} units because total warehouse stock is only ${this.selectedMedForSoftLock.stockQuantity}.`;
+      return;
+    }
+
+    this.softLockLoading = true;
+    this.adminService.updateSoftLock(this.selectedMedForSoftLock.id, this.softLockQuantity).subscribe({
+      next: (updated) => {
+        this.softLockLoading = false;
+        this.selectedMedForSoftLock!.reservedQuantity = updated.reservedQuantity;
+        this.selectedMedForSoftLock!.availableQuantity = updated.availableQuantity;
+        this.message = `🔒 Soft-lock updated to ${updated.reservedQuantity} units for ${this.selectedMedForSoftLock!.medicineName}.`;
+        this.closeSoftLockModal();
+        this.applyFilter(this.currentFilter);
+        setTimeout(() => this.message = '', 5000);
+      },
+      error: (err) => {
+        this.softLockLoading = false;
+        this.softLockFeedback = err.error?.detail || err.error?.message || 'Failed to update soft lock.';
       }
     });
   }

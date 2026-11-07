@@ -39,6 +39,14 @@ public class SseController {
     }
 
     /**
+     * Public SSE channel: receives live inventory/stock availability updates for patient catalog.
+     */
+    @GetMapping(value = "/public-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamPublicEvents() {
+        return sseNotificationService.subscribePublic();
+    }
+
+    /**
      * Clinical Staff SSE channel: receives urgent stockout alerts, newly submitted prescriptions
      * awaiting triage, and automated refill execution logs.
      */

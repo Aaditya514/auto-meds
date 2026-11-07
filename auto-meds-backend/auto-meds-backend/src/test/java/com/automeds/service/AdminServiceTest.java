@@ -194,6 +194,27 @@ class AdminServiceTest {
     }
 
     @Test
+    void testUpdateSoftLockSuccessAndValidation() {
+        Medicine m = new Medicine();
+        m.setId(1L);
+        m.setStockQuantity(50);
+        m.setReservedQuantity(10);
+
+        Mockito.when(medicineRepository.findById(1L)).thenReturn(Optional.of(m));
+        Mockito.when(medicineRepository.save(m)).thenReturn(m);
+
+        adminService.updateSoftLock(1L, 25);
+        assertEquals(25, m.getReservedQuantity());
+        assertEquals(25, m.getAvailableQuantity());
+
+        // Negative reserved quantity should throw
+        assertThrows(BadRequestException.class, () -> adminService.updateSoftLock(1L, -1));
+
+        // Reserved exceeding stock (60 > 50) should throw
+        assertThrows(BadRequestException.class, () -> adminService.updateSoftLock(1L, 60));
+    }
+
+    @Test
     void testGetAllOrdersAndUpdateOrderStatus() {
         User u = new User();
         u.setId(1L);

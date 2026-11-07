@@ -129,6 +129,9 @@
                   <button (click)="openRestockModal(med)" class="btn btn-sm btn-outline-primary" title="Replenish batch via FEFO restock">
                     <i class="bi bi-plus-circle me-1"></i> Restock
                   </button>
+                  <button (click)="openSoftLockModal(med)" class="btn btn-sm btn-outline-warning text-dark fw-semibold" title="Manually adjust or add soft lock reserves">
+                    <i class="bi bi-lock-fill me-1"></i> Lock
+                  </button>
                   <button (click)="updateStock(med, -1)" class="btn btn-sm btn-outline-secondary" [disabled]="med.stockQuantity <= 0" title="Decrement 1 unit">
                     -1
                   </button>
@@ -342,6 +345,100 @@
                   [class.btn-submitting]="restockLoading">
             <span *ngIf="restockLoading" class="spinner-border spinner-border-sm me-1"></span>
             {{ restockLoading ? 'Allocating & Restocking...' : 'Confirm & Fulfill Queue' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MANAGE SOFT-LOCK MODAL ================= -->
+  <div *ngIf="isSoftLockModalOpen" class="modal-backdrop fade show"></div>
+  <div *ngIf="isSoftLockModalOpen" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow border-0">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title fw-bold text-white d-flex align-items-center">
+            <i class="bi bi-shield-lock-fill text-warning me-2 fs-5"></i>
+            Manage Inventory Soft Lock
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeSoftLockModal()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <div *ngIf="selectedMedForSoftLock" class="mb-3 p-3 bg-light rounded border">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="text-muted small">Target Formulation:</div>
+                <h6 class="fw-bold text-dark mb-0">{{ selectedMedForSoftLock.medicineName }}</h6>
+                <small class="text-secondary">{{ selectedMedForSoftLock.brandName }} &bull; {{ selectedMedForSoftLock.strength }}</small>
+              </div>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary">ID #{{ selectedMedForSoftLock.id }}</span>
+            </div>
+            
+            <div class="row g-2 mt-2 pt-2 border-top text-center small">
+              <div class="col-4">
+                <span class="text-muted d-block" style="font-size: 11px;">Total Stock</span>
+                <strong class="fs-6 text-dark">{{ selectedMedForSoftLock.stockQuantity }}</strong>
+              </div>
+              <div class="col-4">
+                <span class="text-muted d-block" style="font-size: 11px;">Current Locked</span>
+                <strong class="fs-6 text-warning">{{ selectedMedForSoftLock.reservedQuantity || 0 }}</strong>
+              </div>
+              <div class="col-4">
+                <span class="text-muted d-block" style="font-size: 11px;">Available to Sell</span>
+                <strong class="fs-6 text-success">{{ selectedMedForSoftLock.availableQuantity ?? selectedMedForSoftLock.stockQuantity }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Educational Explanation Banner -->
+          <div class="alert alert-info py-2 px-3 small d-flex align-items-start gap-2 mb-3">
+            <i class="bi bi-info-circle-fill text-info mt-1 fs-6"></i>
+            <div style="font-size: 12px; line-height: 1.4;">
+              <strong>How Soft-Locks Work:</strong> Auto-Meds <em>automatically</em> soft-locks required units 5 days before active patient subscriptions refill. Here you can also <strong>manually add or adjust</strong> reserves (for hospital holds, emergency reserves, or clinical buffers).
+            </div>
+          </div>
+
+          <div *ngIf="softLockFeedback" class="alert alert-danger small mb-3">
+            <i class="bi bi-exclamation-triangle me-1"></i>{{ softLockFeedback }}
+          </div>
+
+          <!-- Soft-Lock Input -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Total Units to Soft-Lock (Reserve):</label>
+            <div class="input-group">
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustSoftLockQty(-5)">-5</button>
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustSoftLockQty(-1)">-1</button>
+              <input type="number" class="form-control text-center fw-bold fs-5" [(ngModel)]="softLockQuantity" [min]="0" [max]="selectedMedForSoftLock?.stockQuantity || 0">
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustSoftLockQty(1)">+1</button>
+              <button class="btn btn-outline-secondary" type="button" (click)="adjustSoftLockQty(5)">+5</button>
+            </div>
+            <div class="d-flex justify-content-between text-muted small mt-1" style="font-size: 11px;">
+              <span>Min: 0</span>
+              <a href="javascript:void(0)" class="text-decoration-none text-danger" (click)="softLockQuantity = 0">Clear All Locks</a>
+              <span>Max physical stock: {{ selectedMedForSoftLock?.stockQuantity || 0 }}</span>
+            </div>
+          </div>
+
+          <!-- Preview of resulting available stock -->
+          <div class="p-2 bg-light rounded text-center small border">
+            Resulting Available to Sell: 
+            <strong class="fs-6" [ngClass]="((selectedMedForSoftLock?.stockQuantity || 0) - softLockQuantity) > 0 ? 'text-success' : 'text-danger'">
+              {{ (selectedMedForSoftLock?.stockQuantity || 0) - softLockQuantity }} units
+            </strong>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" (click)="closeSoftLockModal()" [disabled]="softLockLoading">
+            Cancel
+          </button>
+          <button type="button" 
+                  class="btn btn-warning text-dark fw-bold" 
+                  (click)="submitSoftLock()" 
+                  [disabled]="softLockLoading || softLockQuantity < 0 || (selectedMedForSoftLock && softLockQuantity > selectedMedForSoftLock.stockQuantity)">
+            <span *ngIf="softLockLoading" class="spinner-border spinner-border-sm me-1"></span>
+            {{ softLockLoading ? 'Saving Lock...' : 'Apply Soft Lock' }}
           </button>
         </div>
       </div>

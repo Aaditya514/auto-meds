@@ -6,10 +6,7 @@ import com.automeds.entity.Prescription;
 import com.automeds.entity.Subscription;
 import com.automeds.repository.MedicineRepository;
 import com.automeds.repository.SubscriptionRepository;
-import com.automeds.service.NotificationService;
-import com.automeds.service.OrderService;
-import com.automeds.service.SmsService;
-import com.automeds.service.SubscriptionService;
+import com.automeds.service.*;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +44,12 @@ public class AutoRefillScheduler {
     private final SubscriptionService subscriptionService;
     private final NotificationService notificationService;
     private final SmsService smsService;
+
+    @Autowired(required = false)
+    private MedicineService medicineService;
+
+    @Autowired(required = false)
+    private SseNotificationService sseNotificationService;
 
     @Value("${automeds.refill-buffer-days:5}")
     private int refillBufferDays;
@@ -220,6 +223,20 @@ public class AutoRefillScheduler {
                     "SUCCESS"
             );
             logger.info("Successfully soft-locked {} units of {} for subscription #{}", sub.getQuantity(), medicine.getMedicineName(), sub.getId());
+
+            if (medicineService != null) {
+                medicineService.evictMedicineCaches();
+            }
+            if (sseNotificationService != null) {
+                medicineRepository.findById(medicine.getId()).ifPresent(refreshedMed ->
+                        sseNotificationService.broadcastInventoryUpdate(
+                                refreshedMed.getId(),
+                                refreshedMed.getStockQuantity(),
+                                refreshedMed.getReservedQuantity(),
+                                refreshedMed.getAvailableQuantity()
+                        )
+                );
+            }
         } else {
             sub.setReservationStatus("OUT_OF_STOCK_DEFICIT");
             subscriptionRepository.save(sub);

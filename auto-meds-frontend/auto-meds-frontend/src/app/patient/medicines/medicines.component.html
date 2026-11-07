@@ -70,9 +70,9 @@
               <h5 class="fw-bold text-dark mb-1">{{ med.medicineName }}</h5>
               <span class="badge-brand">{{ med.brandName }}</span>
             </div>
-            <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'">
-              <i [ngClass]="med.stockQuantity > 0 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'" class="me-1"></i>
-              {{ med.stockQuantity > 0 ? 'IN STOCK' : 'OUT OF STOCK' }}
+            <span [ngClass]="isMedicineInStock(med) ? 'badge-in-stock' : 'badge-out-of-stock'">
+              <i [ngClass]="isMedicineInStock(med) ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'" class="me-1"></i>
+              {{ isMedicineInStock(med) ? 'IN STOCK' : 'OUT OF STOCK' }}
             </span>
           </div>
 
@@ -116,21 +116,22 @@
             </button>
           </div>
 
-          <!-- Price & Stock Count -->
+          <!-- Price & Availability (No raw stock count on patient view) -->
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
               <span class="text-muted small">Price: </span>
               <span class="price-tag">₹{{ med.price }}</span>
             </div>
-            <div class="text-muted small">
-              Stock: <strong>{{ med.stockQuantity }}</strong>
+            <div class="small fw-semibold" [ngClass]="isMedicineInStock(med) ? 'text-success' : 'text-danger'">
+              <i [ngClass]="isMedicineInStock(med) ? 'bi bi-check2-circle' : 'bi bi-dash-circle'" class="me-1"></i>
+              {{ isMedicineInStock(med) ? 'Available' : 'Unavailable' }}
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="mt-auto pt-3 border-top d-flex flex-column gap-2">
             <!-- IN STOCK Actions -->
-            <ng-container *ngIf="med.stockQuantity > 0">
+            <ng-container *ngIf="isMedicineInStock(med)">
               <button (click)="addToCart(med)" class="btn btn-outline-primary w-100 fw-semibold">
                 <i class="bi bi-cart-plus me-1"></i> Add to Cart
               </button>
@@ -140,7 +141,7 @@
             </ng-container>
 
             <!-- OUT OF STOCK Actions -->
-            <ng-container *ngIf="med.stockQuantity <= 0">
+            <ng-container *ngIf="!isMedicineInStock(med)">
               <button disabled class="btn btn-secondary w-100 text-muted" title="Item is currently out of stock">
                 <i class="bi bi-cart-x me-1"></i> Add to Cart - Disabled
               </button>
@@ -211,7 +212,7 @@
             <div class="card alternative-match-card h-100">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <h6 class="fw-bold text-dark mb-0">{{ alt.medicineName }}</h6>
-                <span class="badge badge-in-stock">IN STOCK ({{ alt.stockQuantity }})</span>
+                <span class="badge badge-in-stock"><i class="bi bi-check-circle-fill me-1"></i>IN STOCK</span>
               </div>
               <p class="text-secondary small mb-2">Brand: <strong class="text-dark">{{ alt.brandName }}</strong></p>
 

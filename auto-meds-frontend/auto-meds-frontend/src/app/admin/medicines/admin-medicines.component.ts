@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { MedicineService } from '../../core/services/medicine.service';
 import { AdminService } from '../../core/services/admin.service';
+import { RealtimeService, InventoryUpdateEvent } from '../../core/services/realtime.service';
 import { Medicine } from '../../core/models/medicine.model';
 
 @Component({
@@ -19,6 +21,7 @@ export class AdminMedicinesComponent implements OnInit {
   message = '';
   errorMessage = '';
   searchQuery = '';
+  private realtimeSub: Subscription | null = null;
 
   get filteredMedicines(): Medicine[] {
     if (!this.searchQuery || !this.searchQuery.trim()) {
@@ -72,12 +75,29 @@ export class AdminMedicinesComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private medicineService: MedicineService,
-    private adminService: AdminService
+    private adminService: AdminService,
+    private realtimeService: RealtimeService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
     this.loadMedicines();
+    this.realtimeService.connect();
+    this.realtimeSub = this.realtimeService.inventoryUpdates$.subscribe((update: InventoryUpdateEvent) => {
+      const med = this.medicines.find(m => m.id === update.medicineId);
+      if (med) {
+        med.stockQuantity = update.stockQuantity;
+        med.reservedQuantity = update.reservedQuantity;
+        med.availableQuantity = update.availableQuantity;
+        med.inStock = update.inStock;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.realtimeSub) {
+      this.realtimeSub.unsubscribe();
+    }
   }
 
   initForm(): void {

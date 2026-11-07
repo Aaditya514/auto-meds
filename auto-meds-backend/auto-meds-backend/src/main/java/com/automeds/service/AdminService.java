@@ -287,8 +287,49 @@ public class AdminService {
         }
 
         medicine.setStockQuantity(stockQuantity);
+        Medicine saved = medicineRepository.save(medicine);
         medicineService.evictMedicineCaches();
-        return medicineService.convertToDTO(medicineRepository.save(medicine));
+
+        if (sseNotificationService != null) {
+            sseNotificationService.broadcastInventoryUpdate(
+                    saved.getId(),
+                    saved.getStockQuantity(),
+                    saved.getReservedQuantity(),
+                    saved.getAvailableQuantity()
+            );
+        }
+
+        return medicineService.convertToDTO(saved);
+    }
+
+    // Wraps execution inside a database transaction
+    @Transactional
+    public MedicineDTO updateSoftLock(Long medicineId, Integer reservedQuantity) {
+        Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new ResourceNotFoundException(ENTITY_MEDICINE, "id", medicineId));
+
+        if (reservedQuantity == null || reservedQuantity < 0) {
+            throw new BadRequestException("Soft-locked (reserved) quantity cannot be negative.");
+        }
+        if (reservedQuantity > medicine.getStockQuantity()) {
+            throw new BadRequestException("Soft-locked quantity (" + reservedQuantity +
+                    ") cannot exceed total physical stock (" + medicine.getStockQuantity() + ").");
+        }
+
+        medicine.setReservedQuantity(reservedQuantity);
+        Medicine saved = medicineRepository.save(medicine);
+        medicineService.evictMedicineCaches();
+
+        if (sseNotificationService != null) {
+            sseNotificationService.broadcastInventoryUpdate(
+                    saved.getId(),
+                    saved.getStockQuantity(),
+                    saved.getReservedQuantity(),
+                    saved.getAvailableQuantity()
+            );
+        }
+
+        return medicineService.convertToDTO(saved);
     }
 
     // Wraps execution inside a database transaction
@@ -496,8 +537,14 @@ public class AdminService {
 
         Medicine refreshed = medicineRepository.findById(medicine.getId()).orElse(medicine);
 
-        // P4: Broadcast restock event to clinical staff command centers
+        // P4: Broadcast restock event to clinical staff command centers & update live stock
         if (sseNotificationService != null) {
+            sseNotificationService.broadcastInventoryUpdate(
+                    refreshed.getId(),
+                    refreshed.getStockQuantity(),
+                    refreshed.getReservedQuantity(),
+                    refreshed.getAvailableQuantity()
+            );
             sseNotificationService.sendToStaff("INVENTORY_RESTOCKED", java.util.Map.of(
                     "medicineId", medicine.getId(),
                     "medicineName", medicine.getMedicineName(),

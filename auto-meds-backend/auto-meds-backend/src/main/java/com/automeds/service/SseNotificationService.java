@@ -33,6 +33,9 @@ public class SseNotificationService {
     // Clinical staff / pharmacist subscribers for pharmacy triage telemetry
     private final List<SseEmitter> staffEmitters = new CopyOnWriteArrayList<>();
 
+    // Public subscribers (guest visitors, catalog browsers) for real-time stock availability
+    private final List<SseEmitter> publicEmitters = new CopyOnWriteArrayList<>();
+
     /**
      * Subscribe a patient to their private real-time clinical telemetry stream.
      */
@@ -83,6 +86,30 @@ public class SseNotificationService {
     }
 
     /**
+     * Subscribe a public user (or catalog browser) for real-time inventory and catalog updates.
+     */
+    public SseEmitter subscribePublic() {
+        SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT);
+
+        publicEmitters.add(emitter);
+
+        emitter.onCompletion(() -> publicEmitters.remove(emitter));
+        emitter.onTimeout(() -> publicEmitters.remove(emitter));
+        emitter.onError(e -> publicEmitters.remove(emitter));
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("CONNECTED")
+                    .data(Map.of("message", "Auto-Meds public stock stream established")));
+        } catch (IOException e) {
+            publicEmitters.remove(emitter);
+        }
+
+        log.info("Public client subscribed to SSE stock stream. Total active public streams: {}", publicEmitters.size());
+        return emitter;
+    }
+
+    /**
      * Send targeted live push event to a specific patient.
      */
     public void sendToPatient(Long userId, String eventType, Object data) {
@@ -128,11 +155,42 @@ public class SseNotificationService {
     }
 
     /**
-     * Broadcast global operational event to everyone (patients and staff).
+     * Broadcast global operational event to everyone (patients, staff, and public visitors).
      */
     public void broadcast(String eventType, Object data) {
         sendToStaff(eventType, data);
         patientEmitters.keySet().forEach(userId -> sendToPatient(userId, eventType, data));
+        if (!publicEmitters.isEmpty()) {
+            List<SseEmitter> deadPublic = new ArrayList<>();
+            for (SseEmitter emitter : publicEmitters) {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name(eventType)
+                            .data(data));
+                } catch (Exception ex) {
+                    deadPublic.add(emitter);
+                }
+            }
+            publicEmitters.removeAll(deadPublic);
+        }
+    }
+
+    /**
+     * Broadcast real-time inventory stock & soft-lock changes to all channels.
+     */
+    public void broadcastInventoryUpdate(Long medicineId, Integer stockQuantity, Integer reservedQuantity, Integer availableQuantity) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("medicineId", medicineId);
+        payload.put("stockQuantity", stockQuantity != null ? stockQuantity : 0);
+        payload.put("reservedQuantity", reservedQuantity != null ? reservedQuantity : 0);
+        int available = availableQuantity != null ? availableQuantity : Math.max(0, (stockQuantity != null ? stockQuantity : 0) - (reservedQuantity != null ? reservedQuantity : 0));
+        payload.put("availableQuantity", available);
+        payload.put("inStock", available > 0);
+        payload.put("timestamp", java.time.LocalDateTime.now().toString());
+
+        broadcast("INVENTORY_UPDATED", payload);
+        log.info("Broadcasted INVENTORY_UPDATED event: medicineId={}, stock={}, reserved={}, available={}",
+                medicineId, stockQuantity, reservedQuantity, available);
     }
 
     /**
@@ -163,6 +221,17 @@ public class SseNotificationService {
             }
         }
         staffEmitters.removeAll(deadStaff);
+
+        // Ping public channels
+        List<SseEmitter> deadPublic = new ArrayList<>();
+        for (SseEmitter emitter : publicEmitters) {
+            try {
+                emitter.send(SseEmitter.event().name("PING").data("keepalive"));
+            } catch (Exception ex) {
+                deadPublic.add(emitter);
+            }
+        }
+        publicEmitters.removeAll(deadPublic);
     }
 
     private void removePatientEmitter(Long userId, SseEmitter emitter) {

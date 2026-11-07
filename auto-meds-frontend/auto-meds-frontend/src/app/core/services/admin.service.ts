@@ -112,6 +112,10 @@ export class AdminService {
     return this.http.put<Medicine>(`${this.apiUrl}/inventory/${medicineId}/stock`, { stockQuantity });
   }
 
+  updateSoftLock(medicineId: number, reservedQuantity: number): Observable<Medicine> {
+    return this.http.put<Medicine>(`${this.apiUrl}/inventory/${medicineId}/soft-lock`, { reservedQuantity });
+  }
+
   getAllOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.apiUrl}/orders`);
   }

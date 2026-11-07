@@ -95,6 +95,13 @@ public class AdminController {
         return ResponseEntity.ok(adminService.updateStock(medicineId, stockQuantity));
     }
 
+    // Handles PUT requests to manually update or set soft-locked (reserved) stock
+    @PutMapping("/inventory/{medicineId}/soft-lock")
+    public ResponseEntity<MedicineDTO> updateSoftLock(@PathVariable Long medicineId, @RequestBody Map<String, Integer> body) {
+        Integer reservedQuantity = body.get("reservedQuantity");
+        return ResponseEntity.ok(adminService.updateSoftLock(medicineId, reservedQuantity));
+    }
+
     // Handles GET requests at this endpoint
     @GetMapping("/orders")
     public ResponseEntity<List<OrderDTO>> getAllOrders() {

@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MedicineService } from '../../core/services/medicine.service';
 import { CartService } from '../../core/services/cart.service';
+import { RealtimeService, InventoryUpdateEvent } from '../../core/services/realtime.service';
 import { Medicine } from '../../core/models/medicine.model';
 
 @Component({
@@ -9,12 +11,14 @@ import { Medicine } from '../../core/models/medicine.model';
   templateUrl: './medicines.component.html',
   styleUrls: ['./medicines.component.css']
 })
-export class MedicinesComponent implements OnInit {
+export class MedicinesComponent implements OnInit, OnDestroy {
   medicines: Medicine[] = [];
   searchQuery: string = '';
   loading = true;
   message = '';
   errorMessage = '';
+
+  private realtimeSub: Subscription | null = null;
 
   // Alternative Modal State
   selectedOutMedicine: Medicine | null = null;
@@ -36,11 +40,52 @@ export class MedicinesComponent implements OnInit {
   constructor(
     private medicineService: MedicineService,
     private cartService: CartService,
+    private realtimeService: RealtimeService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadMedicines();
+    this.realtimeService.connect();
+    this.realtimeSub = this.realtimeService.inventoryUpdates$.subscribe((update: InventoryUpdateEvent) => {
+      this.handleInventoryUpdate(update);
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.realtimeSub) {
+      this.realtimeSub.unsubscribe();
+    }
+  }
+
+  isMedicineInStock(med: Medicine): boolean {
+    if (med.inStock !== undefined) {
+      return med.inStock;
+    }
+    if (med.availableQuantity !== undefined) {
+      return med.availableQuantity > 0;
+    }
+    return med.stockQuantity > 0;
+  }
+
+  private handleInventoryUpdate(update: InventoryUpdateEvent): void {
+    const med = this.medicines.find(m => m.id === update.medicineId);
+    if (med) {
+      med.stockQuantity = update.stockQuantity;
+      med.reservedQuantity = update.reservedQuantity;
+      med.availableQuantity = update.availableQuantity;
+      med.inStock = update.inStock;
+    }
+
+    if (this.alternativeMedicines && this.alternativeMedicines.length > 0) {
+      const alt = this.alternativeMedicines.find(m => m.id === update.medicineId);
+      if (alt) {
+        alt.stockQuantity = update.stockQuantity;
+        alt.reservedQuantity = update.reservedQuantity;
+        alt.availableQuantity = update.availableQuantity;
+        alt.inStock = update.inStock;
+      }
+    }
   }
 
   loadMedicines(): void {
