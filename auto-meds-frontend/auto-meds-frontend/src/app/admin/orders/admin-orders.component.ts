@@ -113,4 +113,25 @@ export class AdminOrdersComponent implements OnInit {
       }
     });
   }
+
+  getStatusSelectClass(status: string): string {
+    switch (status) {
+      case 'DELIVERED':
+        return 'status-delivered';
+      case 'PENDING':
+        return 'status-pending';
+      case 'APPROVED':
+        return 'status-approved';
+      case 'PACKED':
+        return 'status-packed';
+      case 'DISPATCHED':
+      case 'OUT_FOR_DELIVERY':
+        return 'status-transit';
+      case 'CANCELLED':
+      case 'REJECTED':
+        return 'status-rejected';
+      default:
+        return '';
+    }
+  }
 }

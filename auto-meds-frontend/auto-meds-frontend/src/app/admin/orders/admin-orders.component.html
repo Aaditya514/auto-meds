@@ -1,7 +1,7 @@
 <div class="container-fluid py-4 px-lg-5">
   <!-- Header & Toolbar -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
-    <div>
+  <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 pb-3 border-bottom">
+    <div class="flex-grow-1" style="min-width: 0; max-width: 720px;">
       <h3 class="fw-bold mb-1 text-dark">
         <i class="bi bi-receipt text-primary me-2"></i>Pharmacist Orders Desk & Fulfillment
       </h3>
@@ -11,8 +11,8 @@
     </div>
 
     <!-- Search & Quick Metrics -->
-    <div class="d-flex align-items-center gap-2">
-      <div class="input-group input-group-sm" style="min-width: 260px;">
+    <div class="d-flex align-items-center gap-2 flex-wrap flex-shrink-0">
+      <div class="input-group input-group-sm" style="width: 260px; max-width: 100%;">
         <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
         <input 
           type="text" 
@@ -94,23 +94,25 @@
       <table class="table table-sticky align-middle table-hover mb-0">
         <thead>
           <tr>
-            <th style="width: 80px;">Order ID</th>
-            <th style="width: 140px;">Type</th>
+            <th style="width: 85px;">Order ID</th>
             <th>Patient Details</th>
-            <th class="text-end" style="width: 130px;">Total Amount</th>
+            <th class="text-end" style="width: 115px;">Total Amount</th>
             <th>Prescription Verification</th>
-            <th>Date &amp; Payment</th>
-            <th>Current Status</th>
-            <th class="text-end" style="width: 190px;">Update Status</th>
+            <th style="width: 145px;">Date &amp; Payment</th>
+            <th style="width: 145px;">Current Status</th>
+            <th class="text-end text-nowrap" style="width: 180px;"><i class="bi bi-arrow-repeat me-1"></i> Update Status</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let order of filteredOrders">
-            <td><span class="cell-id">#{{ order.id }}</span></td>
             <td>
-              <span class="badge" [ngClass]="order.orderType === 'SUBSCRIPTION_REFILL' ? 'bg-teal text-success bg-opacity-10 border border-success' : 'bg-primary bg-opacity-10 text-primary border border-primary'">
-                {{ order.orderType }}
-              </span>
+              <span class="cell-id">#{{ order.id }}</span>
+              <div *ngIf="order.orderType === 'SUBSCRIPTION_REFILL'" class="text-success fw-semibold mt-1" style="font-size: 10px;" title="Chronic Prescription Auto-Refill">
+                <i class="bi bi-arrow-repeat"></i> Refill
+              </div>
+              <div *ngIf="order.orderType !== 'SUBSCRIPTION_REFILL'" class="text-muted mt-1" style="font-size: 10px;">
+                One-Time
+              </div>
             </td>
             <td>
               <div class="d-flex align-items-center gap-2">
@@ -166,8 +168,12 @@
                 </button>
               </div>
             </td>
-            <td class="cell-actions">
-              <select [ngModel]="order.orderStatus" (ngModelChange)="updateStatus(order, $event)" class="form-select form-select-sm fw-semibold">
+            <td class="text-end text-nowrap">
+              <select [ngModel]="order.orderStatus" 
+                      (ngModelChange)="updateStatus(order, $event)" 
+                      class="form-select form-select-sm status-select fw-semibold d-inline-block"
+                      [ngClass]="getStatusSelectClass(order.orderStatus)"
+                      title="Update delivery / processing status">
                 <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
               </select>
             </td>
