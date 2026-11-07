@@ -7,6 +7,7 @@
   [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169e1.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
   [![Java](https://img.shields.io/badge/Java-17-ED8B00.svg?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
   [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+  [![AWS](https://img.shields.io/badge/AWS-EC2%20Free%20Tier%20($0/mo)-FF9900.svg?logo=amazon-aws&logoColor=white)](AWS_DEPLOYMENT_GUIDE.md)
   [![JWT](https://img.shields.io/badge/Security-JWT%20Stateless-000000.svg?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
   [![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%20AA-blueviolet.svg)](https://www.w3.org/WAI/standards-guidelines/wcag/)
   [![License](https://img.shields.io/badge/License-MIT-success.svg)](LICENSE)
@@ -17,12 +18,13 @@
 
   [Features](#-key-features) •
   [Architecture](#-system-architecture) •
+  [Refill Lifecycle](#-autonomous-chronic-refill-lifecycle-6-phase-coordinated-engine) •
   [Getting Started](#-getting-started) •
   [Docker](#-docker-deployment) •
+  [AWS Cloud ($0/mo)](#️-aws-free-tier-cloud-deployment-000mo) •
   [API Reference](#-api-endpoints) •
   [Accessibility](#-accessibility-wcag-aa) •
-  [Demo Credentials](#-demo-credentials) •
-  [Roadmap](#-whats-next--roadmap)
+  [Demo Credentials](#-demo-credentials)
 
 </div>
 
@@ -272,6 +274,61 @@ See [DOCKER.md](DOCKER.md) for detailed container architecture and configuration
 | `TWILIO_FROM_NUMBER` | — | Twilio Registered Phone Number |
 | `MAIL_USERNAME` | — | SMTP mail sender address |
 | `MAIL_PASSWORD` | — | SMTP app password |
+
+---
+
+## ☁️ AWS Free Tier Cloud Deployment ($0.00/mo)
+
+Auto-Meds is pre-engineered for complete production deployment on the **AWS 12-Month Free Tier** at **$0.00 / month**, hosting the Angular 16 frontend, Spring Boot 3 backend (with Tesseract OCR), and PostgreSQL 16 database.
+
+> 📖 **Full Step-by-Step Instructions**: Refer to the comprehensive [**AWS Free Tier Deployment Guide (AWS_DEPLOYMENT_GUIDE.md)**](AWS_DEPLOYMENT_GUIDE.md) for AWS Budget setup, EC2 security groups, and troubleshooting.
+
+### 💰 100% Free Resource Breakdown
+
+| AWS Resource | Free Tier Allowance | Auto-Meds Production Usage | Monthly Cost |
+| :--- | :--- | :--- | :--- |
+| **EC2 Compute** | 750 hours / month of `t2.micro` or `t3.micro` | 1 instance running 24/7/365 (~744 hrs/mo) | **$0.00** |
+| **EBS Storage** | 30 GB General Purpose (gp3/gp2) SSD | 25 GB – 30 GB root volume | **$0.00** |
+| **Data Transfer** | 100 GB / month outbound to internet | ~2–5 GB / month under standard usage | **$0.00** |
+| **SSL Certificate** | Free Let's Encrypt automated certs | Automated Nginx HTTPS via `deploy/setup-ssl.sh` | **$0.00** |
+| **Total Cloud Cost** | — | — | **$0.00 / month** |
+
+> [!TIP]
+> **Overcoming the 1 GB RAM Challenge on `t2.micro`**:
+> An EC2 `t2.micro` instance provides 1 vCPU and 1 GB of physical RAM. Spring Boot 3 + Undertow + native Tesseract OCR + PostgreSQL can exceed 1 GB during startup. 
+> Auto-Meds provides an automated setup script ([`deploy/aws-ec2-setup.sh`](deploy/aws-ec2-setup.sh)) that allocates a **4 GB Swapfile** on the free 30 GB EBS volume and tunes JVM heap boundaries (`-Xms128m -Xmx384m`). This guarantees 100% uptime without Out-Of-Memory (OOM) crashes.
+
+### 🚀 3-Step Quick Cloud Deploy
+
+```bash
+# 1. SSH into your Ubuntu 24.04 LTS EC2 instance
+ssh -i "automeds-key.pem" ubuntu@<YOUR-EC2-PUBLIC-IP>
+
+# 2. Clone repo and run the automated EC2 provisioner (Swapfile + Docker + Firewall)
+git clone https://github.com/Aaditya514/auto-meds.git
+cd auto-meds
+chmod +x deploy/aws-ec2-setup.sh && ./deploy/aws-ec2-setup.sh
+newgrp docker
+
+# 3. Configure credentials and launch the production stack
+cp .env.example .env && nano .env
+docker compose up --build -d
+```
+
+### 🔒 Automated HTTPS / SSL Setup
+
+For custom domains or free dynamic DNS (`https://your-domain.duckdns.org`):
+```bash
+chmod +x deploy/setup-ssl.sh
+./deploy/setup-ssl.sh your-domain.com your-email@gmail.com
+```
+
+### ⚡ Automated CI/CD Deployment (GitHub Actions)
+
+Every `git push origin main` triggers the automated workflow in [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml):
+1. **Backend CI**: Runs PostgreSQL 16 container, executes 60+ JUnit unit & integration tests, and verifies Liquibase migrations.
+2. **Frontend CI**: Compiles production Angular 16 distribution with ahead-of-time (AOT) optimizations.
+3. **Automated CD**: Authenticates to your AWS EC2 instance over SSH, pulls the latest code, executes `docker compose up --build -d`, and prunes stale images with zero downtime.
 
 ---
 
