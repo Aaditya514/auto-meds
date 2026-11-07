@@ -248,6 +248,9 @@ h6.text-white {
   border-radius: 9999px;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 .badge-pending,
@@ -260,6 +263,9 @@ h6.text-white {
   border-radius: 9999px;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 .badge-out-of-stock,
@@ -273,6 +279,9 @@ h6.text-white {
   border-radius: 9999px;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 .badge-approved,
@@ -285,6 +294,9 @@ h6.text-white {
   border-radius: 9999px;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 .badge-purple-subtle {
@@ -296,6 +308,9 @@ h6.text-white {
   border-radius: 9999px;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 .badge-expired,
@@ -307,6 +322,9 @@ h6.text-white {
   padding: 4px 10px;
   border-radius: 9999px;
   font-size: 0.75rem;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 /* ── Data Table as a System (Design Motion Principles) ─────────────────────── */

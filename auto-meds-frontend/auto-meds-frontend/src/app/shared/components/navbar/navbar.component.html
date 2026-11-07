@@ -1,9 +1,9 @@
 <nav class="navbar navbar-expand-lg navbar-pharma sticky-top">
-  <div class="container">
-    <a class="navbar-brand fw-bold d-flex align-items-center" routerLink="/">
+  <div class="container-fluid px-3 px-lg-4 px-xl-5">
+    <a class="navbar-brand fw-bold d-flex align-items-center flex-shrink-0 me-3 me-xl-4" routerLink="/">
       <i class="bi bi-prescription2 text-primary fs-3 me-2"></i>
       <span class="brand-gradient fs-4">Auto-Meds</span>
-      <span *ngIf="authService.isAdmin()" class="badge text-uppercase ms-2 fw-semibold" style="background-color: #0f172a; color: #f8fafc; font-size: 0.7rem; letter-spacing: 0.06em; padding: 0.35rem 0.65rem; border-radius: 6px;">Pharmacist Portal</span>
+      <span *ngIf="authService.isAdmin()" class="badge text-uppercase ms-2 fw-semibold text-nowrap flex-shrink-0" style="background-color: #0f172a; color: #f8fafc; font-size: 0.7rem; letter-spacing: 0.06em; padding: 0.35rem 0.65rem; border-radius: 6px;">Pharmacist Portal</span>
     </a>
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -31,27 +31,27 @@
       </ul>
 
       <!-- Admin Nav Links -->
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="authService.isAdmin()">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1" *ngIf="authService.isAdmin()">
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/dashboard" routerLinkActive="active"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/dashboard" routerLinkActive="active"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/medicines" routerLinkActive="active"><i class="bi bi-capsule me-1"></i> Medicines</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/medicines" routerLinkActive="active"><i class="bi bi-capsule me-1"></i> Medicines</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/inventory" routerLinkActive="active"><i class="bi bi-boxes me-1"></i> Inventory</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/inventory" routerLinkActive="active"><i class="bi bi-boxes me-1"></i> Inventory</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/subscription-requests" routerLinkActive="active"><i class="bi bi-file-earmark-medical me-1"></i> Subscriptions</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/subscription-requests" routerLinkActive="active"><i class="bi bi-file-earmark-medical me-1"></i> Subscriptions</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/orders" routerLinkActive="active"><i class="bi bi-receipt me-1"></i> Orders</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/orders" routerLinkActive="active"><i class="bi bi-receipt me-1"></i> Orders</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/users" routerLinkActive="active"><i class="bi bi-people me-1"></i> Patients</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/users" routerLinkActive="active"><i class="bi bi-people me-1"></i> Patients</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium" routerLink="/admin/audit-logs" routerLinkActive="active"><i class="bi bi-shield-check me-1"></i> Audit Logs</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/audit-logs" routerLinkActive="active"><i class="bi bi-shield-check me-1"></i> Audit Logs</a>
         </li>
       </ul>
 
