@@ -23,6 +23,10 @@ export class AdminMedicinesComponent implements OnInit {
   searchQuery = '';
   private realtimeSub: Subscription | null = null;
 
+  // Generic Medicine Builder State
+  isGenericMode = false;
+  genericParentMedicine: Medicine | null = null;
+
   get filteredMedicines(): Medicine[] {
     if (!this.searchQuery || !this.searchQuery.trim()) {
       return this.medicines;
@@ -130,12 +134,61 @@ export class AdminMedicinesComponent implements OnInit {
 
   openAddModal(): void {
     this.editingMedicineId = null;
+    this.isGenericMode = false;
+    this.genericParentMedicine = null;
     this.initForm();
     this.showModal = true;
   }
 
+  openAddGenericModal(sourceMed: Medicine): void {
+    this.editingMedicineId = null;
+    this.initForm();
+    this.isGenericMode = true;
+    this.genericParentMedicine = sourceMed;
+
+    // Inherit clinical disease indication tags
+    this.diseaseTags = sourceMed.symptoms 
+      ? sourceMed.symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0)
+      : [];
+    this.currentTagInput = '';
+
+    // Suggest 50% discount price
+    const suggestedGenericPrice = Math.max(1, Math.round(sourceMed.price * 0.5));
+
+    this.medicineForm.patchValue({
+      medicineName: `${sourceMed.composition} ${sourceMed.strength} Generic`,
+      brandName: 'Generic Labs',
+      composition: sourceMed.composition,
+      strength: sourceMed.strength,
+      category: sourceMed.category || 'General Health & Wellness',
+      price: suggestedGenericPrice,
+      stockQuantity: 100,
+      requiresPrescription: sourceMed.requiresPrescription,
+      manufacturer: 'Generic Pharmaceuticals Ltd',
+      description: `Bioequivalent generic alternative to ${sourceMed.medicineName} (${sourceMed.brandName}) containing identical active molecule ${sourceMed.composition} at ${sourceMed.strength}.`
+    });
+
+    this.showModal = true;
+  }
+
+  onSelectParentMedicine(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const parentId = Number(select.value);
+    if (!parentId) {
+      this.genericParentMedicine = null;
+      return;
+    }
+
+    const parent = this.medicines.find(m => m.id === parentId);
+    if (parent) {
+      this.openAddGenericModal(parent);
+    }
+  }
+
   openEditModal(med: Medicine): void {
     this.editingMedicineId = med.id;
+    this.isGenericMode = false;
+    this.genericParentMedicine = null;
     this.diseaseTags = med.symptoms 
       ? med.symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0)
       : [];
@@ -159,6 +212,8 @@ export class AdminMedicinesComponent implements OnInit {
   closeModal(): void {
     this.showModal = false;
     this.editingMedicineId = null;
+    this.isGenericMode = false;
+    this.genericParentMedicine = null;
     this.diseaseTags = [];
     this.currentTagInput = '';
   }
