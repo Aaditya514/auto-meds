@@ -53,24 +53,30 @@ Millions of patients suffering from chronic conditions (hypertension, diabetes, 
 
 ### 👨‍⚕️ Patient & Caregiver Experience
 - **Dynamic Catalog & Smart Search**: Real-time multi-attribute search across trade names, composition, manufacturer, and ailments.
-- **Composition-Based Alternative Resolution**: If an item is out of stock, suggests bio-equivalent alternatives ranked by price.
+- **Zero Stock Count Leaks & Anti-Panic UX**: Commercial stock units are concealed from patients to prevent hoarding; out-of-stock items automatically disable Add to Cart and present instant generic alternatives.
+- **Composition-Based Alternative Resolution**: If an item is out of stock or high-cost, suggests bio-equivalent generic alternatives matching identical active salts and strength.
 - **Digital Prescription Vault**: Secure upload with OCR processing, physician tracking, and expiration validation.
 - **Recurring Medication Subscriptions**: Configurable dosage schedules (e.g., 2 tablets/day for 30 days) with automated refill pipelines.
-- **Interactive SMS Refill Alerts**: Patients can confirm auto-refills straight from standard SMS without opening a browser.
-- **Caregiver Delegation**: Link caregiver accounts to manage medication, upload prescriptions, and track deliveries for elderly family members.
-- **Clinical Drug Interaction Checker**: Instant safety checks across active medication regimens to prevent adverse drug events.
+- **Interactive SMS Refill Alerts**: Patients can confirm auto-refills straight from standard SMS ("Reply YES") or WhatsApp without opening a browser.
+- **Full Caregiver Delegation**: Family members can link patient profiles to supervise prescriptions, review interactions, and track deliveries.
+- **Clinical Drug-Drug Interaction (DDI) Checker**: Real-time safety validation across active medication regimens to prevent adverse pharmacological events.
 
 ### 🛡️ Admin & Pharmacist Control Center
-- **Prescription Triaging & Async OCR**: Automated text extraction with pharmacist approval/rejection workflows and dosage validation.
-- **Near-Expiry Dashboard (H5)**: Proactive surveillance filtering inventory expiring within 90 days, prioritized by expiration date.
-- **Batch Number Recall Traceability**: Every stock unit tracks manufacturer batch numbers for regulatory audit standards.
-- **Procurement & Deficit Queues**: Automated allocation of incoming inventory to waiting chronic subscribers upon restocking.
+- **Prescription Triaging & Async OCR**: Automated text extraction with pharmacist approval/rejection workflows, dosage validation, and doctor clarification requests.
+- **Autonomous 6-Phase Refill Stepper**: Live visual lifecycle tracker orchestrating 5-day soft-lock, caregiver alerts, clinical review, FEFO picking, payment settlement, and delivery dispatch.
+- **1-Click Generic Medicine Builder**: Rapid cloning tool allowing pharmacists to spawn bio-equivalent generic medicines pre-populated with identical active molecules and disease indications.
+- **Interactive Soft-Locking & Deficit Management**: Visual monitoring of physical inventory vs. 5-day soft-locked chronic reserves, with manual override controls and subscription deficit backlogs.
+- **Near-Expiry Surveillance & FEFO Dispensing**: Proactive 90-day expiry triage prioritizing batch depletion by earliest expiration date (First-Expired, First-Out).
+- **Batch Number Recall Traceability**: Every stock unit tracks manufacturer batch numbers and expiry dates for regulatory compliance and targeted recalls.
+- **Closed-Loop FEFO Restocking**: Single-click batch replenishment with quick presets (+10, +25, +50, +100) that automatically fulfill waiting chronic subscription deficits.
 - **Real-Time SSE Notification Bus**: Instant dashboard updates for orders, low-stock warnings, and refill cycles.
-- **Dispensing Slip Generation**: Clinical packing slips with medication details, batch codes, and pharmacist sign-offs.
-- **Immutable Audit Trail**: Structured audit logging for all prescription approvals, modifications, and stock adjustments.
+- **Clinical Dispensing Slip & QR Codes**: Official packaging slips with tamper-evident verification QR codes for doorstep delivery scanning.
+- **Immutable Audit Trail**: Structured regulatory audit logging for all prescription approvals, modifications, and stock adjustments.
+- **High-Density Responsive Action Toolbar**: Compact 3-action clinical toolbar (`+ Generic`, `Edit`, `Deactivate`) designed for zero-horizontal-scroll across 1024px+ viewports.
 
 ### ⚙️ Platform & Engineering Highlights
-- **Distributed Scheduling (ShedLock)**: Safe multi-replica background execution for cron jobs and auto-refill triggers.
+- **Distributed Scheduling (ShedLock)**: Safe multi-replica background execution for cron jobs and auto-refill triggers without duplicate runs.
+- **Real-Time Inventory Soft-Locking**: Two-tier stock architecture (`stock_quantity` vs. `reserved_quantity`) ensuring chronic patients never lose refill availability to walk-in e-commerce buyers.
 - **Asynchronous Execution (`@Async`)**: Non-blocking OCR thread pools isolated from web request threads.
 - **In-Memory Caching (Caffeine)**: Low-latency caching on active medicine catalogs with automatic cache eviction on mutations.
 - **Stateless Security (JWT + Refresh Tokens)**: Fine-grained Role-Based Access Control (`PATIENT`, `ADMIN`).
@@ -121,6 +127,58 @@ Millions of patients suffering from chronic conditions (hypertension, diabetes, 
 │   • shedlock        • caregiver_links           • notifications        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 🔄 Autonomous Chronic Refill Lifecycle (6-Phase Coordinated Engine)
+
+Auto-Meds eliminates medication therapy drop-offs for chronic illnesses (hypertension, diabetes, cardiovascular care) through a closed-loop **6-Phase Refill Lifecycle** coordinated between the distributed background scheduler, inventory soft-locking engine, caregiver communication bus, and pharmacist fulfillment desk:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Scheduler as ShedLock Scheduler
+    participant Inventory as Inventory Engine
+    participant Comms as Twilio / Mail Gateway
+    participant Patient as Patient / Caregiver
+    participant Pharmacist as Pharmacist Desk
+    participant Fulfillment as Order & Dispatch
+
+    Note over Scheduler,Inventory: Phase 1: 5-Day Soft-Lock
+    Scheduler->>Inventory: Scan active refills due in next 5 days
+    Inventory->>Inventory: Move units: Public Pool ➔ 5-Day Soft-Locked Reserve
+
+    Note over Comms,Patient: Phase 2: Caregiver Cadence
+    Inventory->>Comms: Trigger refill cadence notifications
+    Comms-->>Patient: SMS ("Reply YES") / WhatsApp / Email alert
+    Patient-->>Comms: Refill confirmation
+
+    Note over Pharmacist: Phase 3: Clinical Review
+    Pharmacist->>Pharmacist: Prescription OCR dosage check & DDI interaction audit
+    Pharmacist->>Fulfillment: Approve & trigger auto-order generation
+
+    Note over Inventory,Fulfillment: Phase 4: Batch FEFO Picking
+    Fulfillment->>Inventory: Allocate batch by First-Expired, First-Out (FEFO)
+    Fulfillment->>Fulfillment: Generate tamper-evident packing slip with Doorstep QR
+
+    Note over Fulfillment: Phase 5: Co-Pay Settlement
+    Fulfillment->>Fulfillment: Process payment (Recurring mandate / UPI / COD) & log audit trail
+
+    Note over Fulfillment,Patient: Phase 6: Doorstep Dispatch
+    Fulfillment->>Patient: Dispatch package with 5-day Bridge Supply fail-safe
+    Patient-->>Fulfillment: Doorstep QR verification on delivery
+```
+
+### Detailed Phase Breakdown
+
+| Phase | Designation | Key Operations & Failure Recovery |
+| :---: | :--- | :--- |
+| **1** | **5-Day Predictive Soft-Lock** | Distributed ShedLock cron queries subscriptions with `next_refill_date <= NOW() + 5 Days`. Stock is transferred from the public catalog pool into `reserved_quantity`. If warehouse stock is insufficient, an automated **Subscription Deficit** alert is queued for procurement. |
+| **2** | **Multi-Channel Caregiver Cadence** | Refill notifications are dispatched via Twilio SMS ("Reply YES"), WhatsApp, and email to both the patient and authorized caregiver proxies. Caregivers of dependent elderly family members can review and approve refills remotely. |
+| **3** | **Pharmacist Clinical Verification** | High-risk chronic medications require Four-Eyes pharmacist review. The clinical engine runs real-time **Drug-Drug Interaction (DDI)** cross-checks and flags expired prescriptions for doctor clarification. |
+| **4** | **Batch FEFO Picking & Traceability** | Physical fulfillment allocates stock units strictly following **First-Expired, First-Out (FEFO)** to prevent near-expiry waste. Every strip tracks manufacturer lot/batch numbers for recall compliance, and a physical dispensing slip with a verification QR code is generated. |
+| **5** | **Co-Pay Settlement & Compliance** | Automated payment execution via card recurring mandates, UPI AutoPay, or Cash-on-Delivery. Full clinical and financial transactions are recorded in the immutable regulatory audit log table (`audit_logs`). |
+| **6** | **Doorstep Dispatch & Bridge Supply** | Courier transit with temperature-sensitive cold-chain indicators where required. If a prescription renewal is delayed, the system triggers an emergency **5-Day Bridge Supply** to prevent therapy interruption until doctor re-authorization. |
 
 ---
 
@@ -241,6 +299,7 @@ See [DOCKER.md](DOCKER.md) for detailed container architecture and configuration
 | `GET` | `/api/medicines` | Retrieve active medicines (**Caffeine-cached**) |
 | `GET` | `/api/medicines/{id}` | Detailed medicine info |
 | `GET` | `/api/medicines/search?q=` | Multi-attribute search across composition, brand, ailment |
+| `GET` | `/api/medicines/symptom?symptom=` | Search medicines by therapeutic symptom / ailment tag |
 | `GET` | `/api/medicines/{id}/alternatives` | Resolve bio-equivalent alternatives by chemical composition |
 
 ### 📋 Prescriptions & Subscriptions
@@ -266,16 +325,22 @@ See [DOCKER.md](DOCKER.md) for detailed container architecture and configuration
 ### 🛡️ Administrative & Inventory Operations
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/admin/dashboard` | Aggregated dashboard KPIs and stock health |
+| `GET` | `/api/admin/dashboard` | Aggregated dashboard KPIs, stock health & 6-phase stepper status |
 | `GET` | `/api/admin/subscription-requests` | View pending prescription submissions |
 | `PUT` | `/api/admin/subscriptions/{id}/approve` | Approve subscription & allocate inventory |
 | `PUT` | `/api/admin/subscriptions/{id}/reject` | Reject request with reason |
-| `POST` | `/api/admin/medicines` | Onboard new medicine with batch number & expiry date |
+| `PUT` | `/api/admin/subscriptions/{id}/clarification` | Request clarification from prescribing doctor |
+| `POST` | `/api/admin/medicines` | Onboard new medicine formulation with batch number & expiry |
+| `PUT` | `/api/admin/medicines/{id}` | Update existing medicine formulation and therapeutic tags |
 | `PUT` | `/api/admin/inventory/{id}/stock` | Quick-update inventory stock level |
+| `PUT` | `/api/admin/inventory/{id}/soft-lock` | Manually calibrate 5-day soft-locked chronic reserves |
 | `GET` | `/api/admin/inventory/near-expiry` | **Near-expiry alert queue** (expiring within 90 days) |
-| `GET` | `/api/admin/procurement/alerts` | Procurements alerts and deficit backlog queue |
+| `GET` | `/api/admin/procurement/alerts` | Procurement stockout alerts |
+| `GET` | `/api/admin/procurement/deficits` | Subscriptions blocked by inventory shortages queue |
 | `POST` | `/api/admin/procurement/restock` | Restock inventory and auto-fulfill waiting subscriptions |
+| `GET` | `/api/admin/orders` | Orders management queue for fulfillment desk |
 | `PUT` | `/api/admin/orders/{id}/status` | Advance fulfillment status (`PENDING` ➔ `DELIVERED`) |
+| `GET` | `/api/admin/users` | List registered patients with caregiver delegation info |
 | `POST` | `/api/admin/scheduler/trigger-refill` | Manually execute auto-refill evaluation cycle |
 
 ### 🩺 Clinical Safety & Caregiver
@@ -304,6 +369,8 @@ Auto-Meds provides first-class support for elderly and low-vision patients:
 
 | Architecture Decision | Selection | Rationale |
 | :--- | :--- | :--- |
+| **5-Day Soft-Lock vs Immediate Deduct** | Two-tier `stock_quantity` vs `reserved_quantity` | Reserving physical stock 5 days ahead guarantees chronic refill fulfillment without prematurely charging patients or permanently locking stock if a regimen changes. |
+| **Zero Patient Stock Leakage** | Binary In-Stock vs Out-of-Stock on UI | Hiding exact warehouse unit counts protects commercial confidentiality and prevents panic hoarding during supply pinches. |
 | **Web Server** | Undertow over Tomcat | Up to 3× lower memory footprint and superior handling of high-concurrency SSE connections. |
 | **Catalog Caching** | Caffeine over Redis | Zero network latency and zero infrastructure overhead; eviction hooks maintain strict consistency. |
 | **Distributed Locks** | ShedLock over raw `@Scheduled` | Prevents duplicate refill order generation across multi-replica container deployments. |
