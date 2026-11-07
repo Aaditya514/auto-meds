@@ -1,9 +1,15 @@
 <nav class="navbar navbar-expand-lg navbar-pharma sticky-top">
   <div class="container-fluid px-3 px-lg-4 px-xl-5">
-    <a class="navbar-brand fw-bold d-flex align-items-center flex-shrink-0 me-3 me-xl-4" routerLink="/">
-      <i class="bi bi-prescription2 text-primary fs-3 me-2"></i>
-      <span class="brand-gradient fs-4">Auto-Meds</span>
-      <span *ngIf="authService.isAdmin()" class="badge text-uppercase ms-2 fw-semibold text-nowrap flex-shrink-0" style="background-color: #0f172a; color: #f8fafc; font-size: 0.7rem; letter-spacing: 0.06em; padding: 0.35rem 0.65rem; border-radius: 6px;">Pharmacist Portal</span>
+    <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-3 me-xl-4 text-decoration-none py-0" routerLink="/">
+      <i class="bi bi-prescription2 text-primary fs-2 me-2"></i>
+      <div class="d-flex flex-column align-items-start lh-1">
+        <span class="brand-gradient fs-4 fw-bold mb-1">Auto-Meds</span>
+        <span *ngIf="authService.isAdmin()" 
+              class="badge text-uppercase fw-bold text-nowrap" 
+              style="background-color: #0f172a; color: #f8fafc; font-size: 0.58rem; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 4px;">
+          Pharmacist Portal
+        </span>
+      </div>
     </a>
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -78,14 +84,14 @@
         </ng-container>
 
         <!-- Logged In User Dropdown -->
-        <li class="nav-item dropdown" *ngIf="authService.isLoggedIn()">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-3" href="#" role="button" data-bs-toggle="dropdown">
-            <div class="avatar-pharma avatar-sm avatar-interactive" [ngClass]="authService.isPharmacist() ? 'avatar-pharmacist' : 'avatar-patient'">
+        <li class="nav-item dropdown flex-shrink-0" *ngIf="authService.isLoggedIn()">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-3 text-nowrap" href="#" role="button" data-bs-toggle="dropdown">
+            <div class="avatar-pharma avatar-sm avatar-interactive flex-shrink-0" [ngClass]="authService.isPharmacist() ? 'avatar-pharmacist' : 'avatar-patient'">
               {{ currentUser?.name?.charAt(0)?.toUpperCase() || 'U' }}
               <span class="avatar-status-dot avatar-status-online" title="Session Active"></span>
             </div>
             <div class="d-none d-md-flex flex-column text-start lh-1">
-              <span class="fw-semibold text-dark" style="font-size: 0.88rem;">{{ currentUser?.name }}</span>
+              <span class="fw-semibold text-dark text-nowrap" style="font-size: 0.88rem;">{{ currentUser?.name }}</span>
               <span class="text-muted" style="font-size: 0.72rem;">{{ authService.isPharmacist() ? 'Pharmacist' : 'Patient' }}</span>
             </div>
           </a>
