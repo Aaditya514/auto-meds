@@ -79,14 +79,14 @@
       <table class="medistock-catalog-table">
         <thead>
           <tr>
-            <th style="width: 55px;">ID</th>
+            <th style="width: 50px;">ID</th>
             <th>Medicine Name</th>
-            <th style="width: 120px;">Brand</th>
-            <th style="width: 180px;">Composition &amp; Strength</th>
-            <th style="width: 220px;">Therapeutic Class &amp; Indications</th>
-            <th class="text-end" style="width: 85px;">Price</th>
-            <th class="text-center text-nowrap" style="width: 110px;">Stock</th>
-            <th class="text-end text-nowrap" style="width: 195px;">Actions</th>
+            <th style="min-width: 120px;">Brand</th>
+            <th style="min-width: 160px;">Composition &amp; Strength</th>
+            <th style="min-width: 190px;">Therapeutic Class &amp; Indications</th>
+            <th class="text-end" style="width: 80px;">Price</th>
+            <th class="text-center text-nowrap" style="width: 100px;">Stock</th>
+            <th class="text-end text-nowrap" style="width: 110px;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -95,11 +95,11 @@
             <td>
               <div class="med-name-block">
                 <span class="status-indicator-dot" [ngClass]="med.stockQuantity > 0 ? 'dot-emerald' : 'dot-red'"></span>
-                <span class="fw-bold text-slate-900">{{ med.medicineName }}</span>
+                <span class="fw-bold text-slate-900 text-nowrap">{{ med.medicineName }}</span>
               </div>
             </td>
             <td>
-              <span class="badge-brand-pill">{{ med.brandName }}</span>
+              <span class="badge-brand-pill text-nowrap">{{ med.brandName }}</span>
             </td>
             <td>
               <div class="cell-truncate text-slate-800 small font-medium" style="max-width: 175px;" [title]="med.composition">{{ med.composition }}</div>
@@ -131,19 +131,22 @@
             <td class="text-end text-nowrap">
               <div class="action-toolbar">
                 <button (click)="openAddGenericModal(med)" 
-                        class="btn-action btn-action-generic" 
-                        title="Add low-cost bio-equivalent generic alternative">
-                  <i class="bi bi-tag-fill me-1"></i>+ Generic
+                        class="btn-icon-action btn-icon-generic" 
+                        title="Add Bio-Equivalent Generic Alternative"
+                        aria-label="Add Generic Alternative">
+                  <i class="bi bi-tag-fill"></i>
                 </button>
                 <button (click)="openEditModal(med)" 
-                        class="btn-action btn-action-edit" 
-                        title="Edit medicine formulation details">
-                  <i class="bi bi-pencil-fill me-1"></i>Edit
+                        class="btn-icon-action btn-icon-edit" 
+                        title="Edit Medicine Formulation"
+                        aria-label="Edit Medicine Formulation">
+                  <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button (click)="deactivate(med.id)" 
-                        class="btn-action btn-action-deactivate" 
-                        title="Deactivate this medicine formulation">
-                  <i class="bi bi-slash-circle me-1"></i>Deactivate
+                        class="btn-icon-action btn-icon-deactivate" 
+                        title="Deactivate Medicine Formulation"
+                        aria-label="Deactivate Medicine Formulation">
+                  <i class="bi bi-slash-circle-fill"></i>
                 </button>
               </div>
             </td>
