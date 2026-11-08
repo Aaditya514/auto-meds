@@ -1,42 +1,229 @@
-/* ── Compliance & Regulatory Audit Ledger Styles ─────────────────────────── */
+/* ── Compliance & Regulatory Audit Ledger (MediStock Theme) ──────────────── */
 
 :host {
   display: block;
+  min-height: 100vh;
+  background-color: #f4f7f5;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.table thead th {
-  background-color: #f8fafc;
+.medistock-audit-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+/* ── Page Header ── */
+.medistock-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.system-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.header-title {
+  font-size: 1.75rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.header-subtitle {
+  font-size: 0.88rem;
   color: #64748b;
-  font-size: 0.74rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 14px 16px;
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.5;
 }
 
-.table tbody tr:hover td {
-  background-color: #f8fafc;
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-medistock-refresh {
+  display: inline-flex;
+  align-items: center;
+  background-color: #ffffff;
+  color: #0a2f24;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.btn-medistock-refresh:hover:not(:disabled) {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
 }
 
 .spin {
   animation: spin 1s linear infinite;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Toolbar ── */
+.medistock-audit-toolbar {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.toolbar-search-box {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 14px 8px 34px;
+  font-size: 0.84rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: #0f172a;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  background-color: #ffffff;
+}
+
+.toolbar-filter-select {
+  width: 240px;
+  max-width: 100%;
+}
+
+.medistock-select {
+  font-size: 0.84rem;
+  border-radius: 10px;
+  border-color: #e2e8f0;
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 500;
+}
+
+.toolbar-count-pill {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* ── MediStock Table Card & Table ── */
+.medistock-table-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.medistock-inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.medistock-inventory-table th {
+  background-color: #f8faf9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 13px 18px;
+  border-bottom: 1px solid #edf2f0;
+}
+
+.medistock-inventory-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.medistock-inventory-table tr:hover td {
+  background-color: #fbfdfc;
+}
+
+.cell-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  background-color: #f1f5f9;
+  padding: 3px 7px;
+  border-radius: 6px;
+}
+
 .font-monospace {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-.badge-role {
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
-
-.role-admin { background-color: #fee2e2; color: #991b1b; }
-.role-caregiver { background-color: #f3e8ff; color: #6b21a8; }
-.role-patient { background-color: #e0f2fe; color: #0369a1; }
-.role-system { background-color: #f1f5f9; color: #475569; }
 
 .badge-action {
   font-family: ui-monospace, SFMono-Regular, monospace;
@@ -47,10 +234,10 @@
   display: inline-block;
 }
 
-.action-confirm { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.action-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-.action-info { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-.action-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.action-confirm { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.action-danger { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.action-info { background-color: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+.action-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 
 .ip-tag {
   background-color: #f8fafc;
@@ -59,9 +246,4 @@
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.75rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }

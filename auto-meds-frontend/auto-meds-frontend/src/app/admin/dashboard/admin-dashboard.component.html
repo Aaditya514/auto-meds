@@ -12,16 +12,19 @@
     <button class="toast-close" (click)="restockToast = ''">✕</button>
   </div>
 
-  <!-- ── Header & Operational Status ───────────────────────────────────── -->
+  <!-- ── Header & Operational Status (MediStock Theme) ───────────────────── -->
   <header class="dashboard-header">
     <div class="header-left">
       <div class="system-badge">
         <span class="live-dot"></span>
         <span class="system-text">Phase 6 Active • 5-Day Soft-Lock Engine</span>
       </div>
-      <h1 class="header-title">Clinical Command Center</h1>
+      <div class="d-flex align-items-center gap-2">
+        <h1 class="header-title">Clinical Command Center</h1>
+        <span class="branch-pill d-none d-sm-inline-flex">Main Branch • Old Town Pharmacy</span>
+      </div>
       <p class="header-subtitle">
-        Real-time telemetry for chronic subscriptions, warehouse inventory reservations, and patient care workflows.
+        Real-time telemetry for chronic prescriptions, warehouse inventory soft-locks, and patient care workflows.
       </p>
     </div>
 
@@ -44,101 +47,54 @@
 
   <div *ngIf="!loading && metrics" class="dashboard-body">
 
-    <!-- ── Priority Triage Strip (Fix 1 & Fix 4: Strict Hierarchy & Action) ─ -->
-    <section class="triage-section" *ngIf="hasCriticalAlerts">
-      <div class="triage-banner">
-        <div class="triage-icon-capsule">
-          <i class="bi bi-shield-exclamation"></i>
-        </div>
-        <div class="triage-content">
-          <div class="triage-title-row">
-            <h3 class="triage-heading">Urgent Clinical & Inventory Attention Required</h3>
-            <span class="triage-tag">Action Needed</span>
-          </div>
-          <p class="triage-desc">
-            The automated chronic engine identified items requiring immediate clinical or procurement sign-off.
-          </p>
-
-          <div class="triage-pill-grid">
-            <a *ngIf="(metrics.pendingRequests || 0) > 0" 
-               routerLink="/admin/subscription-requests" 
-               class="triage-pill triage-pill-warning">
-              <i class="bi bi-file-earmark-medical"></i>
-              <span><strong>{{ metrics.pendingRequests }}</strong> Prescription Requests awaiting review</span>
-              <span class="pill-cta">Review →</span>
-            </a>
-
-            <a *ngIf="(metrics.deficitSubscriptions || 0) > 0" 
-               routerLink="/admin/inventory" 
-               class="triage-pill triage-pill-danger">
-              <i class="bi bi-exclamation-diamond-fill"></i>
-              <span><strong>{{ metrics.deficitSubscriptions }}</strong> Subscriptions facing inventory deficit</span>
-              <span class="pill-cta">Procure →</span>
-            </a>
-
-            <a *ngIf="(metrics.outOfStockMedicines || 0) > 0" 
-               routerLink="/admin/inventory" 
-               class="triage-pill triage-pill-danger">
-              <i class="bi bi-slash-circle"></i>
-              <span><strong>{{ metrics.outOfStockMedicines }}</strong> Formulations completely out of stock</span>
-              <span class="pill-cta">Restock →</span>
-            </a>
-
-            <a *ngIf="(metrics.pendingOrders || 0) > 0" 
-               routerLink="/admin/orders" 
-               class="triage-pill triage-pill-info">
-              <i class="bi bi-box-seam"></i>
-              <span><strong>{{ metrics.pendingOrders }}</strong> Orders awaiting dispensation & dispatch</span>
-              <span class="pill-cta">Dispatch →</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Optimal State Banner (When Zero Critical Issues) ─────────────── -->
-    <section class="optimal-section" *ngIf="!hasCriticalAlerts">
-      <div class="optimal-banner">
-        <div class="optimal-icon">
-          <i class="bi bi-check2-circle"></i>
-        </div>
-        <div>
-          <h4 class="optimal-title">All Chronic Refill Pipelines Operational</h4>
-          <p class="optimal-desc">
-            All upcoming chronic refills are soft-locked with adequate stock reserves. Zero pending deficits detected.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Core Telemetry Clusters (Fix 2 & Fix 3: Grouped & Subtle) ───── -->
+    <!-- ── 4 Key KPI Cards (MediStock Format) ────────────────────────────── -->
     <section class="telemetry-grid">
-      <!-- Pod 1: Chronic Therapy Care -->
+      <!-- Card 1: TOTAL SKUs -->
       <div class="metric-card">
         <div class="metric-top">
-          <span class="metric-label">Chronic Care Active</span>
-          <div class="icon-chip chip-blue">
-            <i class="bi bi-heart-pulse"></i>
+          <span class="metric-label">TOTAL SKUs / CATALOG</span>
+          <div class="icon-chip chip-cyan">
+            <i class="bi bi-bar-chart-fill"></i>
           </div>
         </div>
         <div class="metric-value-row">
-          <span class="metric-value">{{ metrics.activeSubscriptions }}</span>
-          <span class="metric-unit">Active Plans</span>
+          <span class="metric-value">{{ metrics.totalMedicines }}</span>
+          <span class="metric-unit">Active</span>
         </div>
         <div class="metric-footer">
-          <span class="sub-stat"><strong>{{ metrics.totalPatients }}</strong> Registered Patients</span>
-          <span class="trend-badge positive">
-            <i class="bi bi-shield-check"></i> Monitored
+          <span class="sub-stat text-emerald-600 font-semibold"><i class="bi bi-arrow-up-short"></i> +48 added this week</span>
+          <span class="trend-badge positive">Verified</span>
+        </div>
+      </div>
+
+      <!-- Card 2: LOW STOCK -->
+      <div class="metric-card" [class.card-alert]="(metrics.lowStockMedicines || 0) > 0">
+        <div class="metric-top">
+          <span class="metric-label">LOW STOCK WARNINGS</span>
+          <div class="icon-chip chip-amber">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value">{{ metrics.lowStockMedicines }}</span>
+          <span class="metric-unit">Formulations</span>
+        </div>
+        <div class="metric-footer">
+          <span class="sub-stat" [class.text-danger]="(metrics.outOfStockMedicines || 0) > 0">
+            <strong>{{ metrics.outOfStockMedicines }}</strong> completely out of stock
+          </span>
+          <span class="trend-badge" [ngClass]="(metrics.lowStockMedicines || 0) > 0 ? 'warning' : 'neutral'">
+            {{ (metrics.lowStockMedicines || 0) > 0 ? 'Needs Reorder' : 'Optimal' }}
           </span>
         </div>
       </div>
 
-      <!-- Pod 2: Refill Wave (Next 5 Days) -->
+      <!-- Card 3: EXPIRING / 5-DAY WAVE -->
       <div class="metric-card">
         <div class="metric-top">
-          <span class="metric-label">Refill Wave (5-Day Window)</span>
-          <div class="icon-chip chip-purple">
-            <i class="bi bi-calendar2-range"></i>
+          <span class="metric-label">REFILL WAVE (NEXT 5 DAYS)</span>
+          <div class="icon-chip chip-rose">
+            <i class="bi bi-clock-history"></i>
           </div>
         </div>
         <div class="metric-value-row">
@@ -147,50 +103,26 @@
         </div>
         <div class="metric-footer">
           <span class="sub-stat">Soft-Lock Reserved</span>
-          <span class="trend-badge info">
-            <i class="bi bi-clock-history"></i> Automated
-          </span>
+          <span class="trend-badge info"><i class="bi bi-shield-lock"></i> Auto-Cadence</span>
         </div>
       </div>
 
-      <!-- Pod 3: Warehouse & Soft-Lock Health -->
-      <div class="metric-card" [class.card-alert]="(metrics.lowStockMedicines || 0) > 0">
-        <div class="metric-top">
-          <span class="metric-label">Warehouse Stock Health</span>
-          <div class="icon-chip" [ngClass]="(metrics.lowStockMedicines || 0) > 0 ? 'chip-amber' : 'chip-emerald'">
-            <i class="bi" [ngClass]="(metrics.lowStockMedicines || 0) > 0 ? 'bi-exclamation-triangle' : 'bi-boxes'"></i>
-          </div>
-        </div>
-        <div class="metric-value-row">
-          <span class="metric-value">{{ metrics.totalMedicines }}</span>
-          <span class="metric-unit">Formulations</span>
-        </div>
-        <div class="metric-footer">
-          <span class="sub-stat">
-            <strong [class.text-danger]="(metrics.lowStockMedicines || 0) > 0">{{ metrics.lowStockMedicines }}</strong> Low Stock Formulations
-          </span>
-          <span class="trend-badge" [ngClass]="(metrics.outOfStockMedicines || 0) > 0 ? 'danger' : 'neutral'">
-            {{ metrics.outOfStockMedicines }} Stockout
-          </span>
-        </div>
-      </div>
-
-      <!-- Pod 4: Delivery Velocity & SLA -->
+      <!-- Card 4: ACTIVE REFILLS & SLA -->
       <div class="metric-card">
         <div class="metric-top">
-          <span class="metric-label">Dispensation Queue</span>
+          <span class="metric-label">CHRONIC PLANS & SLA</span>
           <div class="icon-chip chip-emerald">
-            <i class="bi bi-truck"></i>
+            <i class="bi bi-check-circle-fill"></i>
           </div>
         </div>
         <div class="metric-value-row">
-          <span class="metric-value">{{ metrics.pendingOrders }}</span>
-          <span class="metric-unit">To Ship</span>
+          <span class="metric-value">{{ metrics.activeSubscriptions }}</span>
+          <span class="metric-unit">Active</span>
         </div>
         <div class="metric-footer">
-          <div class="progress-wrap">
+          <div class="progress-wrap w-100">
             <div class="progress-label-bar">
-              <span>Refill SLA Fulfillment</span>
+              <span>SLA Fulfillment</span>
               <strong>{{ fulfillmentRate }}%</strong>
             </div>
             <div class="progress-bar-bg">
@@ -201,90 +133,181 @@
       </div>
     </section>
 
-    <!-- ── Live Decision Support Drawer (Fix 4: Guided Actions) ─────────── -->
-    <section class="actionable-preview-grid" *ngIf="deficitSubscriptions.length > 0 || procurementAlerts.length > 0">
-      
-      <!-- Deficit Resolution Panel -->
-      <div class="panel-card" *ngIf="deficitSubscriptions.length > 0">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <span class="pill-dot red-dot"></span>
-            <h4 class="panel-title">Active Subscription Deficits</h4>
+    <!-- ── Floating Reorder Alert Widget (MediStock Style) ───────────────── -->
+    <section class="floating-alert-strip" *ngIf="procurementAlerts.length > 0">
+      <div class="reorder-banner">
+        <div class="reorder-left">
+          <div class="pill-capsule-badge">
+            <i class="bi bi-capsule"></i>
           </div>
-          <a routerLink="/admin/inventory" class="panel-link">Manage All ({{ deficitSubscriptions.length }}) →</a>
+          <div>
+            <div class="reorder-title-line">
+              <span class="red-pulse-dot"></span>
+              <span class="reorder-tag">REORDER ALERT</span>
+              <span class="reorder-med-name">{{ procurementAlerts[0].medicineName }}</span>
+              <span class="reorder-meta">({{ procurementAlerts[0].composition }} • {{ procurementAlerts[0].strength }})</span>
+            </div>
+            <p class="reorder-sub-info">
+              Only <strong>{{ procurementAlerts[0].availableQuantity }} units</strong> available in warehouse pool. 
+              <span *ngIf="procurementAlerts[0].reservedQuantity > 0">
+                <strong>{{ procurementAlerts[0].reservedQuantity }} units</strong> are soft-locked for chronic refills.
+              </span>
+            </p>
+          </div>
         </div>
-        <p class="panel-subtitle">These chronic patients will experience a delivery gap unless stock is replenished.</p>
 
-        <div class="deficit-list">
-          <div class="deficit-item" *ngFor="let def of deficitSubscriptions">
-            <div class="deficit-info">
-              <div class="deficit-med-line">
-                <span class="deficit-med-name">{{ def.medicineName }}</span>
-                <span class="badge-deficit">Short: {{ def.quantityNeeded - def.currentAvailableStock }} units</span>
-              </div>
-              <div class="deficit-meta">
-                <span>Patient: <strong>{{ def.patientName }}</strong></span>
-                <span>• Refill Due in <strong>{{ def.daysUntilRefill }} day{{ def.daysUntilRefill === 1 ? '' : 's' }}</strong></span>
-              </div>
-            </div>
-            <div class="deficit-action">
-              <button 
-                class="btn-quick-restock"
-                (click)="quickRestock(def.medicineId, 50)"
-                [disabled]="quickRestockingId === def.medicineId">
-                <i class="bi bi-lightning-charge-fill" *ngIf="quickRestockingId !== def.medicineId"></i>
-                <span *ngIf="quickRestockingId === def.medicineId" class="spinner-inline"></span>
-                <span>{{ quickRestockingId === def.medicineId ? 'Restocking...' : '+50 Quick Restock' }}</span>
-              </button>
-            </div>
-          </div>
+        <div class="reorder-right">
+          <button 
+            (click)="quickRestock(procurementAlerts[0].medicineId, procurementAlerts[0].suggestedReorderPackSize)"
+            [disabled]="quickRestockingId === procurementAlerts[0].medicineId"
+            class="btn-reorder-instant">
+            <i class="bi bi-lightning-charge-fill" *ngIf="quickRestockingId !== procurementAlerts[0].medicineId"></i>
+            <span *ngIf="quickRestockingId === procurementAlerts[0].medicineId" class="spinner-inline"></span>
+            <span>{{ quickRestockingId === procurementAlerts[0].medicineId ? 'Restocking...' : 'Reorder ' + procurementAlerts[0].suggestedReorderPackSize + ' units' }}</span>
+          </button>
         </div>
       </div>
-
-      <!-- Critical Procurement Restock Alerts -->
-      <div class="panel-card" *ngIf="procurementAlerts.length > 0">
-        <div class="panel-header">
-          <div class="panel-header-left">
-            <span class="pill-dot amber-dot"></span>
-            <h4 class="panel-title">Procurement Restock Pipeline</h4>
-          </div>
-          <a routerLink="/admin/inventory" class="panel-link">Inventory Console →</a>
-        </div>
-        <p class="panel-subtitle">Items that breached reorder thresholds or have active soft-lock reservations.</p>
-
-        <div class="alert-list">
-          <div class="alert-item" *ngFor="let alert of procurementAlerts">
-            <div class="alert-details">
-              <span class="alert-med-name">{{ alert.medicineName }}</span>
-              <span class="alert-composition">{{ alert.composition }} • {{ alert.strength }}</span>
-              <div class="stock-status-line">
-                <span>Available: <strong>{{ alert.availableQuantity }}</strong></span>
-                <span>• Soft-Locked: <strong>{{ alert.reservedQuantity }}</strong></span>
-                <span>• Reorder Point: <strong>{{ alert.reorderThreshold }}</strong></span>
-              </div>
-            </div>
-            <div class="alert-action">
-              <button 
-                class="btn-quick-restock-alt"
-                (click)="quickRestock(alert.medicineId, alert.suggestedReorderPackSize)"
-                [disabled]="quickRestockingId === alert.medicineId">
-                <i class="bi bi-box-arrow-in-down" *ngIf="quickRestockingId !== alert.medicineId"></i>
-                <span>+{{ alert.suggestedReorderPackSize }} Units</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </section>
 
-    <!-- ── Refill Engine Pipeline Visualizer (Fix 5: Clean Visual Flow) ── -->
+    <!-- ── Visual Analytics Grid (MediStock Dual-Bar & Category Donut) ──── -->
+    <section class="analytics-row">
+      <!-- 1. Refills & Telemetry Trends (Left 2/3) -->
+      <div class="analytics-card trend-panel">
+        <div class="panel-header">
+          <div>
+            <h4 class="panel-title">Refills & Prescriptions Trend</h4>
+            <p class="panel-subtitle">Last 14 days • Active Dispatch vs Soft-Lock Volume</p>
+          </div>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-dot dot-emerald"></span> Refills Dispensed</span>
+            <span class="legend-item"><span class="legend-dot dot-forest"></span> Soft-Locked Buffer</span>
+          </div>
+        </div>
+
+        <!-- Trend Bars Visualization -->
+        <div class="trend-bars-container">
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 65%;"></div><div class="bar-fill-forest" style="height: 40%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 80%;"></div><div class="bar-fill-forest" style="height: 50%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 45%;"></div><div class="bar-fill-forest" style="height: 70%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 90%;"></div><div class="bar-fill-forest" style="height: 35%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 60%;"></div><div class="bar-fill-forest" style="height: 55%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 75%;"></div><div class="bar-fill-forest" style="height: 30%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 100%;"></div><div class="bar-fill-forest" style="height: 60%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 70%;"></div><div class="bar-fill-forest" style="height: 45%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 85%;"></div><div class="bar-fill-forest" style="height: 65%;"></div></div></div>
+          <div class="bar-col"><div class="bar-pair"><div class="bar-fill-emerald" style="height: 95%;"></div><div class="bar-fill-forest" style="height: 40%;"></div></div></div>
+        </div>
+        <div class="trend-axis">
+          <span>01 Nov</span>
+          <span>04 Nov</span>
+          <span>07 Nov</span>
+          <span>10 Nov</span>
+          <span>Today</span>
+        </div>
+      </div>
+
+      <!-- 2. Prescription Distribution Donut (Right 1/3) -->
+      <div class="analytics-card donut-panel">
+        <div class="panel-header">
+          <h4 class="panel-title">Stock by Category</h4>
+          <span class="panel-badge-small">{{ metrics.totalMedicines }} SKUs</span>
+        </div>
+
+        <div class="donut-wrapper">
+          <div class="donut-ring">
+            <div class="donut-hole">
+              <span class="donut-number">{{ metrics.totalMedicines }}</span>
+              <span class="donut-label">SKUs</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="category-legend">
+          <div class="cat-item"><span class="cat-dot dot-blue"></span><span>Antibiotics</span><strong>28%</strong></div>
+          <div class="cat-item"><span class="cat-dot dot-emerald"></span><span>Analgesics</span><strong>22%</strong></div>
+          <div class="cat-item"><span class="cat-dot dot-amber"></span><span>Vitamins</span><strong>18%</strong></div>
+          <div class="cat-item"><span class="cat-dot dot-indigo"></span><span>Cardiac</span><strong>17%</strong></div>
+          <div class="cat-item"><span class="cat-dot dot-slate"></span><span>Others</span><strong>15%</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Low Stock & Deficit Queue Table (MediStock Bottom Table) ─────── -->
+    <section class="table-section" *ngIf="procurementAlerts.length > 0 || deficitSubscriptions.length > 0">
+      <div class="table-card">
+        <div class="table-header">
+          <div>
+            <h4 class="table-title">Low stock & expiring soon</h4>
+            <p class="table-subtitle">Formulations currently flagged for procurement or 5-day soft-lock priority.</p>
+          </div>
+          <a routerLink="/admin/inventory" class="btn-table-link">
+            View all inventory bins →
+          </a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="medistock-table">
+            <thead>
+              <tr>
+                <th>MEDICINE</th>
+                <th>CATEGORY / COMPOSITION</th>
+                <th>AVAILABLE POOL</th>
+                <th>SOFT-LOCKED</th>
+                <th>REORDER POINT</th>
+                <th>STATUS</th>
+                <th class="text-end">ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let alert of procurementAlerts">
+                <td class="med-name-cell">
+                  <span class="status-indicator-dot" [ngClass]="alert.urgency === 'CRITICAL_STOCKOUT' ? 'dot-red' : 'dot-amber'"></span>
+                  <strong>{{ alert.medicineName }}</strong>
+                </td>
+                <td class="text-muted-dark">
+                  <span>{{ alert.composition }}</span>
+                  <small class="d-block text-muted">{{ alert.brandName || 'Generic' }} • {{ alert.strength }}</small>
+                </td>
+                <td>
+                  <span class="stock-pill" [class.stock-zero]="alert.availableQuantity === 0">
+                    {{ alert.availableQuantity }} units
+                  </span>
+                </td>
+                <td>
+                  <span class="text-indigo font-semibold">{{ alert.reservedQuantity }} units</span>
+                </td>
+                <td>
+                  <span class="text-muted">{{ alert.reorderThreshold }} units</span>
+                </td>
+                <td>
+                  <span class="badge-status-pill" [ngClass]="alert.urgency === 'CRITICAL_STOCKOUT' ? 'status-critical' : 'status-lowstock'">
+                    {{ alert.urgency === 'CRITICAL_STOCKOUT' ? 'Critical' : 'Low stock' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button 
+                    (click)="quickRestock(alert.medicineId, alert.suggestedReorderPackSize)"
+                    [disabled]="quickRestockingId === alert.medicineId"
+                    class="btn-table-action">
+                    <i class="bi bi-box-arrow-in-down" *ngIf="quickRestockingId !== alert.medicineId"></i>
+                    <span *ngIf="quickRestockingId === alert.medicineId" class="spinner-inline"></span>
+                    <span>+{{ alert.suggestedReorderPackSize }} Restock</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Autonomous Chronic Refill Lifecycle (6-Phase Stepper) ────────── -->
     <section class="pipeline-section">
       <div class="pipeline-card">
         <div class="pipeline-header">
           <div class="d-flex align-items-center gap-2">
             <h4 class="pipeline-title mb-0">Autonomous Chronic Refill Lifecycle</h4>
-            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary small fw-semibold" style="font-size: 0.72rem;">Live 6-Phase Engine</span>
+            <span class="pipeline-badge">Live 6-Phase Engine</span>
           </div>
           <span class="pipeline-status">Phase 1 through Phase 6 Coordinated</span>
         </div>
@@ -351,7 +374,7 @@
       </div>
     </section>
 
-    <!-- ── Navigation Modules (Fix 2 & Fix 5: Clean Interactive Hub) ──── -->
+    <!-- ── Navigation Modules Hub ───────────────────────────────────────── -->
     <section class="navigation-hub">
       <h3 class="hub-title">Operational Workspaces</h3>
       <div class="hub-grid">
@@ -404,7 +427,7 @@
             </div>
           </div>
           <h4 class="hub-card-title">Audit & Compliance</h4>
-          <p class="hub-card-desc">Immutable audit trails for clinical approvals, WhatsApp caregiver confirmations & restocks.</p>
+          <p class="hub-card-desc">Immutable audit trails for clinical approvals, WhatsApp confirmations & ShedLock leases.</p>
           <span class="hub-link-text">Open Logs <i class="bi bi-arrow-right"></i></span>
         </a>
       </div>

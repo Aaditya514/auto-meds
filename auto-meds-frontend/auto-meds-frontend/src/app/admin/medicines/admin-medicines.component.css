@@ -1,46 +1,320 @@
-/* ── Admin Medicine Catalog Management ───────────────────────────────────── */
+/* ── Admin Medicine Catalog Management (MediStock Theme) ───────────────── */
 
 :host {
   display: block;
+  min-height: 100vh;
+  background-color: #f4f7f5;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.table thead th {
-  background-color: #f8fafc;
+.medistock-catalog-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.medistock-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.system-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.header-title {
+  font-size: 1.75rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.header-subtitle {
+  font-size: 0.88rem;
   color: #64748b;
-  font-size: 0.74rem;
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.medistock-search-box {
+  position: relative;
+  width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 9px 32px 9px 36px;
+  font-size: 0.84rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.btn-medistock-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #0a2f24;
+  color: #ffffff;
+  border: 1px solid #144739;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(10, 47, 36, 0.2);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-medistock-primary:hover {
+  background-color: #144739;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(10, 47, 36, 0.28);
+}
+
+/* ── Catalog Summary Metric Strip ────────────────────────────────────────── */
+.catalog-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.summary-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.icon-cyan { background-color: #ecfeff; color: #0891b2; }
+.icon-emerald { background-color: #ecfdf5; color: #059669; }
+.icon-indigo { background-color: #eef2ff; color: #4f46e5; }
+
+.summary-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.summary-subtext {
+  font-size: 0.76rem;
+  margin: 6px 0 0 0;
+}
+
+/* ── Table Card (MediStock Style) ────────────────────────────────────────── */
+.medistock-table-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.medistock-catalog-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.medistock-catalog-table th {
+  background-color: #f8faf9;
+  color: #64748b;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 14px 16px;
+  padding: 13px 18px;
+  border-bottom: 1px solid #edf2f0;
 }
 
-.table tbody tr:hover td {
+.medistock-catalog-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.medistock-catalog-table tr:hover td {
+  background-color: #fbfdfc;
+}
+
+.med-name-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-emerald { background-color: #10b981; }
+.dot-red { background-color: #ef4444; }
+
+.badge-brand-pill {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.badge-strength-pill {
   background-color: #f8fafc;
-}
-
-.category-tag {
-  background-color: #e0f2fe;
-  border: 1px solid #bae6fd;
-  color: #0369a1;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  padding: 2px 7px;
+  border-radius: 5px;
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
+  display: inline-block;
 }
 
-.symptom-tag {
+.badge-category-pill {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-symptom-pill {
   background-color: #f8fafc;
+  color: #64748b;
   border: 1px solid #e2e8f0;
-  color: #475569;
-  font-size: 0.7rem;
-  font-weight: 500;
   padding: 2px 6px;
   border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 500;
 }
 
-.modal-content {
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
+.stock-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.stock-pill-in {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.stock-pill-out {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 /* ── Minimal & Effective 3-Button Action Toolbar ─────────────────────────── */
@@ -55,7 +329,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.22rem 0.45rem;
+  padding: 0.26rem 0.55rem;
   font-size: 0.72rem;
   font-weight: 600;
   border-radius: 6px;
@@ -85,18 +359,68 @@
 }
 
 .btn-action-edit {
-  color: #0284c7;
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
+  color: #0f172a;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
 }
 
 .btn-action-edit:hover {
-  background-color: #0284c7;
+  background-color: #0f172a;
   color: #ffffff;
-  border-color: #0284c7;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+  border-color: #0f172a;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
   transform: translateY(-1px);
 }
+
+.btn-action-deactivate {
+  color: #e11d48;
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+
+.btn-action-deactivate:hover {
+  background-color: #e11d48;
+  color: #ffffff;
+  border-color: #e11d48;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);
+  transform: translateY(-1px);
+}
+
+.toast-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.toast-success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.modal-content {
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
 
 .btn-action-deactivate {
   color: #dc2626;

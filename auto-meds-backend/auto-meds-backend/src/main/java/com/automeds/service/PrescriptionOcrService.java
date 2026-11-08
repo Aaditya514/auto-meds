@@ -399,6 +399,9 @@ public class PrescriptionOcrService {
             } else {
                 log.warn("NVIDIA Nemotron Parse API responded with status {}: {}", response.statusCode(), response.body());
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Failed to execute NVIDIA Nemotron Parse on image {}: thread interrupted", imagePath);
         } catch (Exception e) {
             log.error("Failed to execute NVIDIA Nemotron Parse on image {}: {}", imagePath, e.getMessage());
         }
@@ -489,6 +492,10 @@ public class PrescriptionOcrService {
                     .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             return response.statusCode() == 200;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Thread interrupted while verifying NVIDIA API key");
+            return false;
         } catch (Exception e) {
             log.warn("Error verifying NVIDIA API key: {}", e.getMessage());
             return false;
@@ -529,6 +536,10 @@ public class PrescriptionOcrService {
                 log.warn("Windows OCR process timed out for image {}", imagePath);
             }
             return sb.toString().trim();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Windows OCR process interrupted on {}: {}", imagePath, e.getMessage());
+            return "";
         } catch (Exception e) {
             log.error("Error executing Windows OCR script on {}: {}", imagePath, e.getMessage());
             return "";
@@ -562,6 +573,9 @@ public class PrescriptionOcrService {
                 log.info("Tesseract OCR successfully extracted {} characters from {}", sb.length(), imagePath.getFileName());
                 return sb.toString().trim();
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.debug("Tesseract OCR process interrupted on {}: {}", imagePath, e.getMessage());
         } catch (Exception e) {
             log.debug("Tesseract CLI not available in environment: {}", e.getMessage());
         }

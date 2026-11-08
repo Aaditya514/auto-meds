@@ -1,49 +1,91 @@
-<div class="container-fluid py-4 px-3 px-md-4">
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3">
+<div class="medistock-catalog-container">
+  <!-- Top Navigation & Header (MediStock Theme) -->
+  <div class="medistock-page-header">
     <div>
-      <h3 class="fw-bold mb-1 text-dark"><i class="bi bi-capsule text-primary me-2"></i>Medicine Catalog Management</h3>
-      <p class="text-muted small mb-0">Add, edit, deactivate &amp; manage active pharmaceutical formulations, composition molecules, and therapeutic classes.</p>
+      <div class="system-badge mb-2">
+        <span class="live-dot"></span>
+        <span class="system-text">Formulary Directory • WHO ATC Molecule Classification</span>
+      </div>
+      <h1 class="header-title">Medicine Catalog Management</h1>
+      <p class="header-subtitle">Add, edit, deactivate & manage active pharmaceutical formulations, composition molecules, and bio-equivalent generic substitutes.</p>
     </div>
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-      <div class="input-group input-group-sm" style="width: 220px; max-width: 100%;">
-        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+
+    <!-- Header Search & Add Actions -->
+    <div class="header-actions">
+      <div class="medistock-search-box">
+        <i class="bi bi-search search-icon"></i>
         <input 
           type="text" 
-          class="form-control border-start-0 ps-0" 
-          placeholder="Search medicines..." 
+          class="search-input" 
+          placeholder="Search by name, brand, molecule..." 
           [(ngModel)]="searchQuery">
-        <button *ngIf="searchQuery" (click)="searchQuery = ''" class="btn btn-outline-secondary" type="button">
+        <button *ngIf="searchQuery" (click)="searchQuery = ''" class="search-clear-btn" type="button">
           <i class="bi bi-x"></i>
         </button>
       </div>
-      <button (click)="openAddModal()" class="btn btn-pharma-primary btn-sm px-3 text-nowrap">
-        <i class="bi bi-plus-lg me-1"></i> Add New Medicine
+
+      <button (click)="openAddModal()" class="btn-medistock-primary">
+        <i class="bi bi-plus-lg"></i>
+        <span>Add New Medicine</span>
       </button>
     </div>
   </div>
 
-  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm">
-    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
-    <button type="button" class="btn-close" (click)="message = ''"></button>
+  <!-- Global Action Feedback Message -->
+  <div *ngIf="message" class="toast-banner toast-success mb-4">
+    <i class="bi bi-check-circle-fill"></i>
+    <span>{{ message }}</span>
+    <button type="button" class="toast-close" (click)="message = ''">✕</button>
+  </div>
+
+  <!-- Catalog Summary Metric Strip -->
+  <div class="catalog-summary-grid mb-4">
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">CATALOG FORMULATIONS</span>
+        <div class="summary-icon icon-cyan"><i class="bi bi-capsule"></i></div>
+      </div>
+      <div class="summary-value">{{ medicines.length }}</div>
+      <p class="summary-subtext text-emerald-600 font-semibold"><i class="bi bi-check2"></i> Active in database</p>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">FILTERED RESULTS</span>
+        <div class="summary-icon icon-emerald"><i class="bi bi-filter-circle"></i></div>
+      </div>
+      <div class="summary-value">{{ filteredMedicines.length }}</div>
+      <p class="summary-subtext text-slate-500">Matching search criteria</p>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">BIO-EQUIVALENT GENERICS</span>
+        <div class="summary-icon icon-indigo"><i class="bi bi-tag-fill"></i></div>
+      </div>
+      <div class="summary-value text-indigo-700">98.4%</div>
+      <p class="summary-subtext text-slate-500">Generic Smart-Save enabled</p>
+    </div>
   </div>
 
   <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status"></div>
+    <div class="spinner-border text-emerald-600" role="status"></div>
     <p class="text-muted small mt-2">Loading catalog formulations...</p>
   </div>
 
-  <div *ngIf="!loading && filteredMedicines.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
+  <!-- Main Catalog Table Card (MediStock Style) -->
+  <div *ngIf="!loading && filteredMedicines.length > 0" class="medistock-table-card">
     <div class="table-responsive">
-      <table class="table table-sticky align-middle table-hover mb-0">
+      <table class="medistock-catalog-table">
         <thead>
           <tr>
-            <th style="width: 48px;">ID</th>
+            <th style="width: 55px;">ID</th>
             <th>Medicine Name</th>
-            <th style="width: 100px;">Brand</th>
-            <th style="width: 160px;">Composition &amp; Strength</th>
-            <th style="width: 200px;">Therapeutic Class &amp; Indications</th>
-            <th class="text-end" style="width: 75px;">Price</th>
-            <th class="text-center text-nowrap" style="width: 95px;">Stock</th>
+            <th style="width: 120px;">Brand</th>
+            <th style="width: 180px;">Composition &amp; Strength</th>
+            <th style="width: 220px;">Therapeutic Class &amp; Indications</th>
+            <th class="text-end" style="width: 85px;">Price</th>
+            <th class="text-center text-nowrap" style="width: 110px;">Stock</th>
             <th class="text-end text-nowrap" style="width: 195px;">Actions</th>
           </tr>
         </thead>
@@ -51,23 +93,28 @@
           <tr *ngFor="let med of filteredMedicines">
             <td><span class="cell-id">#{{ med.id }}</span></td>
             <td>
-              <span class="fw-bold text-dark">{{ med.medicineName }}</span>
-            </td>
-            <td><span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold">{{ med.brandName }}</span></td>
-            <td>
-              <div class="cell-truncate text-dark small" style="max-width: 155px;" [title]="med.composition">{{ med.composition }}</div>
-              <div><span class="badge bg-light text-dark border small mt-1">{{ med.strength }}</span></div>
+              <div class="med-name-block">
+                <span class="status-indicator-dot" [ngClass]="med.stockQuantity > 0 ? 'dot-emerald' : 'dot-red'"></span>
+                <span class="fw-bold text-slate-900">{{ med.medicineName }}</span>
+              </div>
             </td>
             <td>
-              <div style="max-width: 195px;">
+              <span class="badge-brand-pill">{{ med.brandName }}</span>
+            </td>
+            <td>
+              <div class="cell-truncate text-slate-800 small font-medium" style="max-width: 175px;" [title]="med.composition">{{ med.composition }}</div>
+              <div><span class="badge-strength-pill mt-1">{{ med.strength }}</span></div>
+            </td>
+            <td>
+              <div style="max-width: 210px;">
                 <div class="mb-1" *ngIf="med.category">
-                  <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold">{{ med.category }}</span>
+                  <span class="badge-category-pill">{{ med.category }}</span>
                 </div>
                 <div class="d-flex flex-wrap gap-1" *ngIf="getSymptomsList(med.symptoms).length > 0">
-                  <span *ngFor="let sym of getSymptomsList(med.symptoms).slice(0, 2)" class="badge bg-light text-dark border" style="font-size: 10px;">
-                    <i class="bi bi-tag-fill text-primary opacity-50 me-1"></i>{{ sym }}
+                  <span *ngFor="let sym of getSymptomsList(med.symptoms).slice(0, 2)" class="badge-symptom-pill">
+                    <i class="bi bi-tag-fill me-1 opacity-60"></i>{{ sym }}
                   </span>
-                  <span *ngIf="getSymptomsList(med.symptoms).length > 2" class="badge bg-light text-muted border" style="font-size: 10px;" [title]="med.symptoms">
+                  <span *ngIf="getSymptomsList(med.symptoms).length > 2" class="badge-symptom-pill text-muted" [title]="med.symptoms">
                     +{{ getSymptomsList(med.symptoms).length - 2 }}
                   </span>
                 </div>
@@ -76,25 +123,25 @@
             </td>
             <td class="text-end cell-currency">₹{{ med.price }}</td>
             <td class="text-center text-nowrap">
-              <span [ngClass]="med.stockQuantity > 0 ? 'badge-in-stock' : 'badge-out-of-stock'" class="d-inline-flex align-items-center gap-1 text-nowrap tabular-nums">
-                <i [ngClass]="med.stockQuantity > 0 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'" style="font-size: 0.65rem;"></i>
+              <span [ngClass]="med.stockQuantity > 0 ? 'stock-pill-in' : 'stock-pill-out'" class="stock-badge-pill">
+                <i [ngClass]="med.stockQuantity > 0 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
                 {{ med.stockQuantity }} units
               </span>
             </td>
             <td class="text-end text-nowrap">
               <div class="action-toolbar">
                 <button (click)="openAddGenericModal(med)" 
-                        class="btn btn-action btn-action-generic" 
+                        class="btn-action btn-action-generic" 
                         title="Add low-cost bio-equivalent generic alternative">
-                  <i class="bi bi-tag-fill me-1"></i>Generic
+                  <i class="bi bi-tag-fill me-1"></i>+ Generic
                 </button>
                 <button (click)="openEditModal(med)" 
-                        class="btn btn-action btn-action-edit" 
+                        class="btn-action btn-action-edit" 
                         title="Edit medicine formulation details">
                   <i class="bi bi-pencil-fill me-1"></i>Edit
                 </button>
                 <button (click)="deactivate(med.id)" 
-                        class="btn btn-action btn-action-deactivate" 
+                        class="btn-action btn-action-deactivate" 
                         title="Deactivate this medicine formulation">
                   <i class="bi bi-slash-circle me-1"></i>Deactivate
                 </button>

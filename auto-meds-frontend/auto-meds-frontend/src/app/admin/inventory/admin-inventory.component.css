@@ -1,94 +1,460 @@
-/* ── Admin Inventory & Warehouse Management Styles ───────────────────────── */
+/* ── Admin Inventory & Warehouse Procurement Desk (MediStock Theme) ── */
 
 :host {
   display: block;
+  min-height: 100vh;
+  background-color: #f4f7f5;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.custom-tabs .nav-link {
+.medistock-inventory-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+/* ── Page Header ── */
+.medistock-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.system-badge {
   display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.header-title {
+  font-size: 1.75rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.header-subtitle {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+/* ── MediStock Tab Switcher ── */
+.medistock-nav-tabs {
+  display: inline-flex;
+  background-color: #e2e8f0;
+  padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: #0f172a;
+}
+
+.tab-btn.active {
+  background-color: #0a2f24;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(10, 47, 36, 0.25);
+}
+
+.tab-badge-pill {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  margin-left: 4px;
+}
+
+/* ── Toast Banner ── */
+.toast-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.toast-success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ── Inventory Toolbar Strip ── */
+.inventory-toolbar-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.medistock-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-pill {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.filter-pill:hover {
+  color: #0f172a;
+  background-color: #f8fafc;
+}
+
+.filter-pill.active {
+  background-color: #0a2f24;
+  color: #ffffff;
+}
+
+.filter-pill.pill-warning.active {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+
+.filter-pill.pill-danger.active {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+/* ── MediStock Table Card & Table ── */
+.medistock-table-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.medistock-inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.medistock-inventory-table th {
+  background-color: #f8faf9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 13px 18px;
+  border-bottom: 1px solid #edf2f0;
+}
+
+.medistock-inventory-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.medistock-inventory-table tr:hover td {
+  background-color: #fbfdfc;
+}
+
+.cell-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  background-color: #f1f5f9;
+  padding: 3px 7px;
+  border-radius: 6px;
+}
+
+.med-name-block {
+  display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.table thead th {
-  background-color: #f8fafc;
-  font-weight: 700;
-  font-size: 0.74rem;
-  letter-spacing: 0.05em;
-  color: #64748b;
-  text-transform: uppercase;
+.status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.table tbody tr:hover td {
-  background-color: #f8fafc;
-}
+.dot-emerald { background-color: #10b981; }
+.dot-amber { background-color: #f59e0b; }
+.dot-red { background-color: #ef4444; }
 
-.badge-lock {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: #f5f3ff;
-  border: 1px solid #ddd6fe;
-  color: #6d28d9;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-}
-
-.badge-avail-high {
-  background-color: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #065f46;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-}
-
-.badge-avail-low {
-  background-color: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #92400e;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-}
-
-.badge-avail-zero {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-}
-
-.filter-btn-group .btn {
-  font-size: 0.82rem;
-  padding: 6px 14px;
-}
-
-.btn-group .btn-outline-secondary {
-  border-color: #e2e8f0;
-  color: #64748b;
-}
-
-.btn-group .btn-outline-secondary:hover {
+.badge-brand-pill {
+  display: inline-block;
   background-color: #f1f5f9;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 6px;
+}
+
+.badge-strength-pill {
+  display: inline-block;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.cell-currency {
+  font-weight: 700;
   color: #0f172a;
 }
 
-/* Modal styling */
-.modal-backdrop-custom {
-  background-color: rgba(15, 23, 42, 0.6);
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 5-Day Soft-Lock Pills & Adjust Button ── */
+.badge-lock-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.badge-lock-pill.lock-active {
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.badge-lock-pill.lock-empty {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-softlock-adjust {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-softlock-adjust:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* ── Available Pool Badge ── */
+.badge-available-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-available-pill.avail-high {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.badge-available-pill.avail-low {
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.badge-available-pill.avail-zero {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+/* ── Status Pills (MediStock Pastel) ── */
+.badge-status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.badge-status-pill.status-instock {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.badge-status-pill.status-lowstock {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.badge-status-pill.status-critical {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* ── Action Restock Button ── */
+.btn-medistock-restock {
+  display: inline-flex;
+  align-items: center;
+  background-color: #0a2f24;
+  color: #ffffff;
+  border: 1px solid #144739;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-medistock-restock:hover {
+  background-color: #144739;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(10, 47, 36, 0.2);
+}
+
+/* ── Tab 2: Procurement Cards & Deficit Section ── */
+.card-pharma {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+.table-sticky th {
+  background-color: #f8faf9 !important;
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid #edf2f0 !important;
+  padding: 12px 16px !important;
+}
+
+.table-sticky td {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  vertical-align: middle !important;
+}
+
+/* ── Modals (Batch Restock & Soft-Lock) ── */
+.modal-backdrop.show {
+  background-color: rgba(10, 47, 36, 0.6);
   backdrop-filter: blur(4px);
+  opacity: 1;
 }
 
 .modal-content {
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(10, 47, 36, 0.25);
+}
+
+.modal-header.bg-primary {
+  background-color: #0a2f24 !important;
+  border-bottom: 1px solid #144739;
+}
+
+.modal-header.bg-dark {
+  background-color: #0f172a !important;
+}
+
+.modal-footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 14px 20px;
+}
+
+.btn-submitting {
+  opacity: 0.8;
+  cursor: not-allowed;
 }

@@ -105,3 +105,84 @@
   color: #0f172a;
 }
 
+/* ── MediStock Theme for Pharmacist/Admin Portal ────────────────────────── */
+.navbar-admin-medistock {
+  background-color: #0a2f24 !important;
+  border-bottom: 1px solid #07241b !important;
+  box-shadow: 0 4px 16px rgba(10, 47, 36, 0.2) !important;
+}
+
+.admin-brand-icon {
+  background-color: #10b981;
+  color: #0a2f24;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.brand-admin-text {
+  color: #ffffff !important;
+  letter-spacing: -0.02em;
+}
+
+.admin-portal-badge {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+  color: #6ee7b7 !important;
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  font-size: 0.6rem !important;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.navbar-admin-medistock .navbar-nav .nav-link {
+  color: #93c5b5;
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-admin-medistock .navbar-nav .nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-admin-medistock .navbar-nav .nav-link.active {
+  color: #ffffff !important;
+  background-color: #144739 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-admin-medistock .navbar-nav .nav-link.active i {
+  color: #34d399 !important;
+}
+
+.navbar-admin-medistock .avatar-pharmacist {
+  background-color: #134e42 !important;
+  border: 2px solid #10b981 !important;
+  color: #ffffff !important;
+}
+
+.navbar-admin-medistock .d-none.d-md-flex .text-dark {
+  color: #ffffff !important;
+}
+
+.navbar-admin-medistock .d-none.d-md-flex .text-muted {
+  color: #6ee7b7 !important;
+}
+
+.navbar-admin-medistock .dropdown-toggle::after {
+  color: #6ee7b7 !important;
+}
+
+

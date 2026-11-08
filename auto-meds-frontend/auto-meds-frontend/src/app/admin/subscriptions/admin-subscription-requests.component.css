@@ -1,42 +1,266 @@
-/* Admin Subscription Requests & Medicine Auditor Styles */
+/* ── Admin Subscription Requests & Prescription Auditor (MediStock Theme) ── */
 
-.card-request-audit {
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #f4f7f5;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.medistock-subscriptions-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+/* ── Page Header ── */
+.medistock-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.system-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.header-title {
+  font-size: 1.75rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.header-subtitle {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.medistock-search-box {
+  position: relative;
+  width: 260px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 30px 8px 34px;
+  font-size: 0.84rem;
+  background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 12px;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+/* ── View Toggle (Segmented Pill) ── */
+.medistock-view-toggle {
+  display: inline-flex;
+  background-color: #e2e8f0;
+  padding: 3px;
+  border-radius: 12px;
+  gap: 3px;
+}
+
+.view-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.view-toggle-btn:hover {
+  color: #0f172a;
+}
+
+.view-toggle-btn.active {
+  background-color: #0a2f24;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(10, 47, 36, 0.25);
+}
+
+.badge-pending-pill {
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Toast Banners ── */
+.toast-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.toast-success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.toast-danger {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ── Audit Request Card (MediStock Style) ── */
+.card-request-audit {
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
 .card-request-audit:hover {
   transform: translateY(-2px);
   border-color: #cbd5e1;
-  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08), 0 6px 12px -4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 24px -4px rgba(10, 47, 36, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
 }
 
 .card-header-bar {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8faf9;
+  border-bottom: 1px solid #edf2f0;
   padding: 1rem 1.25rem;
 }
 
+.cell-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  color: #065f46;
+  font-weight: 700;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.badge-status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.badge-status-pill.status-pending-audit {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
 .prescription-preview-box {
-  background-color: #f8fafc;
+  background-color: #f8faf9;
   border: 1.5px dashed #cbd5e1;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 1.25rem;
   transition: all 0.2s ease;
 }
 
 .prescription-preview-box:hover {
-  border-color: #0284c7;
-  background-color: #f0f9ff;
+  border-color: #10b981;
+  background-color: #f0fdf9;
 }
 
-/* Multi-Select Medicine Selector Styling */
+/* ── Medicine Selector & Multi-Select ── */
 .med-selector-box {
-  background: #f8fafc;
+  background: #f8faf9;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 1rem;
@@ -51,34 +275,17 @@
 }
 
 .med-chip {
-  background-color: rgba(13, 110, 253, 0.08);
-  color: #0d6efd;
-  border: 1px solid rgba(13, 110, 253, 0.2);
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
   border-radius: 20px;
   padding: 4px 10px;
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.15s ease;
-}
-
-.med-chip:hover {
-  background-color: rgba(13, 110, 253, 0.15);
-}
-
-.med-chip .btn-close-chip {
-  cursor: pointer;
-  opacity: 0.65;
-  font-size: 0.9rem;
-  line-height: 1;
-  margin-left: 2px;
-}
-
-.med-chip .btn-close-chip:hover {
-  opacity: 1;
-  color: #dc3545;
 }
 
 .med-scroll-grid {
@@ -87,7 +294,6 @@
   padding-right: 4px;
 }
 
-/* Custom Scrollbar */
 .med-scroll-grid::-webkit-scrollbar,
 .auditor-modal-body::-webkit-scrollbar {
   width: 6px;
@@ -121,14 +327,14 @@
 }
 
 .med-item-card:hover {
-  border-color: #93c5fd;
-  background-color: #f0f7ff;
+  border-color: #a7f3d0;
+  background-color: #f0fdf9;
 }
 
 .med-item-card.is-selected {
-  border-color: #0d6efd;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.12);
+  border-color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
 }
 
 .med-item-card .form-check-input {
@@ -137,14 +343,147 @@
   cursor: pointer;
 }
 
-/* Side-by-Side Modal Auditor Overlay */
+/* ── Card Footer Bar & MediStock Buttons ── */
+.card-footer-bar {
+  background-color: #f8faf9;
+  border-top: 1px solid #edf2f0;
+}
+
+.btn-medistock-secondary {
+  display: inline-flex;
+  align-items: center;
+  background-color: #ffffff;
+  color: #0a2f24;
+  border: 1px solid #cbd5e1;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-medistock-secondary:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.btn-medistock-clarify {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-medistock-clarify:hover {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.btn-medistock-reject {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-medistock-reject:hover {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+}
+
+.btn-medistock-approve {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0a2f24;
+  color: #ffffff;
+  border: 1px solid #144739;
+  padding: 7px 18px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(10, 47, 36, 0.25);
+  transition: all 0.15s ease;
+}
+
+.btn-medistock-approve:hover:not(:disabled) {
+  background-color: #144739;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(10, 47, 36, 0.3);
+}
+
+.btn-medistock-approve:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-submitting {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+/* ── Table Card View ── */
+.medistock-table-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.medistock-inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.medistock-inventory-table th {
+  background-color: #f8faf9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 13px 18px;
+  border-bottom: 1px solid #edf2f0;
+}
+
+.medistock-inventory-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.medistock-inventory-table tr:hover td {
+  background-color: #fbfdfc;
+}
+
+/* ── Side-by-Side Modal Auditor Overlay ── */
 .auditor-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(10, 47, 36, 0.65);
   backdrop-filter: blur(4px);
   z-index: 1050;
   display: flex;
@@ -156,7 +495,7 @@
 .auditor-modal-dialog {
   background: #ffffff;
   border-radius: 20px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(10, 47, 36, 0.3);
   width: 100%;
   max-width: 1260px;
   max-height: 92vh;
@@ -166,7 +505,22 @@
   animation: modalFadeIn 0.2s ease-out;
 }
 
-/* Split-Screen Viewer & OCR Triage Desk Styles */
+.auditor-modal-header {
+  background: #0a2f24;
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #144739;
+}
+
+.auditor-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
 .auditor-viewport-box {
   background: #0f172a;
   border-radius: 12px;
@@ -188,14 +542,6 @@
   padding: 10px;
 }
 
-.auditor-preview-media {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center center;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
 .auditor-preview-iframe {
   width: 100%;
   height: 100%;
@@ -208,7 +554,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(10, 47, 36, 0.9);
   backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 24px;
@@ -228,73 +574,16 @@
   font-size: 0.8rem;
   line-height: 1;
   transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .auditor-toolbar .btn-tool:hover {
   background: rgba(255, 255, 255, 0.2);
-  color: #38bdf8;
-}
-
-.ocr-triage-panel {
-  border: 1.5px solid #e0e7ff;
-  background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
-  border-radius: 14px;
-  padding: 1rem;
-}
-
-.ocr-candidate-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 0.65rem 0.85rem;
-  transition: all 0.2s ease;
-}
-
-.ocr-candidate-card:hover {
-  border-color: #6366f1;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-}
-
-.ocr-badge-high {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-}
-
-.ocr-badge-med {
-  background: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fde68a;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.auditor-modal-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #ffffff;
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.auditor-modal-body {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
+  color: #10b981;
 }
 
 .auditor-modal-footer {
-  background: #f8fafc;
+  background: #f8faf9;
   border-top: 1px solid #e2e8f0;
   padding: 1rem 1.5rem;
   display: flex;
@@ -303,32 +592,14 @@
   gap: 0.75rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 991.98px) {
-  .auditor-modal-dialog {
-    max-height: 95vh;
-  }
-}
-
-@media (max-width: 767.98px) {
-  .card-header-bar {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 0.5rem;
-  }
-  .med-scroll-grid {
-    max-height: 200px;
-  }
-}
-
-/* Handsome Centered Action Modal Dialog */
+/* ── Action Modals (Clarification / Rejection) ── */
 .action-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(10, 47, 36, 0.7);
   backdrop-filter: blur(8px);
   z-index: 99999 !important;
   display: flex;
@@ -338,30 +609,14 @@
   animation: fadeInBackdrop 0.2s ease-out;
 }
 
-@keyframes fadeInBackdrop {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .action-modal-card {
   background: #ffffff;
   border-radius: 20px;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 60px -15px rgba(10, 47, 36, 0.35);
   width: 100%;
   max-width: 560px;
   overflow: hidden;
   animation: popInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes popInModal {
-  from {
-    opacity: 0;
-    transform: scale(0.92) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
 }
 
 .action-modal-header {
@@ -398,8 +653,9 @@
 }
 
 .action-textarea:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+  outline: none;
 }
 
 .suggestion-chip {
@@ -411,6 +667,7 @@
   color: #334155;
   transition: all 0.15s ease;
   text-align: left;
+  cursor: pointer;
 }
 
 .suggestion-chip:hover {
@@ -420,4 +677,17 @@
   transform: translateY(-1px);
 }
 
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
 
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popInModal {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}

@@ -1,12 +1,14 @@
-<nav class="navbar navbar-expand-lg navbar-pharma sticky-top">
+<nav class="navbar navbar-expand-lg navbar-pharma sticky-top" [ngClass]="{'navbar-admin-medistock': authService.isAdmin()}">
   <div class="container-fluid px-3 px-md-4">
     <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-3 me-xl-4 text-decoration-none py-0" routerLink="/">
-      <i class="bi bi-prescription2 text-primary fs-2 me-2"></i>
+      <div *ngIf="authService.isAdmin()" class="admin-brand-icon me-2">
+        <i class="bi bi-plus-lg"></i>
+      </div>
+      <i *ngIf="!authService.isAdmin()" class="bi bi-prescription2 text-primary fs-2 me-2"></i>
       <div class="d-flex flex-column align-items-start lh-1">
-        <span class="brand-gradient fs-4 fw-bold mb-1">Auto-Meds</span>
+        <span class="brand-title fs-4 fw-bold mb-1" [ngClass]="authService.isAdmin() ? 'brand-admin-text' : 'brand-gradient'">Auto-Meds</span>
         <span *ngIf="authService.isAdmin()" 
-              class="badge text-uppercase fw-bold text-nowrap" 
-              style="background-color: #0f172a; color: #f8fafc; font-size: 0.58rem; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 4px;">
+              class="badge text-uppercase fw-bold text-nowrap admin-portal-badge">
           Pharmacist Portal
         </span>
       </div>

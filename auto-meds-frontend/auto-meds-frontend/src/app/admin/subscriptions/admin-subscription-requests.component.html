@@ -1,61 +1,63 @@
-<div class="container-fluid py-4 px-lg-5">
-  <!-- Header & Toolbar -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+<div class="medistock-subscriptions-container">
+  <!-- Header & Toolbar (MediStock Theme) -->
+  <div class="medistock-page-header">
     <div>
-      <h3 class="fw-bold mb-1 text-dark">
-        <i class="bi bi-file-earmark-medical text-primary me-2"></i>Subscription & Prescription Requests
-      </h3>
-      <p class="text-muted small mb-0">
+      <div class="system-badge mb-2">
+        <span class="live-dot"></span>
+        <span class="system-text">Phase 2 Active • Pharmacist Clinical Rx Verification Desk</span>
+      </div>
+      <h1 class="header-title">Subscription & Prescription Requests</h1>
+      <p class="header-subtitle">
         Audit patient prescription documents, search & assign multiple chronic medicines, and approve auto-refill subscriptions seamlessly.
       </p>
     </div>
     
     <!-- Controls: Search & View Mode -->
-    <div class="d-flex flex-wrap align-items-center gap-2">
-      <div class="input-group input-group-sm" style="min-width: 250px;">
-        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+    <div class="header-actions">
+      <div class="medistock-search-box">
+        <i class="bi bi-search search-icon"></i>
         <input type="text" 
-               class="form-control border-start-0 ps-0" 
+               class="search-input" 
                placeholder="Search patient, ID, dosage..." 
                [(ngModel)]="globalSearchQuery">
-        <button *ngIf="globalSearchQuery" (click)="globalSearchQuery = ''" class="btn btn-outline-secondary" type="button">
-          <i class="bi bi-x"></i>
+        <button *ngIf="globalSearchQuery" (click)="globalSearchQuery = ''" class="search-clear-btn" type="button">
+          ✕
         </button>
       </div>
 
-      <div class="btn-group btn-group-sm shadow-sm" role="group">
+      <div class="medistock-view-toggle">
         <button type="button" 
-                class="btn" 
-                [class.btn-primary]="viewMode === 'cards'" 
-                [class.btn-outline-primary]="viewMode !== 'cards'"
+                class="view-toggle-btn" 
+                [class.active]="viewMode === 'cards'" 
                 (click)="viewMode = 'cards'"
                 title="Responsive Cards View">
           <i class="bi bi-grid-fill me-1"></i> Cards
         </button>
         <button type="button" 
-                class="btn" 
-                [class.btn-primary]="viewMode === 'table'" 
-                [class.btn-outline-primary]="viewMode !== 'table'"
+                class="view-toggle-btn" 
+                [class.active]="viewMode === 'table'" 
                 (click)="viewMode = 'table'"
                 title="Compact Table View">
           <i class="bi bi-table me-1"></i> Table
         </button>
       </div>
 
-      <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
+      <span class="badge-pending-pill">
         <i class="bi bi-clock-history me-1"></i>{{ filteredRequests.length }} Pending
       </span>
     </div>
   </div>
 
   <!-- Alerts -->
-  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm border-0">
-    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
-    <button type="button" class="btn-close" (click)="message = ''"></button>
+  <div *ngIf="message" class="toast-banner toast-success mb-4">
+    <i class="bi bi-check-circle-fill"></i>
+    <span>{{ message }}</span>
+    <button type="button" class="toast-close" (click)="message = ''">✕</button>
   </div>
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm border-0">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
-    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  <div *ngIf="errorMessage" class="toast-banner toast-danger mb-4">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span>{{ errorMessage }}</span>
+    <button type="button" class="toast-close" (click)="errorMessage = ''">✕</button>
   </div>
 
   <!-- Loading State -->
@@ -71,17 +73,17 @@
         <!-- Card Header -->
         <div class="card-header-bar d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-3">
-            <span class="badge bg-dark px-3 py-2 rounded-3 fs-6 fw-bold">#{{ req.id }}</span>
+            <span class="cell-id">#{{ req.id }}</span>
             <div>
-              <h5 class="fw-bold mb-0 text-dark">{{ req.patientName || 'Patient Request' }}</h5>
-              <span class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ req.patientEmail || 'No email' }}</span>
+              <h5 class="fw-bold mb-0 text-slate-900">{{ req.patientName || 'Patient Request' }}</h5>
+              <span class="text-slate-500 small"><i class="bi bi-envelope me-1"></i>{{ req.patientEmail || 'No email' }}</span>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 rounded-pill fw-semibold">
+            <span class="badge-status-pill status-pending-audit">
               <i class="bi bi-hourglass-split me-1"></i>Pending Audit
             </span>
-            <button (click)="openAuditModal(req)" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-xs">
+            <button (click)="openAuditModal(req)" class="btn-medistock-secondary">
               <i class="bi bi-arrows-fullscreen me-1"></i> Full Auditor Modal
             </button>
           </div>
@@ -244,25 +246,25 @@
         </div>
 
         <!-- Card Footer Actions -->
-        <div class="card-footer bg-light px-4 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 border-top">
-          <div class="text-muted small">
-            <i class="bi bi-info-circle text-primary me-1"></i>
-            Assigned: <strong class="text-dark">{{ req.selectedMedicineIds ? req.selectedMedicineIds.length : 0 }} medicine(s)</strong>
+        <div class="card-footer-bar px-4 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 border-top">
+          <div class="text-slate-500 small">
+            <i class="bi bi-info-circle text-emerald-600 me-1"></i>
+            Assigned: <strong class="text-slate-900">{{ req.selectedMedicineIds ? req.selectedMedicineIds.length : 0 }} medicine(s)</strong>
           </div>
           <div class="d-flex flex-wrap gap-2 w-100 w-sm-auto justify-content-end">
             <button type="button" 
                     (click)="openClarificationDialog(req.id)" 
-                    class="btn btn-sm btn-outline-warning fw-semibold px-3 shadow-xs">
+                    class="btn-medistock-clarify">
               <i class="bi bi-question-circle me-1"></i> Request Clarification
             </button>
             <button type="button" 
                     (click)="openRejectDialog(req.id)" 
-                    class="btn btn-sm btn-outline-danger fw-semibold px-3 shadow-xs">
+                    class="btn-medistock-reject">
               <i class="bi bi-x-lg me-1"></i> Reject Request
             </button>
             <button type="button" 
                     (click)="approve(req)" 
-                    class="btn btn-sm btn-success fw-bold px-4 shadow-sm" 
+                    class="btn-medistock-approve" 
                     [disabled]="!req.selectedMedicineIds || req.selectedMedicineIds.length === 0 || approvingIds.has(req.id)"
                     [class.btn-submitting]="approvingIds.has(req.id)">
               <span *ngIf="approvingIds.has(req.id)" class="spinner-border spinner-border-sm me-1"></span>
@@ -276,9 +278,9 @@
   </div>
 
   <!-- COMPACT TABLE VIEW (ALTERNATIVE MODE) -->
-  <div *ngIf="viewMode === 'table' && !loading && filteredRequests.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
+  <div *ngIf="viewMode === 'table' && !loading && filteredRequests.length > 0" class="medistock-table-card">
     <div class="table-responsive">
-      <table class="table table-sticky align-middle table-hover mb-0">
+      <table class="medistock-inventory-table">
         <thead>
           <tr>
             <th style="width: 80px;">Request #</th>

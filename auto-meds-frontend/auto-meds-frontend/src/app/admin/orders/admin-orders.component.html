@@ -1,85 +1,84 @@
-<div class="container-fluid py-4 px-3 px-md-4">
-  <!-- Header & Toolbar -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+<div class="medistock-orders-container">
+  <!-- Header & Toolbar (MediStock Theme) -->
+  <div class="medistock-page-header">
     <div>
-      <h3 class="fw-bold mb-1 text-dark">
-        <i class="bi bi-receipt text-primary me-2"></i>Pharmacist Orders Desk & Fulfillment
-      </h3>
-      <p class="text-muted small mb-0">
+      <div class="system-badge mb-2">
+        <span class="live-dot"></span>
+        <span class="system-text">Phase 5 Active • Dispensing Desk & Fulfillment</span>
+      </div>
+      <h1 class="header-title">Pharmacist Orders Desk & Fulfillment</h1>
+      <p class="header-subtitle">
         Review & transition delivery statuses for One-Time purchases and automated 5-day soft-locked Chronic Refills.
       </p>
     </div>
 
     <!-- Search & Quick Metrics -->
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-      <div class="input-group input-group-sm" style="width: 240px; max-width: 100%;">
-        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+    <div class="header-actions">
+      <div class="medistock-search-box">
+        <i class="bi bi-search search-icon"></i>
         <input 
           type="text" 
-          class="form-control border-start-0 ps-0" 
+          class="search-input" 
           placeholder="Search orders..." 
           [(ngModel)]="searchQuery">
-        <button *ngIf="searchQuery" (click)="searchQuery = ''" class="btn btn-outline-secondary" type="button">
-          <i class="bi bi-x"></i>
+        <button *ngIf="searchQuery" (click)="searchQuery = ''" class="search-clear-btn" type="button">
+          ✕
         </button>
       </div>
 
-      <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
-        {{ filteredOrders.length }} Orders
+      <span class="badge-total-orders">
+        <i class="bi bi-receipt me-1"></i>{{ filteredOrders.length }} Orders
       </span>
     </div>
   </div>
 
-  <!-- Status Filter Toolbar -->
-  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-    <button 
-      (click)="statusFilter = 'ALL'" 
-      class="btn btn-sm rounded-pill fw-semibold"
-      [class.btn-primary]="statusFilter === 'ALL'"
-      [class.btn-outline-secondary]="statusFilter !== 'ALL'">
-      All Orders
-    </button>
-    <button 
-      (click)="statusFilter = 'PENDING'" 
-      class="btn btn-sm rounded-pill fw-semibold"
-      [class.btn-warning]="statusFilter === 'PENDING'"
-      [class.btn-outline-secondary]="statusFilter !== 'PENDING'">
-      Pending
-    </button>
-    <button 
-      (click)="statusFilter = 'APPROVED'" 
-      class="btn btn-sm rounded-pill fw-semibold"
-      [class.btn-info]="statusFilter === 'APPROVED'"
-      [class.btn-outline-secondary]="statusFilter !== 'APPROVED'">
-      Approved
-    </button>
-    <button 
-      (click)="statusFilter = 'PACKED'" 
-      class="btn btn-sm rounded-pill fw-semibold"
-      [class.btn-primary]="statusFilter === 'PACKED'"
-      [class.btn-outline-secondary]="statusFilter !== 'PACKED'">
-      Packed
-    </button>
-    <button 
-      (click)="statusFilter = 'DISPATCHED'" 
-      class="btn btn-sm rounded-pill fw-semibold"
-      [class.btn-primary]="statusFilter === 'DISPATCHED'"
-      [class.btn-outline-secondary]="statusFilter !== 'DISPATCHED'">
-      Dispatched
-    </button>
-    <button 
-      (click)="statusFilter = 'DELIVERED'" 
-      class="btn btn-sm rounded-pill fw-semibold"
-      [class.btn-success]="statusFilter === 'DELIVERED'"
-      [class.btn-outline-secondary]="statusFilter !== 'DELIVERED'">
-      Delivered
-    </button>
+  <!-- Status Filter Pills Strip (MediStock Style) -->
+  <div class="inventory-toolbar-strip mb-4">
+    <div class="medistock-filter-pills">
+      <button 
+        (click)="statusFilter = 'ALL'" 
+        class="filter-pill"
+        [class.active]="statusFilter === 'ALL'">
+        All Orders
+      </button>
+      <button 
+        (click)="statusFilter = 'PENDING'" 
+        class="filter-pill pill-warning"
+        [class.active]="statusFilter === 'PENDING'">
+        Pending
+      </button>
+      <button 
+        (click)="statusFilter = 'APPROVED'" 
+        class="filter-pill pill-info"
+        [class.active]="statusFilter === 'APPROVED'">
+        Approved
+      </button>
+      <button 
+        (click)="statusFilter = 'PACKED'" 
+        class="filter-pill"
+        [class.active]="statusFilter === 'PACKED'">
+        Packed
+      </button>
+      <button 
+        (click)="statusFilter = 'DISPATCHED'" 
+        class="filter-pill"
+        [class.active]="statusFilter === 'DISPATCHED'">
+        Dispatched
+      </button>
+      <button 
+        (click)="statusFilter = 'DELIVERED'" 
+        class="filter-pill pill-success"
+        [class.active]="statusFilter === 'DELIVERED'">
+        Delivered
+      </button>
+    </div>
   </div>
 
   <!-- Messages -->
-  <div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm">
-    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
-    <button type="button" class="btn-close" (click)="message = ''"></button>
+  <div *ngIf="message" class="toast-banner toast-success mb-4">
+    <i class="bi bi-check-circle-fill"></i>
+    <span>{{ message }}</span>
+    <button type="button" class="toast-close" (click)="message = ''">✕</button>
   </div>
 
   <!-- Loading State -->
@@ -89,9 +88,9 @@
   </div>
 
   <!-- Orders Table -->
-  <div *ngIf="!loading && filteredOrders.length > 0" class="card card-pharma p-0 bg-white shadow-sm overflow-hidden">
+  <div *ngIf="!loading && filteredOrders.length > 0" class="medistock-table-card">
     <div class="table-responsive">
-      <table class="table table-sticky align-middle table-hover mb-0">
+      <table class="medistock-inventory-table">
         <thead>
           <tr>
             <th style="width: 75px;">Order ID</th>
