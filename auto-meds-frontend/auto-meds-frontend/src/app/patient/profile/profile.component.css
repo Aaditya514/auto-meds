@@ -1,34 +1,334 @@
-/* ── Patient Profile & Clinical Safety Settings ──────────────────────────── */
+/* ── Patient Health Records & Document Vault Styles ─────────────────────── */
 
-.card-pharma {
+.patient-vault-container {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ── Hero Identity Card ── */
+.patient-hero-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
   border: 1px solid #e2e8f0 !important;
   border-radius: 16px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
 }
 
-.avatar-pharma {
-  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease-spring);
+.patient-hero-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+  position: relative;
+  flex-shrink: 0;
+  border: 2px solid #ffffff;
 }
 
-.avatar-pharma:hover {
-  transform: scale(1.04);
+.online-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 13px;
+  height: 13px;
+  background-color: #10b981;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
 }
 
-.section-header-title {
-  font-size: 1.05rem;
+.hero-stat-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hero-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-number {
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+
+/* ── Navigation Tabs ── */
+.patient-tabs {
+  gap: 6px;
+}
+
+.patient-tabs .nav-link {
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.patient-tabs .nav-link:hover {
+  color: #0f172a;
+  background-color: #f1f5f9;
+}
+
+.patient-tabs .nav-link.active {
+  color: #ffffff !important;
+  background-color: #0284c7 !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+/* ── Filter Pills ── */
+.filter-pill {
+  border-radius: 20px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background-color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.filter-pill:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.filter-pill.filter-active {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+/* ── Document Cards ── */
+.doc-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.doc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.doc-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.icon-prescription {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.icon-health-id {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.icon-insurance {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.icon-vaccine {
+  background-color: #cffafe;
+  color: #0891b2;
+}
+
+.icon-lab {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.category-tag {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
   font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+}
+
+.doc-ref-number {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.doc-meta-box {
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Safety Tags ── */
+.allergy-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.condition-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+/* ── Modal Dialogs ── */
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.modal-dialog-custom {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 650px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-lg-custom {
+  max-width: 820px;
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.btn-close-modal:hover {
   color: #0f172a;
 }
 
-.form-control {
-  border-radius: 9px;
-  border: 1px solid #cbd5e1;
-  padding: 0.65rem 0.95rem;
-  font-size: 0.9rem;
-  transition: all 0.18s ease;
+.modal-body-custom {
+  overflow-y: auto;
 }
 
-.form-control:focus {
-  border-color: #0284c7;
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+/* ── Rx Simulated Sheet ── */
+.prescription-sheet {
+  border: 2px solid #e2e8f0;
+  position: relative;
+  background: #ffffff;
+}
+
+.rx-logo-box {
+  width: 44px;
+  height: 44px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rx-symbol {
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-family: serif;
+}
+
+.signature-line {
+  font-family: cursive, 'Brush Script MT', sans-serif;
+  font-size: 1.2rem;
+}
+
+/* ── ABHA Digital Card Sheet ── */
+.abha-card-sheet {
+  background: linear-gradient(135deg, #0e2a47 0%, #1e3a5f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.abha-tricolor-bar {
+  height: 6px;
+  background: linear-gradient(to right, #ff9933 33.33%, #ffffff 33.33%, #ffffff 66.66%, #138808 66.66%);
+  border-radius: 4px;
+}
+
+.national-emblem-badge {
+  font-size: 1.8rem;
+}
+
+.tracking-wide {
+  letter-spacing: 0.15em;
+}
+
+/* ── Insurance Sheet ── */
+.insurance-card-sheet {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #cbd5e1;
+}
+
+/* ── File Upload Box ── */
+.file-upload-box {
+  background-color: #f8fafc;
+  border: 2px dashed #cbd5e1 !important;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.file-upload-box:hover {
+  border-color: #0284c7 !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .modal-dialog-custom,
+  .modal-dialog-custom * {
+    visibility: visible;
+  }
+  .modal-dialog-custom {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+  }
+  .modal-header-custom,
+  .modal-footer-custom {
+    display: none !important;
+  }
 }

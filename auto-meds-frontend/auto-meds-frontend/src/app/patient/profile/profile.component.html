@@ -1,165 +1,706 @@
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-
-      <!-- Breadcrumb Navigation -->
-      <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb mb-0">
+<div class="patient-vault-container py-4 px-3 px-md-4">
+  <!-- Top Breadcrumb & Quick Actions -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
           <li class="breadcrumb-item"><a routerLink="/home" class="text-decoration-none">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+          <li class="breadcrumb-item active" aria-current="page">Health Profile &amp; Medical Records</li>
         </ol>
       </nav>
+      <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-primary"></i>
+        <span>Patient Health Records &amp; Document Vault</span>
+      </h2>
+    </div>
 
-      <!-- Feedback Messages -->
-      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ successMessage }}
-      </div>
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
-      </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-secondary btn-sm" (click)="loadProfile()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
+      </button>
+      <button class="btn btn-primary btn-sm px-3 fw-semibold shadow-sm" (click)="openUploadModal()">
+        <i class="bi bi-cloud-arrow-up-fill me-1"></i>Upload Medical Document
+      </button>
+    </div>
+  </div>
 
-      <!-- Loading State -->
-      <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="text-muted mt-2">Loading profile details...</p>
-      </div>
+  <!-- Global Feedback Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+  </div>
 
-      <!-- Profile Container -->
-      <div *ngIf="!loading && user" class="card card-pharma p-4 p-md-5 bg-white shadow-sm border-0">
-        
-        <!-- Profile Header / Identity Banner -->
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-4 mb-4 gap-3">
-          <div class="d-flex align-items-center">
-            <div class="avatar-pharma avatar-xl avatar-patient me-3 shadow-sm position-relative">
-              {{ (user.name ? user.name.charAt(0) : 'U') | uppercase }}
-              <span class="avatar-status-dot avatar-status-online" title="Identity Verified &amp; Active"></span>
-            </div>
-            <div>
-              <h3 class="fw-bold mb-1 text-dark">{{ user.name }}</h3>
-              <p class="text-muted small mb-1"><i class="bi bi-envelope me-1"></i>{{ user.email }}</p>
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge rounded-pill" [ngClass]="user.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'">
-                  {{ user.role }}
-                </span>
-                <span class="text-muted small" *ngIf="user.createdAt">
-                  &bull; Member since {{ user.createdAt | date:'mediumDate' }}
-                </span>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2">Loading clinical health profile and records...</p>
+  </div>
+
+  <div *ngIf="!loading && user">
+    <!-- ── Patient Identity Hero Card & Health KPI Pods ── -->
+    <div class="card patient-hero-card mb-4 border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="row align-items-center g-3">
+          <!-- Left: User Identity -->
+          <div class="col-lg-5 col-md-6">
+            <div class="d-flex align-items-center gap-3">
+              <div class="patient-hero-avatar shadow-sm">
+                <span>{{ (user.name ? user.name.charAt(0) : 'P') | uppercase }}</span>
+                <span class="online-indicator" title="ABDM &amp; E-Prescription Active"></span>
+              </div>
+              <div class="overflow-hidden">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <h4 class="fw-bold mb-0 text-dark">{{ user.name }}</h4>
+                  <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">
+                    <i class="bi bi-shield-fill-check me-1"></i>Verified Patient
+                  </span>
+                </div>
+                <div class="text-muted small mt-1">
+                  <i class="bi bi-envelope me-1"></i>{{ user.email }} &bull; 
+                  <i class="bi bi-telephone ms-1 me-1"></i>{{ user.phone || 'Phone not set' }}
+                </div>
+                <div class="text-muted small mt-1">
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 me-2">
+                    Blood Group: <strong>{{ bloodGroup }}</strong>
+                  </span>
+                  <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                    ABHA: <strong>91-5839-2041-8492</strong>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Quick Navigation Actions -->
-          <div class="d-flex gap-2">
-            <a routerLink="/subscriptions" class="btn btn-outline-primary btn-sm">
-              <i class="bi bi-arrow-repeat me-1"></i>Subscriptions
-            </a>
-            <a routerLink="/orders" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-box me-1"></i>Orders
-            </a>
+          <!-- Right: 4 Health Metric Pods -->
+          <div class="col-lg-7 col-md-6">
+            <div class="row g-2 text-center">
+              <div class="col-sm-3 col-6">
+                <div class="hero-stat-card p-2 rounded-3 bg-white border">
+                  <div class="stat-number text-primary fw-bold fs-4">{{ prescriptionCount }}</div>
+                  <div class="stat-label small text-muted">Active Prescriptions</div>
+                </div>
+              </div>
+              <div class="col-sm-3 col-6">
+                <div class="hero-stat-card p-2 rounded-3 bg-white border">
+                  <div class="stat-number text-success fw-bold fs-4">{{ documents.length }}</div>
+                  <div class="stat-label small text-muted">Stored Documents</div>
+                </div>
+              </div>
+              <div class="col-sm-3 col-6">
+                <div class="hero-stat-card p-2 rounded-3 bg-white border">
+                  <div class="stat-number text-info fw-bold fs-4">Cashless</div>
+                  <div class="stat-label small text-muted">Star Mediclaim</div>
+                </div>
+              </div>
+              <div class="col-sm-3 col-6">
+                <div class="hero-stat-card p-2 rounded-3 bg-white border">
+                  <div class="stat-number text-danger fw-bold fs-4">{{ getAllergyList().length }}</div>
+                  <div class="stat-label small text-muted">Allergies Flagged</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Edit Form -->
-        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-          
-          <!-- Section 1: Personal Contact Information -->
-          <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-3">
-              <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal Contact Information
-            </h5>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
-                <input type="text" formControlName="name" class="form-control" placeholder="Enter your full name">
-                <div *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.invalid" class="text-danger small mt-1">
-                  Full name is required.
+    <!-- ── Vault Navigation Tabs ── -->
+    <ul class="nav nav-pills patient-tabs mb-4 p-1 bg-white rounded-3 shadow-sm border">
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab === 'vault'" (click)="activeTab = 'vault'">
+          <i class="bi bi-folder-fill me-2"></i>Medical Records &amp; Documents Vault
+          <span class="badge rounded-pill ms-2" [ngClass]="activeTab === 'vault' ? 'bg-light text-dark' : 'bg-primary text-white'">
+            {{ documents.length }}
+          </span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab === 'personal'" (click)="activeTab = 'personal'">
+          <i class="bi bi-person-lines-fill me-2"></i>Personal &amp; Delivery Shipping Info
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab === 'clinical'" (click)="activeTab = 'clinical'">
+          <i class="bi bi-shield-shaded me-2"></i>Clinical Safety, Allergies &amp; Emergency ID
+        </button>
+      </li>
+    </ul>
+
+    <!-- ==================== TAB 1: MEDICAL DOCUMENTS VAULT ==================== -->
+    <div *ngIf="activeTab === 'vault'" class="vault-content">
+      <!-- Filter Category Bar & Search Bar -->
+      <div class="card border-0 shadow-sm mb-4 p-3 bg-white">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <!-- Filter Buttons -->
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm filter-pill" [class.filter-active]="filterCategory === 'ALL'" (click)="setFilter('ALL')">
+              All Records ({{ documents.length }})
+            </button>
+            <button class="btn btn-sm filter-pill" [class.filter-active]="filterCategory === 'PRESCRIPTION'" (click)="setFilter('PRESCRIPTION')">
+              <i class="bi bi-file-earmark-medical me-1"></i>Prescriptions ({{ prescriptionCount }})
+            </button>
+            <button class="btn btn-sm filter-pill" [class.filter-active]="filterCategory === 'HEALTH_ID'" (click)="setFilter('HEALTH_ID')">
+              <i class="bi bi-person-vcard me-1"></i>Digital Health IDs (ABHA)
+            </button>
+            <button class="btn btn-sm filter-pill" [class.filter-active]="filterCategory === 'INSURANCE'" (click)="setFilter('INSURANCE')">
+              <i class="bi bi-shield-check me-1"></i>Health Insurance
+            </button>
+            <button class="btn btn-sm filter-pill" [class.filter-active]="filterCategory === 'VACCINE'" (click)="setFilter('VACCINE')">
+              <i class="bi bi-shield-plus me-1"></i>Vaccinations
+            </button>
+          </div>
+
+          <button class="btn btn-sm btn-outline-primary" (click)="openUploadModal()">
+            <i class="bi bi-plus-lg me-1"></i>Add New Record
+          </button>
+        </div>
+      </div>
+
+      <!-- Document Cards Grid -->
+      <div class="row g-3">
+        <div class="col-lg-6" *ngFor="let doc of getFilteredDocuments()">
+          <div class="card doc-card h-100 border-0 shadow-sm">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+              <div>
+                <!-- Top Card Header: Category Badge & Status -->
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="doc-icon-box" [ngClass]="{
+                      'icon-prescription': doc.category === 'PRESCRIPTION',
+                      'icon-health-id': doc.category === 'HEALTH_ID',
+                      'icon-insurance': doc.category === 'INSURANCE',
+                      'icon-vaccine': doc.category === 'VACCINE',
+                      'icon-lab': doc.category === 'LAB_REPORT'
+                    }">
+                      <i class="bi" [ngClass]="{
+                        'bi-file-earmark-medical-fill': doc.category === 'PRESCRIPTION',
+                        'bi-person-vcard-fill': doc.category === 'HEALTH_ID',
+                        'bi-shield-check': doc.category === 'INSURANCE',
+                        'bi-shield-plus': doc.category === 'VACCINE',
+                        'bi-clipboard2-pulse': doc.category === 'LAB_REPORT'
+                      }"></i>
+                    </div>
+                    <div>
+                      <span class="badge category-tag" [ngClass]="{
+                        'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25': doc.category === 'PRESCRIPTION',
+                        'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25': doc.category === 'HEALTH_ID',
+                        'bg-success bg-opacity-10 text-success border border-success border-opacity-25': doc.category === 'INSURANCE',
+                        'bg-info bg-opacity-10 text-info border border-info border-opacity-25': doc.category === 'VACCINE',
+                        'bg-secondary bg-opacity-10 text-secondary border': doc.category === 'LAB_REPORT'
+                      }">
+                        {{ doc.category }}
+                      </span>
+                      <span class="doc-ref-number ms-1">#{{ doc.documentNumber }}</span>
+                    </div>
+                  </div>
+
+                  <span class="badge rounded-pill" [ngClass]="doc.status === 'ACTIVE' ? 'bg-success' : 'bg-warning text-dark'">
+                    <i class="bi bi-check2-circle me-1" *ngIf="doc.status === 'ACTIVE'"></i>{{ doc.status }}
+                  </span>
+                </div>
+
+                <!-- Document Title -->
+                <h5 class="fw-bold text-dark mb-1">{{ doc.title }}</h5>
+                <p class="text-muted small mb-3">
+                  <i class="bi bi-building me-1"></i>{{ doc.issuingAuthority }}
+                </p>
+
+                <!-- Detailed Specs Grid -->
+                <div class="doc-meta-box p-3 rounded-3 mb-3 bg-light">
+                  <div class="row g-2 small">
+                    <div class="col-sm-6" *ngIf="doc.doctorName">
+                      <span class="text-muted d-block">Prescribing Doctor:</span>
+                      <strong class="text-dark">{{ doc.doctorName }}</strong>
+                      <span class="text-muted ms-1" *ngIf="doc.doctorReg">({{ doc.doctorReg }})</span>
+                    </div>
+                    <div class="col-sm-6" *ngIf="doc.issueDate">
+                      <span class="text-muted d-block">Issued On:</span>
+                      <strong class="text-dark">{{ doc.issueDate }}</strong>
+                    </div>
+                    <div class="col-sm-6" *ngIf="doc.expiryDate">
+                      <span class="text-muted d-block">Valid Through / Renewal:</span>
+                      <strong class="text-success">{{ doc.expiryDate }}</strong>
+                    </div>
+                    <div class="col-sm-6" *ngIf="doc.fileName">
+                      <span class="text-muted d-block">Attachment:</span>
+                      <span class="text-truncate d-inline-block" style="max-width: 170px;" [title]="doc.fileName">
+                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ doc.fileName }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div *ngIf="doc.prescribedMeds" class="mt-2 pt-2 border-top small">
+                    <span class="text-muted d-block fw-semibold text-primary">Prescribed Medicines:</span>
+                    <span class="text-dark">{{ doc.prescribedMeds }}</span>
+                  </div>
+
+                  <div *ngIf="doc.policyDetails" class="mt-2 pt-2 border-top small">
+                    <span class="text-muted d-block fw-semibold text-success">Coverage Details:</span>
+                    <span class="text-dark">{{ doc.policyDetails }}</span>
+                  </div>
+
+                  <div *ngIf="doc.notes" class="mt-2 pt-2 border-top small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>{{ doc.notes }}
+                  </div>
                 </div>
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Email Address</label>
-                <input type="email" formControlName="email" class="form-control bg-light" title="Email cannot be changed">
-                <small class="text-muted">Primary account email used for order confirmations and notifications.</small>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Phone Number</label>
-                <input type="tel" formControlName="phone" class="form-control" placeholder="e.g. +91 9876543210">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 2: Delivery & Shipping Address -->
-          <div class="mb-4 pt-3 border-top">
-            <h5 class="fw-bold text-dark mb-3">
-              <i class="bi bi-geo-alt-fill text-success me-2"></i>Default Shipping & Delivery Address
-            </h5>
-            <p class="text-muted small mb-3">This address is used to automatically schedule and dispatch your chronic prescription refills.</p>
-            
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label fw-semibold small">Street Address / Apartment / Suite</label>
-                <input type="text" formControlName="address" class="form-control" placeholder="e.g. 123 Health Ave, Suite 4B">
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label fw-semibold small">City</label>
-                <input type="text" formControlName="city" class="form-control" placeholder="e.g. Greenville">
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label fw-semibold small">State / Province</label>
-                <input type="text" formControlName="state" class="form-control" placeholder="e.g. Karnataka">
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label fw-semibold small">PIN / Postal Code</label>
-                <input type="text" formControlName="pincode" class="form-control" placeholder="e.g. 560001">
+              <!-- Action Buttons -->
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn btn-sm btn-primary px-3" (click)="openPreviewModal(doc)">
+                    <i class="bi bi-eye-fill me-1"></i>View Document
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" (click)="downloadDocument(doc)">
+                    <i class="bi bi-download me-1"></i>Download
+                  </button>
+                </div>
+                <button *ngIf="doc.isCustom" class="btn btn-sm btn-outline-danger" (click)="deleteCustomDocument(doc.id)" title="Delete user-uploaded document">
+                  <i class="bi bi-trash"></i>
+                </button>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
 
-          <!-- Section 3: Clinical Safety & Allergy Profile (Phase 5) -->
-          <div class="mb-4 pt-3 border-top">
-            <h5 class="fw-bold text-dark mb-2">
-              <i class="bi bi-shield-shaded text-danger me-2"></i>Clinical Safety & Allergy Profile
-            </h5>
-            <div class="alert alert-info py-2 px-3 small d-flex align-items-center mb-3">
-              <i class="bi bi-info-circle-fill fs-5 me-2 text-info"></i>
-              <span>Our clinical Drug-Drug Interaction (DDI) & allergy interceptor monitors your prescribed medicines in real-time to alert against potential adverse drug events.</span>
+    <!-- ==================== TAB 2: PERSONAL & SHIPPING ADDRESS ==================== -->
+    <div *ngIf="activeTab === 'personal'" class="card border-0 shadow-sm p-4 p-md-5 bg-white">
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+        <!-- Section 1: Personal Contact Info -->
+        <div class="mb-4">
+          <h5 class="fw-bold text-dark mb-3">
+            <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal Contact Information
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+              <input type="text" formControlName="name" class="form-control" placeholder="Enter your full name">
+              <div *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.invalid" class="text-danger small mt-1">
+                Full name is required.
+              </div>
             </div>
 
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Known Drug Allergies</label>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Email Address</label>
+              <input type="email" formControlName="email" class="form-control bg-light" title="Email cannot be changed">
+              <small class="text-muted">Primary account email used for order confirmations and notifications.</small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Phone Number</label>
+              <input type="tel" formControlName="phone" class="form-control" placeholder="e.g. +91 9876543210">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Shipping Address -->
+        <div class="mb-4 pt-3 border-top">
+          <h5 class="fw-bold text-dark mb-2">
+            <i class="bi bi-geo-alt-fill text-success me-2"></i>Default Shipping &amp; Delivery Address
+          </h5>
+          <p class="text-muted small mb-3">
+            This address is automatically scheduled for chronic prescription refills with soft-lock reserve allocation 5 days prior to dispatch.
+          </p>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Street Address / Apartment / Suite</label>
+              <input type="text" formControlName="address" class="form-control" placeholder="e.g. 123 Health Ave, Suite 4B">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">City</label>
+              <input type="text" formControlName="city" class="form-control" placeholder="e.g. Bangalore">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">State / Province</label>
+              <input type="text" formControlName="state" class="form-control" placeholder="e.g. Karnataka">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">PIN / Postal Code</label>
+              <input type="text" formControlName="pincode" class="form-control" placeholder="e.g. 560001">
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end pt-3 border-top gap-2">
+          <button type="button" (click)="loadProfile()" class="btn btn-outline-secondary px-4" [disabled]="saving">
+            Reset
+          </button>
+          <button type="submit" class="btn btn-primary px-4 fw-bold" [disabled]="profileForm.invalid || saving">
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <i *ngIf="!saving" class="bi bi-check2-circle me-1"></i>
+            Save Profile &amp; Address
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ==================== TAB 3: CLINICAL SAFETY & ALLERGIES ==================== -->
+    <div *ngIf="activeTab === 'clinical'" class="clinical-content">
+      <div class="row g-4">
+        <!-- Left: Clinical Allergy Cards -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm p-4 bg-white mb-4">
+            <h5 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-octagon-fill text-danger"></i>
+              <span>Active Drug Allergies &amp; Safety Contraindications</span>
+            </h5>
+            <p class="text-muted small mb-3">
+              Our clinical Drug-Drug Interaction (DDI) engine cross-checks all ordered formulations against these recorded allergies before dispensing.
+            </p>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="allergy-tag-pill" *ngFor="let allergy of getAllergyList()">
+                <i class="bi bi-shield-x text-danger me-1"></i>{{ allergy }}
+              </span>
+              <span *ngIf="getAllergyList().length === 0" class="text-muted small">No allergies recorded.</span>
+            </div>
+
+            <h6 class="fw-bold text-dark mt-4 mb-2 d-flex align-items-center gap-2">
+              <i class="bi bi-heart-pulse-fill text-primary"></i>
+              <span>Chronic Medical Conditions</span>
+            </h6>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span class="condition-tag-pill" *ngFor="let cond of getConditionList()">
+                <i class="bi bi-check-circle-fill text-primary me-1"></i>{{ cond }}
+              </span>
+              <span *ngIf="getConditionList().length === 0" class="text-muted small">No chronic conditions recorded.</span>
+            </div>
+
+            <!-- Form to edit allergies and conditions -->
+            <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="mt-4 pt-3 border-top">
+              <div class="mb-3">
+                <label class="form-label fw-semibold small">Known Drug Allergies (Comma separated)</label>
                 <input type="text" formControlName="allergies" class="form-control" placeholder="e.g. Penicillin, Sulfa, Aspirin">
-                <div class="form-text small">Separate multiple allergies with commas.</div>
               </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold small">Chronic Medical Conditions (Comma separated)</label>
+                <input type="text" formControlName="chronicConditions" class="form-control" placeholder="e.g. Type-2 Diabetes, Hypertension, Asthma">
+              </div>
+              <button type="submit" class="btn btn-outline-primary btn-sm fw-semibold" [disabled]="saving">
+                <i class="bi bi-check2 me-1"></i>Update Clinical Safety Flags
+              </button>
+            </form>
+          </div>
+        </div>
 
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Chronic Medical Conditions</label>
-                <input type="text" formControlName="chronicConditions" class="form-control" placeholder="e.g. Asthma, Hypertension, Diabetes, Kidney Disease">
-                <div class="form-text small">Helps clinical pharmacists review refill appropriateness.</div>
+        <!-- Right: Emergency Contact & Primary Care Doctor -->
+        <div class="col-lg-5">
+          <!-- Emergency Contact Card -->
+          <div class="card border-0 shadow-sm p-4 bg-white mb-4">
+            <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-telephone-fill text-danger"></i>
+              <span>Emergency Medical Contact</span>
+            </h5>
+            <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 mb-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="fw-bold text-danger mb-0">{{ emergencyContact.name }}</h6>
+                  <span class="small text-muted">{{ emergencyContact.relation }}</span>
+                </div>
+                <span class="badge bg-danger text-white">Next of Kin</span>
+              </div>
+              <div class="mt-2 text-dark fw-bold fs-5">
+                <i class="bi bi-telephone-outbound me-2"></i>{{ emergencyContact.phone }}
+              </div>
+            </div>
+            <p class="text-muted small mb-0">
+              Notified automatically in case of urgent clinical adverse interaction or missed chronic refill delivery windows.
+            </p>
+          </div>
+
+          <!-- Primary Doctor Card -->
+          <div class="card border-0 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-hospital text-primary"></i>
+              <span>Primary Care Physician</span>
+            </h5>
+            <div class="p-3 rounded-3 bg-light border mb-2">
+              <h6 class="fw-bold text-dark mb-0">{{ primaryDoctor.name }}</h6>
+              <span class="small text-primary fw-semibold">{{ primaryDoctor.specialty }}</span>
+              <div class="small text-muted mt-1">{{ primaryDoctor.hospital }}</div>
+              <div class="small text-muted">MCI Reg: {{ primaryDoctor.regNumber }}</div>
+              <div class="small text-dark fw-semibold mt-1">
+                <i class="bi bi-telephone me-1"></i>{{ primaryDoctor.phone }}
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-          <!-- Save Button -->
-          <div class="d-flex justify-content-end pt-3 border-top gap-2">
-            <button type="button" (click)="loadProfile()" class="btn btn-outline-secondary px-4" [disabled]="saving">
-              Reset
-            </button>
-            <button type="submit" class="btn btn-pharma-primary px-4 fw-bold" [disabled]="profileForm.invalid || saving">
-              <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-              <i *ngIf="!saving" class="bi bi-check2-circle me-1"></i>
-              Save Profile Changes
-            </button>
+<!-- ==================== 1. DOCUMENT PREVIEW MODAL ==================== -->
+<div *ngIf="selectedDoc" class="modal-backdrop-custom" (click)="closePreviewModal()">
+  <div class="modal-dialog-custom modal-lg-custom" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header-custom d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <div>
+          <h5 class="modal-title fw-bold text-dark mb-0">{{ selectedDoc.title }}</h5>
+          <span class="text-muted small">Record ID: #{{ selectedDoc.documentNumber }} &bull; {{ selectedDoc.issuingAuthority }}</span>
+        </div>
+      </div>
+      <button class="btn-close-modal" (click)="closePreviewModal()">✕</button>
+    </div>
+
+    <!-- Modal Document Body (Simulated Official Digital Document) -->
+    <div class="modal-body-custom p-4 bg-white">
+      <!-- ── CASE 1: DOCTOR PRESCRIPTION PREVIEW ── -->
+      <div *ngIf="selectedDoc.category === 'PRESCRIPTION'" class="prescription-sheet p-4 border rounded-3 shadow-sm bg-white">
+        <!-- Clinic Letterhead -->
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rx-logo-box">
+              <span class="rx-symbol">℞</span>
+            </div>
+            <div>
+              <h4 class="fw-bold text-dark mb-0">{{ selectedDoc.issuingAuthority }}</h4>
+              <p class="text-muted small mb-0">Central Outpatient Department &bull; Reg: NMC-HEALTH-INDIA-2026</p>
+              <span class="text-primary small fw-semibold">Consulting: {{ selectedDoc.doctorName }} (Reg: {{ selectedDoc.doctorReg || 'KMC-49201' }})</span>
+            </div>
           </div>
+          <div class="text-end small text-muted">
+            <div>Date: <strong>{{ selectedDoc.issueDate }}</strong></div>
+            <div>Validity: <strong class="text-success">{{ selectedDoc.expiryDate }}</strong></div>
+          </div>
+        </div>
 
-        </form>
+        <!-- Patient Demographics Bar -->
+        <div class="patient-rx-meta p-2 rounded-2 bg-light border mb-3 small d-flex justify-content-between flex-wrap gap-2">
+          <span>Patient Name: <strong>{{ user?.name || 'Patient' }}</strong></span>
+          <span>Age / Gender: <strong>42 Yrs / Male</strong></span>
+          <span>ABHA ID: <strong>91-5839-2041-8492</strong></span>
+          <span>Blood Group: <strong>{{ bloodGroup }}</strong></span>
+        </div>
 
+        <!-- Prescribed Medications -->
+        <div class="mb-4">
+          <h6 class="fw-bold text-dark mb-2">Prescribed Regimen (Rx):</h6>
+          <div class="p-3 bg-light rounded-3 border">
+            <div class="fw-bold text-primary mb-1">{{ selectedDoc.prescribedMeds || 'Formulation instructions as prescribed.' }}</div>
+            <div class="text-muted small">
+              &bull; Take with meal as directed.<br>
+              &bull; Chronic 12-month auto-dispense protocol active with Auto-Meds soft-lock inventory reserves.
+            </div>
+          </div>
+        </div>
+
+        <!-- Warnings & Allergies Alert -->
+        <div class="alert alert-danger py-2 px-3 small d-flex align-items-center mb-3">
+          <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+          <span><strong>Known Patient Allergies:</strong> {{ user?.allergies || 'Penicillin, Sulfa Antibiotics, Aspirin' }}. Strictly contraindicated.</span>
+        </div>
+
+        <!-- Signature & Stamp -->
+        <div class="d-flex justify-content-between align-items-end pt-3 border-top mt-4">
+          <div class="small text-muted">
+            <div class="d-flex align-items-center gap-1 text-success fw-semibold">
+              <i class="bi bi-shield-fill-check"></i> Cryptographically Verified Electronic Prescription
+            </div>
+            <span>Auto-Meds E-Prescription Gateway UID: {{ selectedDoc.id }}</span>
+          </div>
+          <div class="text-center">
+            <div class="signature-line fw-bold text-primary mb-1">{{ selectedDoc.doctorName || 'Dr. Rajesh Sharma, MD' }}</div>
+            <div class="badge bg-secondary bg-opacity-25 text-secondary border small">Digitally Signed &bull; NMC Approved</div>
+          </div>
+        </div>
       </div>
 
+      <!-- ── CASE 2: ABHA DIGITAL HEALTH CARD PREVIEW ── -->
+      <div *ngIf="selectedDoc.category === 'HEALTH_ID'" class="abha-card-sheet p-4 rounded-4 shadow-sm text-white">
+        <!-- Tricolor Top Band -->
+        <div class="abha-tricolor-bar mb-3"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <div class="national-emblem-badge">🇮🇳</div>
+            <div>
+              <div class="small text-uppercase fw-bold text-warning">National Health Authority</div>
+              <div class="fs-6 fw-bold">Ayushman Bharat Digital Mission (ABDM)</div>
+            </div>
+          </div>
+          <span class="badge bg-success border border-light">NHA VERIFIED</span>
+        </div>
+
+        <div class="row align-items-center my-3">
+          <div class="col-sm-8">
+            <div class="small text-white-50">ABHA Number:</div>
+            <div class="fs-4 fw-bold font-monospace tracking-wide text-warning">{{ selectedDoc.documentNumber }}</div>
+            <div class="small text-white-50 mt-2">ABHA Address:</div>
+            <div class="fw-semibold text-white">patient.care&#64;abdm</div>
+            <div class="small text-white-50 mt-2">Cardholder Name:</div>
+            <div class="fw-bold text-white">{{ user?.name || 'Patient User' }}</div>
+          </div>
+          <div class="col-sm-4 text-center">
+            <div class="qr-code-box p-2 bg-white rounded-3 d-inline-block shadow">
+              <i class="bi bi-qr-code text-dark" style="font-size: 4rem;"></i>
+            </div>
+            <div class="small text-white-50 mt-1">Scan for Hospital EHR Sync</div>
+          </div>
+        </div>
+
+        <div class="border-top border-white border-opacity-25 pt-2 mt-2 d-flex justify-content-between small text-white-50">
+          <span>Gender: Male &bull; YOB: 1984</span>
+          <span>Health Locker: Auto-Meds Certified</span>
+        </div>
+      </div>
+
+      <!-- ── CASE 3: HEALTH INSURANCE E-CARD PREVIEW ── -->
+      <div *ngIf="selectedDoc.category === 'INSURANCE'" class="insurance-card-sheet p-4 rounded-4 shadow-sm bg-light border">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+          <div>
+            <h5 class="fw-bold text-dark mb-0">{{ selectedDoc.issuingAuthority }}</h5>
+            <span class="text-success small fw-semibold">Cashless Pharmacy &amp; Outpatient OPD Network</span>
+          </div>
+          <span class="badge bg-success">CASHLESS ACTIVE</span>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6 small">
+            <span class="text-muted d-block">Policy Number:</span>
+            <strong class="text-dark fs-6">{{ selectedDoc.documentNumber }}</strong>
+          </div>
+          <div class="col-sm-6 small">
+            <span class="text-muted d-block">Insured Member:</span>
+            <strong class="text-dark fs-6">{{ user?.name || 'Patient User' }}</strong>
+          </div>
+          <div class="col-sm-6 small">
+            <span class="text-muted d-block">Valid Through:</span>
+            <strong class="text-success">{{ selectedDoc.expiryDate }}</strong>
+          </div>
+          <div class="col-sm-6 small">
+            <span class="text-muted d-block">TPA Toll-Free Assistance:</span>
+            <strong class="text-primary">{{ selectedDoc.tpaHelpline || '1800-425-2255' }}</strong>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-3 border small">
+          <strong>Benefits &amp; Coverage:</strong> {{ selectedDoc.policyDetails }}
+        </div>
+      </div>
+
+      <!-- ── CASE 4: VACCINATION / LAB REPORT ── -->
+      <div *ngIf="selectedDoc.category === 'VACCINE' || selectedDoc.category === 'LAB_REPORT'" class="p-4 border rounded-3 bg-light">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+          <div>
+            <h5 class="fw-bold text-dark mb-0">{{ selectedDoc.title }}</h5>
+            <span class="text-muted small">{{ selectedDoc.issuingAuthority }} &bull; Ref #{{ selectedDoc.documentNumber }}</span>
+          </div>
+          <span class="badge bg-success">VERIFIED RECORD</span>
+        </div>
+        <p class="text-dark small mb-2">{{ selectedDoc.notes }}</p>
+        <div class="text-muted small">Recorded On: {{ selectedDoc.issueDate }} &bull; Status: {{ selectedDoc.status }}</div>
+      </div>
     </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-custom p-3 border-top bg-light d-flex justify-content-between">
+      <button class="btn btn-outline-secondary" (click)="closePreviewModal()">Close</button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" (click)="printDocument()">
+          <i class="bi bi-printer-fill me-1"></i>Print Document
+        </button>
+        <button class="btn btn-primary px-3" (click)="downloadDocument(selectedDoc)">
+          <i class="bi bi-download me-1"></i>Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. DOCUMENT UPLOAD MODAL ==================== -->
+<div *ngIf="showUploadModal" class="modal-backdrop-custom" (click)="closeUploadModal()">
+  <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+    <div class="modal-header-custom d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+      <h5 class="modal-title fw-bold text-dark mb-0">
+        <i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i>Upload Medical Document to Vault
+      </h5>
+      <button class="btn-close-modal" (click)="closeUploadModal()">✕</button>
+    </div>
+
+    <form [formGroup]="uploadForm" (ngSubmit)="submitNewDocument()">
+      <div class="modal-body-custom p-4 bg-white">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Document Title <span class="text-danger">*</span></label>
+            <input type="text" formControlName="title" class="form-control" placeholder="e.g. Cardiologist Prescription Nov 2026">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Document Category <span class="text-danger">*</span></label>
+            <select formControlName="category" class="form-select">
+              <option value="PRESCRIPTION">Doctor Prescription (Rx)</option>
+              <option value="HEALTH_ID">Government Digital Health ID (ABHA)</option>
+              <option value="INSURANCE">Health Insurance Policy / E-Card</option>
+              <option value="VACCINE">Vaccination / Immunization Certificate</option>
+              <option value="LAB_REPORT">Diagnostic Lab Report</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Doctor / Physician Name</label>
+            <input type="text" formControlName="doctorName" class="form-control" placeholder="e.g. Dr. Sunita Rao, MD">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Document / License / Policy Number <span class="text-danger">*</span></label>
+            <input type="text" formControlName="documentNumber" class="form-control" placeholder="e.g. RX-2026-90412">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Hospital / Clinic / Issuing Authority <span class="text-danger">*</span></label>
+            <input type="text" formControlName="issuingAuthority" class="form-control" placeholder="e.g. Apollo Multispeciality Clinic">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Issue Date <span class="text-danger">*</span></label>
+            <input type="date" formControlName="issueDate" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Expiry / Validity Date <span class="text-danger">*</span></label>
+            <input type="date" formControlName="expiryDate" class="form-control">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Prescribed Medicines / Regimen Summary</label>
+            <input type="text" formControlName="prescribedMeds" class="form-control" placeholder="e.g. Metformin 500mg (BID), Atorvastatin 10mg (OD)">
+          </div>
+
+          <!-- File Upload Input -->
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Upload File (PDF, PNG, JPG)</label>
+            <div class="file-upload-box p-3 border rounded-3 text-center bg-light">
+              <input type="file" (change)="onFileSelected($event)" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+              <small class="text-muted mt-1 d-block" *ngIf="selectedFile">
+                Selected: <strong>{{ selectedFile.name }}</strong> ({{ (selectedFile.size / 1024).toFixed(0) }} KB)
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom p-3 border-top bg-light d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeUploadModal()" [disabled]="uploadingDoc">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary px-4 fw-bold" [disabled]="uploadForm.invalid || uploadingDoc">
+          <span *ngIf="uploadingDoc" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          <i *ngIf="!uploadingDoc" class="bi bi-shield-check me-1"></i>
+          Verify &amp; Save to Vault
+        </button>
+      </div>
+    </form>
   </div>
 </div>

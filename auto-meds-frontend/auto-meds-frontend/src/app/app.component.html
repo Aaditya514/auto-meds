@@ -1,5 +1,5 @@
-<!-- ================= 1. PATIENT & PUBLIC PORTAL LAYOUT ================= -->
-<div *ngIf="!authService.isAdmin()" class="d-flex flex-column min-vh-100" style="overflow-x: hidden;">
+<!-- ================= 1. PUBLIC VISITOR LAYOUT (LOGGED OUT) ================= -->
+<div *ngIf="!authService.isLoggedIn()" class="d-flex flex-column min-vh-100" style="overflow-x: hidden;">
   <app-navbar></app-navbar>
 
   <main class="flex-grow-1" style="min-width: 0; width: 100%; overflow-x: hidden;">
@@ -13,8 +13,116 @@
   </footer>
 </div>
 
-<!-- ================= 2. PHARMACIST / ADMIN MEDISTOCK SIDEBAR LAYOUT ================= -->
-<div *ngIf="authService.isAdmin()" class="medistock-admin-layout">
+<!-- ================= 2. PATIENT MEDISTOCK-STYLE SIDEBAR LAYOUT ================= -->
+<div *ngIf="authService.isLoggedIn() && authService.isPatient()" class="medistock-patient-layout">
+  <!-- Mobile Backdrop Overlay -->
+  <div *ngIf="mobileSidebarOpen" class="sidebar-backdrop patient-backdrop" (click)="closeMobileSidebar()"></div>
+
+  <!-- Left-Side Vertical Sidebar (Patient Care Theme) -->
+  <aside class="medistock-sidebar patient-sidebar" [class.sidebar-open]="mobileSidebarOpen">
+    <!-- Top Brand Logo -->
+    <div class="sidebar-header patient-sidebar-header">
+      <a routerLink="/home" class="sidebar-brand-link text-decoration-none" (click)="closeMobileSidebar()">
+        <div class="sidebar-emblem patient-emblem">
+          <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+        <div class="sidebar-brand-text">
+          <span class="brand-name">Auto-Meds</span>
+          <span class="brand-tagline patient-tagline">PATIENT CARE PORTAL</span>
+        </div>
+      </a>
+      <button class="btn btn-sm btn-close-sidebar d-lg-none" (click)="closeMobileSidebar()">✕</button>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="sidebar-nav">
+      <a routerLink="/home" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-speedometer2"></i>
+        <span>Home / Dashboard</span>
+      </a>
+
+      <a routerLink="/medicines" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-capsule"></i>
+        <span>Browse Medicines</span>
+      </a>
+
+      <a routerLink="/subscriptions" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-arrow-repeat"></i>
+        <span>My Subscriptions</span>
+      </a>
+
+      <a routerLink="/orders" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-box-seam"></i>
+        <span>My Orders</span>
+      </a>
+
+      <a routerLink="/cart" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-cart3"></i>
+        <span>Shopping Cart</span>
+        <span class="badge rounded-pill bg-success ms-auto cart-count-pill" *ngIf="cartItemCount > 0">
+          {{ cartItemCount }}
+        </span>
+      </a>
+
+      <a routerLink="/caregiver" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-people"></i>
+        <span>Caregiver Network</span>
+      </a>
+
+      <a routerLink="/profile" routerLinkActive="active" class="sidebar-nav-item patient-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-shield-check"></i>
+        <span>Health Profile & Vault</span>
+      </a>
+    </nav>
+
+    <!-- Bottom Patient Profile Card -->
+    <div class="sidebar-footer patient-sidebar-footer">
+      <a routerLink="/profile" class="user-profile-card text-decoration-none" (click)="closeMobileSidebar()" title="View Health Profile &amp; Medical Records Vault">
+        <div class="user-avatar-pill patient-avatar-pill">
+          <span>{{ getUserInitials() }}</span>
+        </div>
+        <div class="user-meta">
+          <span class="user-title">{{ authService.currentUserValue?.name || 'Patient User' }}</span>
+          <span class="user-role patient-badge-role">Patient &bull; Active Care</span>
+        </div>
+      </a>
+      <button (click)="logout()" class="btn-sidebar-signout" title="Sign Out of Portal">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="medistock-content-area patient-content-area">
+    <!-- Top Header Bar for Mobile -->
+    <div class="patient-mobile-header d-lg-none">
+      <button class="btn-menu-toggle" (click)="toggleMobileSidebar()">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="d-flex align-items-center gap-2">
+        <span class="brand-mobile-title">Auto-Meds</span>
+        <span class="badge bg-info bg-opacity-25 text-info-emphasis small border border-info border-opacity-25">Patient</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a routerLink="/cart" class="mobile-cart-btn position-relative text-decoration-none">
+          <i class="bi bi-cart3 fs-5 text-white"></i>
+          <span *ngIf="cartItemCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success cart-badge-mini">
+            {{ cartItemCount }}
+          </span>
+        </a>
+        <a routerLink="/profile" class="mobile-avatar-btn patient-mobile-avatar">{{ getUserInitials() }}</a>
+      </div>
+    </div>
+
+    <!-- Main View Outlet -->
+    <main class="medistock-main-view">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<!-- ================= 3. PHARMACIST / ADMIN MEDISTOCK SIDEBAR LAYOUT ================= -->
+<div *ngIf="authService.isLoggedIn() && authService.isAdmin()" class="medistock-admin-layout">
   <!-- Mobile Backdrop Overlay -->
   <div *ngIf="mobileSidebarOpen" class="sidebar-backdrop" (click)="closeMobileSidebar()"></div>
 

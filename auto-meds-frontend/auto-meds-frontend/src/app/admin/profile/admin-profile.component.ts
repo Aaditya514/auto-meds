@@ -170,3 +170,4 @@ export class AdminProfileComponent implements OnInit {
     return this.certificates.filter(c => c.status === 'RENEWAL_DUE').length;
   }
 }
+
