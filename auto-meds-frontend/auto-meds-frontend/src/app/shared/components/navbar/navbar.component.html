@@ -1,22 +1,29 @@
 <nav class="navbar navbar-expand-lg navbar-pharma sticky-top" [ngClass]="{'navbar-admin-medistock': authService.isAdmin()}">
   <div class="container-fluid px-3 px-md-4">
+    <!-- Brand Logo -->
     <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-3 me-xl-4 text-decoration-none py-0" [routerLink]="authService.isAdmin() ? '/admin/dashboard' : '/home'">
       <i *ngIf="!authService.isAdmin()" class="bi bi-prescription2 text-primary fs-2 me-2"></i>
+      <div *ngIf="authService.isAdmin()" class="admin-brand-icon me-2">
+        <i class="bi bi-hospital"></i>
+      </div>
       <div class="d-flex flex-column align-items-start lh-1">
         <span class="brand-title fs-4 fw-bold mb-1" [ngClass]="authService.isAdmin() ? 'brand-admin-text' : 'brand-gradient'">Auto-Meds</span>
-        <span *ngIf="authService.isAdmin()" 
-              class="badge text-uppercase fw-bold text-nowrap admin-portal-badge">
+        <span *ngIf="authService.isAdmin()" class="badge text-uppercase fw-bold text-nowrap admin-portal-badge">
           Pharmacist Portal
+        </span>
+        <span *ngIf="!authService.isAdmin() && authService.isPatient()" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 small" style="font-size: 0.6rem; letter-spacing: 0.05em;">
+          PATIENT CARE
         </span>
       </div>
     </a>
     
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+    <!-- Mobile Hamburger Toggle Button -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarContent">
-      <!-- Patient Nav Links -->
+      <!-- 1. Patient Navigation Links -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="authService.isPatient()">
         <li class="nav-item">
           <a class="nav-link fw-medium" routerLink="/home" routerLinkActive="active"><i class="bi bi-house-door me-1"></i> Home</a>
@@ -33,9 +40,12 @@
         <li class="nav-item">
           <a class="nav-link fw-medium" routerLink="/caregiver" routerLinkActive="active"><i class="bi bi-people me-1"></i> Caregivers</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link fw-medium" routerLink="/profile" routerLinkActive="active"><i class="bi bi-shield-check me-1"></i> Health Vault</a>
+        </li>
       </ul>
 
-      <!-- Admin Nav Links -->
+      <!-- 2. Admin / Pharmacist Navigation Links -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1" *ngIf="authService.isAdmin()">
         <li class="nav-item">
           <a class="nav-link fw-medium text-nowrap" routerLink="/admin/dashboard" routerLinkActive="active"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
@@ -58,12 +68,22 @@
         <li class="nav-item">
           <a class="nav-link fw-medium text-nowrap" routerLink="/admin/audit-logs" routerLinkActive="active"><i class="bi bi-shield-check me-1"></i> Audit Logs</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/profile" routerLinkActive="active"><i class="bi bi-award-fill me-1"></i> Compliance &amp; Profile</a>
+        </li>
       </ul>
 
-      <!-- Right Nav Buttons -->
-      <ul class="navbar-nav ms-auto align-items-center">
-        <!-- Patient Cart Icon -->
-        <li class="nav-item me-3" *ngIf="authService.isPatient()">
+      <!-- 3. Public Visitor Navigation Links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="!authService.isLoggedIn()">
+        <li class="nav-item">
+          <a class="nav-link fw-medium" routerLink="/medicines" routerLinkActive="active"><i class="bi bi-capsule me-1"></i> Browse Medicines</a>
+        </li>
+      </ul>
+
+      <!-- Right Nav Buttons (Cart, User Profile Dropdown, Login/Register) -->
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <!-- Patient Cart Icon Button -->
+        <li class="nav-item" *ngIf="authService.isPatient()">
           <a class="nav-link position-relative cart-icon-btn p-0" routerLink="/cart" title="Shopping Cart">
             <i class="bi bi-cart3 fs-5"></i>
             <span *ngIf="cartItemCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge">
@@ -75,7 +95,10 @@
         <!-- Logged Out Actions -->
         <ng-container *ngIf="!authService.isLoggedIn()">
           <li class="nav-item me-2">
-            <a class="btn btn-outline-primary rounded-pill px-4 fw-semibold" routerLink="/login/patient">Login</a>
+            <a class="btn btn-outline-primary rounded-pill px-4 fw-semibold" routerLink="/login/patient">Patient Login</a>
+          </li>
+          <li class="nav-item me-2">
+            <a class="btn btn-outline-success rounded-pill px-3 fw-semibold" routerLink="/login/admin">Pharmacist Login</a>
           </li>
           <li class="nav-item">
             <a class="btn btn-pharma-primary rounded-pill px-4" routerLink="/register">Register</a>
@@ -84,27 +107,55 @@
 
         <!-- Logged In User Dropdown -->
         <li class="nav-item dropdown flex-shrink-0" *ngIf="authService.isLoggedIn()">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-3 text-nowrap" href="#" role="button" data-bs-toggle="dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-3 text-nowrap" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <div class="avatar-pharma avatar-sm avatar-interactive flex-shrink-0" [ngClass]="authService.isPharmacist() ? 'avatar-pharmacist' : 'avatar-patient'">
-              {{ currentUser?.name?.charAt(0)?.toUpperCase() || 'U' }}
+              {{ getUserInitials() }}
               <span class="avatar-status-dot avatar-status-online" title="Session Active"></span>
             </div>
             <div class="d-none d-md-flex flex-column text-start lh-1">
-              <span class="fw-semibold text-dark text-nowrap" style="font-size: 0.88rem;">{{ currentUser?.name }}</span>
-              <span class="text-muted" style="font-size: 0.72rem;">{{ authService.isPharmacist() ? 'Pharmacist' : 'Patient' }}</span>
+              <span class="fw-semibold text-nowrap" [ngClass]="authService.isAdmin() ? 'text-white' : 'text-dark'" style="font-size: 0.88rem;">{{ currentUser?.name }}</span>
+              <span [ngClass]="authService.isAdmin() ? 'text-emerald-300' : 'text-muted'" style="font-size: 0.72rem;">{{ authService.isPharmacist() ? 'Pharmacist • Admin' : 'Patient • Active Care' }}</span>
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
             <li class="dropdown-header">Logged in as <strong>{{ currentUser?.email }}</strong></li>
             <li><hr class="dropdown-divider"></li>
-            <li *ngIf="authService.isPatient()">
-              <a class="dropdown-link dropdown-item" routerLink="/profile"><i class="bi bi-person me-2"></i> Profile</a>
-            </li>
-            <li *ngIf="authService.isPatient()">
-              <a class="dropdown-link dropdown-item" routerLink="/caregiver"><i class="bi bi-people me-2"></i> Caregiver Access</a>
-            </li>
+            
+            <!-- Patient Dropdown Items -->
+            <ng-container *ngIf="authService.isPatient()">
+              <li>
+                <a class="dropdown-item" routerLink="/profile"><i class="bi bi-shield-check me-2 text-primary"></i>Health Profile &amp; Vault</a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/subscriptions"><i class="bi bi-arrow-repeat me-2 text-success"></i>My Subscriptions</a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/orders"><i class="bi bi-box-seam me-2 text-info"></i>My Orders</a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/caregiver"><i class="bi bi-people me-2 text-secondary"></i>Caregiver Access</a>
+              </li>
+            </ng-container>
+
+            <!-- Admin / Pharmacist Dropdown Items -->
+            <ng-container *ngIf="authService.isAdmin()">
+              <li>
+                <a class="dropdown-item" routerLink="/admin/profile"><i class="bi bi-award-fill me-2 text-success"></i>Store Compliance &amp; Profile</a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/admin/dashboard"><i class="bi bi-speedometer2 me-2 text-primary"></i>Admin Dashboard</a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/admin/inventory"><i class="bi bi-boxes me-2 text-warning"></i>Inventory Management</a>
+              </li>
+              <li>
+                <a class="dropdown-item" routerLink="/admin/audit-logs"><i class="bi bi-shield-check me-2 text-secondary"></i>Audit Logs</a>
+              </li>
+            </ng-container>
+
+            <li><hr class="dropdown-divider"></li>
             <li>
-              <button class="dropdown-item text-danger fw-medium" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
+              <button class="dropdown-item text-danger fw-medium" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
             </li>
           </ul>
         </li>

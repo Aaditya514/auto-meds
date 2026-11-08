@@ -63,6 +63,17 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  getUserInitials(): string {
+    const name = this.currentUser?.name;
+    if (!name) return 'U';
+    const cleanName = name.replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.)\s+/i, '').trim();
+    const parts = cleanName.split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return cleanName.substring(0, 2).toUpperCase();
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
