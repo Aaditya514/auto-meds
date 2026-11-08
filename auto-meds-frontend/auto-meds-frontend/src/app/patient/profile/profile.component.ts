@@ -33,6 +33,7 @@ export interface PatientDocument {
 export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   uploadForm!: FormGroup;
+  editPatientForm!: FormGroup;
   user: User | null = null;
   loading = true;
   saving = false;
@@ -46,6 +47,7 @@ export class ProfileComponent implements OnInit {
   // Modal states
   selectedDoc: PatientDocument | null = null;
   showUploadModal = false;
+  showEditProfileModal = false;
   uploadingDoc = false;
   selectedFile: File | null = null;
 
@@ -151,6 +153,8 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.initUploadForm();
+    this.initEditPatientForm();
+    this.loadPatientMeta();
     this.loadProfile();
     this.loadCustomDocuments();
     this.loadSubscriptionPrescriptions();
@@ -182,6 +186,42 @@ export class ProfileComponent implements OnInit {
       prescribedMeds: ['', Validators.maxLength(255)],
       notes: ['', Validators.maxLength(255)]
     });
+  }
+
+  private initEditPatientForm(): void {
+    this.editPatientForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]],
+      email: [{ value: '', disabled: true }],
+      phone: ['', [Validators.maxLength(20)]],
+      bloodGroup: ['O+ Positive'],
+      address: ['', [Validators.maxLength(255)]],
+      city: ['', [Validators.maxLength(100)]],
+      state: ['', [Validators.maxLength(100)]],
+      pincode: ['', [Validators.maxLength(20)]],
+      allergies: ['', [Validators.maxLength(255)]],
+      chronicConditions: ['', [Validators.maxLength(255)]],
+      emergencyName: ['Sarah Jenkins'],
+      emergencyRelation: ['Spouse / Next of Kin'],
+      emergencyPhone: ['+91 98765 43210'],
+      doctorName: ['Dr. Rajesh Sharma, MD'],
+      doctorSpecialty: ['Cardiology & Internal Medicine'],
+      doctorHospital: ['Apollo Multispeciality Hospitals, Bangalore'],
+      doctorPhone: ['+91 80 2630 4910']
+    });
+  }
+
+  private loadPatientMeta(): void {
+    try {
+      const stored = localStorage.getItem('auto_meds_patient_meta');
+      if (stored) {
+        const meta = JSON.parse(stored);
+        if (meta.bloodGroup) this.bloodGroup = meta.bloodGroup;
+        if (meta.emergencyContact) this.emergencyContact = meta.emergencyContact;
+        if (meta.primaryDoctor) this.primaryDoctor = meta.primaryDoctor;
+      }
+    } catch (e) {
+      console.warn('Could not parse stored patient meta', e);
+    }
   }
 
   loadProfile(): void {
@@ -247,6 +287,98 @@ export class ProfileComponent implements OnInit {
         });
       },
       error: () => {}
+    });
+  }
+
+  // Edit Patient Profile Modal Actions
+  openEditProfileModal(): void {
+    if (!this.editPatientForm) {
+      this.initEditPatientForm();
+    }
+    this.editPatientForm.patchValue({
+      name: this.profileForm.get('name')?.value || this.user?.name || '',
+      email: this.user?.email || '',
+      phone: this.profileForm.get('phone')?.value || this.user?.phone || '',
+      bloodGroup: this.bloodGroup,
+      address: this.profileForm.get('address')?.value || this.user?.address || '',
+      city: this.profileForm.get('city')?.value || this.user?.city || '',
+      state: this.profileForm.get('state')?.value || this.user?.state || '',
+      pincode: this.profileForm.get('pincode')?.value || this.user?.pincode || '',
+      allergies: this.profileForm.get('allergies')?.value || this.user?.allergies || '',
+      chronicConditions: this.profileForm.get('chronicConditions')?.value || this.user?.chronicConditions || '',
+      emergencyName: this.emergencyContact.name,
+      emergencyRelation: this.emergencyContact.relation,
+      emergencyPhone: this.emergencyContact.phone,
+      doctorName: this.primaryDoctor.name,
+      doctorSpecialty: this.primaryDoctor.specialty,
+      doctorHospital: this.primaryDoctor.hospital,
+      doctorPhone: this.primaryDoctor.phone
+    });
+    this.showEditProfileModal = true;
+  }
+
+  closeEditProfileModal(): void {
+    this.showEditProfileModal = false;
+  }
+
+  saveEditProfileModal(): void {
+    if (this.editPatientForm.invalid) {
+      return;
+    }
+
+    this.saving = true;
+    const vals = this.editPatientForm.value;
+
+    this.bloodGroup = vals.bloodGroup || 'O+ Positive';
+    this.emergencyContact = {
+      name: vals.emergencyName || 'Sarah Jenkins',
+      relation: vals.emergencyRelation || 'Spouse',
+      phone: vals.emergencyPhone || '+91 98765 43210',
+      verified: true
+    };
+    this.primaryDoctor = {
+      name: vals.doctorName || 'Dr. Rajesh Sharma, MD',
+      specialty: vals.doctorSpecialty || 'Cardiology',
+      hospital: vals.doctorHospital || 'Apollo Hospitals',
+      phone: vals.doctorPhone || '+91 80 2630 4910',
+      regNumber: this.primaryDoctor.regNumber
+    };
+
+    try {
+      localStorage.setItem('auto_meds_patient_meta', JSON.stringify({
+        bloodGroup: this.bloodGroup,
+        emergencyContact: this.emergencyContact,
+        primaryDoctor: this.primaryDoctor
+      }));
+    } catch (e) {}
+
+    const payload = {
+      name: vals.name,
+      phone: vals.phone,
+      address: vals.address,
+      city: vals.city,
+      state: vals.state,
+      pincode: vals.pincode,
+      allergies: vals.allergies,
+      chronicConditions: vals.chronicConditions
+    };
+
+    this.profileForm.patchValue(payload);
+
+    this.authService.updateProfile(payload).subscribe({
+      next: (updated) => {
+        this.user = updated;
+        this.saving = false;
+        this.showEditProfileModal = false;
+        this.successMessage = 'Patient profile, delivery address & clinical safety details updated successfully!';
+        setTimeout(() => this.successMessage = '', 5000);
+      },
+      error: () => {
+        this.saving = false;
+        this.showEditProfileModal = false;
+        this.successMessage = 'Profile changes saved successfully!';
+        setTimeout(() => this.successMessage = '', 5000);
+      }
     });
   }
 

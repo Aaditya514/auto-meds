@@ -14,12 +14,18 @@
       </h2>
     </div>
 
-    <div class="d-flex align-items-center gap-2">
-      <button class="btn btn-outline-secondary btn-sm" (click)="loadProfile()">
-        <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
+    <!-- Top Action Buttons -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button class="btn btn-outline-secondary btn-sm" (click)="loadProfile()" title="Reload Profile Details">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
       </button>
-      <button class="btn btn-primary btn-sm px-3 fw-semibold shadow-sm" (click)="openUploadModal()">
-        <i class="bi bi-cloud-arrow-up-fill me-1"></i>Upload Medical Document
+      <button class="btn btn-primary btn-sm px-3 fw-semibold shadow-sm d-flex align-items-center gap-1.5" (click)="openEditProfileModal()" title="Edit Patient Profile &amp; Address">
+        <i class="bi bi-pencil-square"></i>
+        <span>Edit Patient Profile</span>
+      </button>
+      <button class="btn btn-success btn-sm px-3 fw-semibold shadow-sm d-flex align-items-center gap-1.5" (click)="openUploadModal()" title="Upload New Prescription or Health Document">
+        <i class="bi bi-cloud-arrow-up-fill"></i>
+        <span>Upload Document</span>
       </button>
     </div>
   </div>
@@ -56,6 +62,9 @@
                   <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">
                     <i class="bi bi-shield-fill-check me-1"></i>Verified Patient
                   </span>
+                  <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" (click)="openEditProfileModal()" title="Edit Personal Details &amp; Address">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                  </button>
                 </div>
                 <div class="text-muted small mt-1">
                   <i class="bi bi-envelope me-1"></i>{{ user.email }} &bull; 
@@ -130,7 +139,7 @@
 
     <!-- ==================== TAB 1: MEDICAL DOCUMENTS VAULT ==================== -->
     <div *ngIf="activeTab === 'vault'" class="vault-content">
-      <!-- Filter Category Bar & Search Bar -->
+      <!-- Filter Category Bar & Quick Add -->
       <div class="card border-0 shadow-sm mb-4 p-3 bg-white">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
           <!-- Filter Buttons -->
@@ -152,9 +161,14 @@
             </button>
           </div>
 
-          <button class="btn btn-sm btn-outline-primary" (click)="openUploadModal()">
-            <i class="bi bi-plus-lg me-1"></i>Add New Record
-          </button>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" (click)="openEditProfileModal()">
+              <i class="bi bi-pencil me-1"></i>Edit Profile
+            </button>
+            <button class="btn btn-sm btn-success" (click)="openUploadModal()">
+              <i class="bi bi-plus-lg me-1"></i>Add Record
+            </button>
+          </div>
         </div>
       </div>
 
@@ -269,11 +283,23 @@
 
     <!-- ==================== TAB 2: PERSONAL & SHIPPING ADDRESS ==================== -->
     <div *ngIf="activeTab === 'personal'" class="card border-0 shadow-sm p-4 p-md-5 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+          <h4 class="fw-bold text-dark mb-1">
+            <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal Contact &amp; Shipping Details
+          </h4>
+          <p class="text-muted small mb-0">Update your default contact and delivery information for scheduled chronic prescription dispatches.</p>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary fw-semibold px-3" (click)="openEditProfileModal()">
+          <i class="bi bi-pencil-square me-1"></i>Open Full Editor
+        </button>
+      </div>
+
       <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
         <!-- Section 1: Personal Contact Info -->
         <div class="mb-4">
           <h5 class="fw-bold text-dark mb-3">
-            <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal Contact Information
+            <i class="bi bi-person-circle text-primary me-2"></i>Personal Contact
           </h5>
           <div class="row g-3">
             <div class="col-md-6">
@@ -349,10 +375,15 @@
         <!-- Left: Clinical Allergy Cards -->
         <div class="col-lg-7">
           <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-            <h5 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
-              <i class="bi bi-exclamation-octagon-fill text-danger"></i>
-              <span>Active Drug Allergies &amp; Safety Contraindications</span>
-            </h5>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-octagon-fill text-danger"></i>
+                <span>Active Drug Allergies &amp; Contraindications</span>
+              </h5>
+              <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" (click)="openEditProfileModal()">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </button>
+            </div>
             <p class="text-muted small mb-3">
               Our clinical Drug-Drug Interaction (DDI) engine cross-checks all ordered formulations against these recorded allergies before dispensing.
             </p>
@@ -396,10 +427,15 @@
         <div class="col-lg-5">
           <!-- Emergency Contact Card -->
           <div class="card border-0 shadow-sm p-4 bg-white mb-4">
-            <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-              <i class="bi bi-telephone-fill text-danger"></i>
-              <span>Emergency Medical Contact</span>
-            </h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-telephone-fill text-danger"></i>
+                <span>Emergency Medical Contact</span>
+              </h5>
+              <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" (click)="openEditProfileModal()">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </button>
+            </div>
             <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 mb-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -419,10 +455,15 @@
 
           <!-- Primary Doctor Card -->
           <div class="card border-0 shadow-sm p-4 bg-white">
-            <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-              <i class="bi bi-hospital text-primary"></i>
-              <span>Primary Care Physician</span>
-            </h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-hospital text-primary"></i>
+                <span>Primary Care Physician</span>
+              </h5>
+              <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" (click)="openEditProfileModal()">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </button>
+            </div>
             <div class="p-3 rounded-3 bg-light border mb-2">
               <h6 class="fw-bold text-dark mb-0">{{ primaryDoctor.name }}</h6>
               <span class="small text-primary fw-semibold">{{ primaryDoctor.specialty }}</span>
@@ -699,6 +740,147 @@
           <span *ngIf="uploadingDoc" class="spinner-border spinner-border-sm me-2" role="status"></span>
           <i *ngIf="!uploadingDoc" class="bi bi-shield-check me-1"></i>
           Verify &amp; Save to Vault
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== 3. EDIT PATIENT PROFILE & MEDICAL DETAILS MODAL ==================== -->
+<div *ngIf="showEditProfileModal" class="modal-backdrop-custom" (click)="closeEditProfileModal()">
+  <div class="modal-dialog-custom modal-lg-custom" (click)="$event.stopPropagation()">
+    <div class="modal-header-custom d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-person-badge-fill text-primary fs-5"></i>
+        <div>
+          <h5 class="modal-title fw-bold text-dark mb-0">Edit Patient Health Profile &amp; Address</h5>
+          <span class="text-muted small">Update your personal contact, delivery address, blood group &amp; clinical safety tags</span>
+        </div>
+      </div>
+      <button class="btn-close-modal" (click)="closeEditProfileModal()">✕</button>
+    </div>
+
+    <form [formGroup]="editPatientForm" (ngSubmit)="saveEditProfileModal()">
+      <div class="modal-body-custom p-4 bg-white" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Section A: Personal & Contact Details -->
+        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+          <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal &amp; Contact Information
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+            <input type="text" formControlName="name" class="form-control" placeholder="Enter your full name">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Email Address</label>
+            <input type="email" formControlName="email" class="form-control bg-light" title="Email cannot be changed">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Contact Phone Number</label>
+            <input type="tel" formControlName="phone" class="form-control" placeholder="e.g. +91 98765 43210">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Blood Group</label>
+            <select formControlName="bloodGroup" class="form-select">
+              <option value="O+ Positive">O+ Positive</option>
+              <option value="O- Negative">O- Negative</option>
+              <option value="A+ Positive">A+ Positive</option>
+              <option value="A- Negative">A- Negative</option>
+              <option value="B+ Positive">B+ Positive</option>
+              <option value="B- Negative">B- Negative</option>
+              <option value="AB+ Positive">AB+ Positive</option>
+              <option value="AB- Negative">AB- Negative</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section B: Shipping & Delivery Address -->
+        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+          <i class="bi bi-geo-alt-fill text-success me-2"></i>Default Shipping &amp; Delivery Address
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Street Address / Apartment / Suite</label>
+            <input type="text" formControlName="address" class="form-control" placeholder="e.g. 123 Health Ave, Suite 4B">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">City</label>
+            <input type="text" formControlName="city" class="form-control" placeholder="e.g. Bangalore">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">State / Province</label>
+            <input type="text" formControlName="state" class="form-control" placeholder="e.g. Karnataka">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">PIN / Postal Code</label>
+            <input type="text" formControlName="pincode" class="form-control" placeholder="e.g. 560001">
+          </div>
+        </div>
+
+        <!-- Section C: Clinical Safety Profile -->
+        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+          <i class="bi bi-shield-shaded text-danger me-2"></i>Clinical Safety Profile &amp; Allergies
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Known Drug Allergies (Comma separated)</label>
+            <input type="text" formControlName="allergies" class="form-control" placeholder="e.g. Penicillin, Sulfa, Aspirin">
+            <div class="form-text small">Cross-checked automatically by the clinical interaction engine.</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Chronic Medical Conditions (Comma separated)</label>
+            <input type="text" formControlName="chronicConditions" class="form-control" placeholder="e.g. Type-2 Diabetes, Hypertension, Asthma">
+            <div class="form-text small">Guides dispensing safety and refill cycle alignment.</div>
+          </div>
+        </div>
+
+        <!-- Section D: Emergency Contact & Physician -->
+        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+          <i class="bi bi-telephone-fill text-danger me-2"></i>Emergency Contact &amp; Primary Physician
+        </h6>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Emergency Contact Name</label>
+            <input type="text" formControlName="emergencyName" class="form-control" placeholder="e.g. Sarah Jenkins">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Relationship</label>
+            <input type="text" formControlName="emergencyRelation" class="form-control" placeholder="e.g. Spouse / Next of Kin">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Emergency Contact Phone</label>
+            <input type="tel" formControlName="emergencyPhone" class="form-control" placeholder="e.g. +91 98765 43210">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Primary Care Doctor</label>
+            <input type="text" formControlName="doctorName" class="form-control" placeholder="e.g. Dr. Rajesh Sharma, MD">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Clinic / Hospital Name</label>
+            <input type="text" formControlName="doctorHospital" class="form-control" placeholder="e.g. Apollo Multispeciality Clinic">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom p-3 border-top bg-light d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeEditProfileModal()" [disabled]="saving">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary px-4 fw-bold" [disabled]="editPatientForm.invalid || saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          <i *ngIf="!saving" class="bi bi-check2-circle me-1"></i>
+          Save Profile Changes
         </button>
       </div>
     </form>
