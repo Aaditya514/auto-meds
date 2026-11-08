@@ -189,10 +189,10 @@
     <div class="sidebar-footer">
       <a routerLink="/admin/profile" class="user-profile-card text-decoration-none" (click)="closeMobileSidebar()" title="View Pharmacist Profile &amp; Compliance Vault">
         <div class="user-avatar-pill">
-          <span>AK</span>
+          <span>{{ getUserInitials() }}</span>
         </div>
         <div class="user-meta">
-          <span class="user-title">Dr. A. Karim</span>
+          <span class="user-title">{{ authService.currentUserValue?.name || 'Dr. A. Karim' }}</span>
           <span class="user-role">Pharmacist &bull; Admin</span>
         </div>
       </a>
@@ -213,7 +213,7 @@
         <span class="brand-mobile-title">Auto-Meds</span>
         <span class="badge bg-success bg-opacity-25 text-success small">Pharmacist</span>
       </div>
-      <a routerLink="/admin/profile" class="mobile-avatar-btn">AK</a>
+      <a routerLink="/admin/profile" class="mobile-avatar-btn">{{ getUserInitials() }}</a>
     </div>
 
     <!-- Main View Outlet -->

@@ -12,8 +12,12 @@
       </p>
     </div>
 
-    <!-- Quick Stats Pills -->
+    <!-- Quick Stats Pills & Edit Action -->
     <div class="header-actions">
+      <button (click)="openEditModal()" class="btn btn-success btn-sm fw-semibold px-3 d-flex align-items-center gap-1.5 shadow-sm" title="Edit Pharmacist Credentials &amp; Store Premises Info">
+        <i class="bi bi-pencil-square"></i>
+        <span>Edit Pharmacist Profile</span>
+      </button>
       <span class="badge-active-pill">
         <i class="bi bi-shield-fill-check me-1.5"></i>{{ getActiveCount() }} Active Licenses
       </span>
@@ -23,15 +27,20 @@
     </div>
   </div>
 
+  <!-- Global Profile Success Notification -->
+  <div *ngIf="profileFeedback" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ profileFeedback }}
+  </div>
+
   <!-- Section 1: Pharmacist Identity & Store Overview Grid -->
   <div class="row g-4 mb-4">
     <!-- Pharmacist Identity Card -->
     <div class="col-lg-6">
       <div class="profile-card">
-        <div class="profile-card-header">
+        <div class="profile-card-header d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-3">
             <div class="pharmacist-avatar-lg">
-              <span>AK</span>
+              <span>{{ getPharmacistInitials() }}</span>
               <span class="avatar-verified-badge" title="State Council Verified"><i class="bi bi-check-lg"></i></span>
             </div>
             <div>
@@ -42,6 +51,11 @@
               <p class="text-slate-500 small mb-0">{{ pharmacistProfile.title }}</p>
             </div>
           </div>
+
+          <button (click)="openEditModal()" class="btn btn-sm btn-outline-success fw-semibold px-3 d-flex align-items-center gap-1.5" title="Edit Pharmacist Profile Credentials">
+            <i class="bi bi-pencil-square"></i>
+            <span>Edit</span>
+          </button>
         </div>
 
         <div class="profile-card-body">
@@ -81,19 +95,24 @@
     <!-- Pharmacy Store & Premises Card -->
     <div class="col-lg-6">
       <div class="profile-card">
-        <div class="profile-card-header">
+        <div class="profile-card-header d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-3">
             <div class="store-icon-lg">
               <i class="bi bi-hospital"></i>
             </div>
             <div>
               <div class="d-flex align-items-center gap-2">
-                <h4 class="fw-bold mb-0 text-slate-900">Auto-Meds Central Hub</h4>
+                <h4 class="fw-bold mb-0 text-slate-900">{{ pharmacistProfile.branchName }}</h4>
                 <span class="badge-store-pill">Unit 4 Dispensary</span>
               </div>
               <p class="text-slate-500 small mb-0">Authorized Chronic Refill &amp; Cold-Chain Vault Facility</p>
             </div>
           </div>
+
+          <button (click)="openEditModal()" class="btn btn-sm btn-outline-secondary fw-semibold px-3 d-flex align-items-center gap-1.5" title="Edit Store &amp; Premises Details">
+            <i class="bi bi-gear-fill"></i>
+            <span>Edit</span>
+          </button>
         </div>
 
         <div class="profile-card-body">
@@ -187,7 +206,7 @@
   </div>
 </div>
 
-<!-- ================= DOCUMENT PREVIEW MODAL ================= -->
+<!-- ================= 1. DOCUMENT PREVIEW MODAL ================= -->
 <div *ngIf="showPreviewModal && selectedCertificate" class="modal-backdrop fade show"></div>
 <div *ngIf="showPreviewModal && selectedCertificate" class="modal fade show d-block" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -203,78 +222,97 @@
         <button type="button" class="btn-close btn-close-white" (click)="closePreview()"></button>
       </div>
 
-      <div class="modal-body p-4 bg-slate-50">
-        <!-- Certificate Layout Sheet Simulation -->
-        <div class="simulated-certificate">
-          <div class="cert-emblem-seal">
-            <div class="seal-circle">
-              <i class="bi bi-shield-shaded"></i>
+      <div class="modal-body cert-modal-body p-4 bg-white">
+        <!-- Certificate Official Document Layout -->
+        <div class="official-cert-border p-4">
+          <!-- Government Header -->
+          <div class="text-center pb-3 border-bottom border-2 border-dark">
+            <div class="cert-emblem-seal mb-1">
+              <span class="national-seal">🏛️</span>
             </div>
-            <div class="seal-text">
-              <strong>GOVERNMENT OF INDIA &bull; DRUGS CONTROL ADMINISTRATION</strong>
-              <span>STATUTORY FORM OF LICENCE UNDER THE DRUGS AND COSMETICS ACT, 1940</span>
+            <h5 class="fw-bold text-uppercase mb-0 tracking-wide text-dark">{{ selectedCertificate.authority }}</h5>
+            <div class="small fw-semibold text-slate-600">CENTRAL DRUGS STANDARD CONTROL ORGANIZATION (CDSCO)</div>
+            <div class="text-xs text-muted text-uppercase mt-1">THE DRUGS AND COSMETICS ACT, 1940 &amp; RULES 1945 THEREUNDER</div>
+          </div>
+
+          <!-- Certificate Title & Statutory Form -->
+          <div class="text-center my-4">
+            <span class="badge bg-dark px-3 py-1 text-uppercase font-mono mb-2">{{ selectedCertificate.formNumber }}</span>
+            <h3 class="fw-bold text-slate-900 mb-1 text-uppercase">{{ selectedCertificate.title }}</h3>
+            <p class="small text-muted mb-0">Under Section 18 of the Drugs and Cosmetics Act, 1940</p>
+          </div>
+
+          <!-- License Particulars Table -->
+          <div class="cert-particulars-table mb-4">
+            <div class="row g-2 small border p-3 rounded bg-slate-50">
+              <div class="col-sm-6">
+                <span class="text-muted d-block">Statutory License Number:</span>
+                <strong class="font-mono text-dark fs-6">{{ selectedCertificate.licenseNumber }}</strong>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted d-block">Current Regulatory Status:</span>
+                <span class="badge" [ngClass]="selectedCertificate.status === 'ACTIVE' ? 'bg-success' : 'bg-warning text-dark'">
+                  {{ selectedCertificate.status === 'ACTIVE' ? 'VALID & COMPLIANT' : 'RENEWAL APPLICATION PENDING' }}
+                </span>
+              </div>
+              <div class="col-sm-6 mt-2">
+                <span class="text-muted d-block">Grant / Issue Date:</span>
+                <strong class="text-dark">{{ selectedCertificate.issueDate }}</strong>
+              </div>
+              <div class="col-sm-6 mt-2">
+                <span class="text-muted d-block">Validity / Expiry Date:</span>
+                <strong class="text-dark">{{ selectedCertificate.expiryDate }}</strong>
+              </div>
+              <div class="col-12 mt-2 pt-2 border-top">
+                <span class="text-muted d-block">Licensed Premise Address:</span>
+                <strong class="text-dark">{{ pharmacistProfile.branchAddress }}</strong>
+              </div>
+              <div class="col-12 mt-1">
+                <span class="text-muted d-block">Supervising Registered Pharmacist In-Charge:</span>
+                <strong class="text-dark">{{ pharmacistProfile.name }} &bull; Reg No: {{ pharmacistProfile.regNumber }}</strong>
+              </div>
             </div>
           </div>
 
-          <hr class="cert-divider">
+          <!-- Scope & Conditions of License -->
+          <div class="mb-4">
+            <h6 class="fw-bold small text-uppercase text-slate-700 mb-1">Conditions of Grant &amp; Permitted Activities:</h6>
+            <p class="small text-slate-600 mb-0 leading-relaxed">{{ selectedCertificate.description }}</p>
+          </div>
 
-          <div class="cert-body-content text-center my-3">
-            <h4 class="fw-bold text-slate-900 mb-2">{{ selectedCertificate.formNumber }}</h4>
-            <p class="text-slate-600 small mb-3">
-              This is to certify that <strong>{{ pharmacistProfile.branchName }}</strong> situated at 
-              <em>{{ pharmacistProfile.branchAddress }}</em> is hereby granted a valid regulatory license to conduct 
-              authorized pharmaceutical activities subject to the provisions of the Act and rules thereunder.
-            </p>
-
-            <div class="row g-3 text-start small p-3 bg-white rounded-3 border my-3">
-              <div class="col-6">
-                <span class="text-muted d-block">License Number:</span>
-                <strong class="font-mono text-slate-900 fs-6">{{ selectedCertificate.licenseNumber }}</strong>
+          <!-- Sign-Off & Official Seals -->
+          <div class="d-flex justify-content-between align-items-end pt-4 border-top mt-4">
+            <div class="text-center">
+              <div class="cert-qr-mock mb-1">
+                <i class="bi bi-qr-code text-dark" style="font-size: 3rem;"></i>
               </div>
-              <div class="col-6">
-                <span class="text-muted d-block">Supervising Registered Pharmacist:</span>
-                <strong class="text-slate-900 fs-6">{{ pharmacistProfile.name }} ({{ pharmacistProfile.regNumber }})</strong>
-              </div>
-              <div class="col-6">
-                <span class="text-muted d-block">Date of Issue:</span>
-                <strong class="text-slate-900">{{ selectedCertificate.issueDate }}</strong>
-              </div>
-              <div class="col-6">
-                <span class="text-muted d-block">Valid Until:</span>
-                <strong class="text-slate-900">{{ selectedCertificate.expiryDate }}</strong>
-              </div>
+              <span class="text-xs text-muted font-mono d-block">CDSCO Digital Sign-off: OK</span>
             </div>
 
-            <div class="d-flex justify-content-between align-items-end mt-4 pt-3 border-top">
-              <div class="text-start">
-                <div class="qr-code-placeholder">
-                  <i class="bi bi-qr-code fs-1 text-slate-800"></i>
-                </div>
-                <small class="text-muted" style="font-size: 10px;">CDSCO National Drug Register Verified</small>
+            <div class="text-center">
+              <div class="gov-seal-stamp mb-2">
+                <span class="seal-text">STATE LICENSING AUTHORITY &bull; SEAL</span>
               </div>
-
-              <div class="text-end">
-                <div class="signature-line">
-                  <span class="text-emerald-700 font-italic fw-bold" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem;">Dr. A. Karim</span>
-                </div>
-                <small class="text-muted d-block" style="font-size: 11px;">State Licensing Authority Sign-Off</small>
+              <div class="border-top border-dark pt-1 fw-bold small text-dark">
+                Drugs Controller &amp; Licensing Authority
               </div>
+              <span class="text-xs text-muted">Directorate of Drugs Control Administration</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="modal-footer bg-white">
+      <div class="modal-footer cert-modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="closePreview()">Close</button>
-        <button type="button" class="btn btn-success btn-sm fw-semibold" (click)="closePreview()">
-          <i class="bi bi-printer me-1"></i>Print Official Certificate Copy
+        <button type="button" class="btn btn-emerald btn-sm" onclick="window.print()">
+          <i class="bi bi-printer me-1"></i>Print Certificate
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ================= UPLOAD/UPDATE MODAL ================= -->
+<!-- ================= 2. CERTIFICATE UPDATE MODAL ================= -->
 <div *ngIf="showUploadModal && selectedCertificate" class="modal-backdrop fade show"></div>
 <div *ngIf="showUploadModal && selectedCertificate" class="modal fade show d-block" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -284,7 +322,7 @@
         <button type="button" class="btn-close btn-close-white" (click)="closeUpload()"></button>
       </div>
 
-      <div class="modal-body p-4">
+      <div class="modal-body p-4 bg-white">
         <div *ngIf="uploadFeedback" class="alert alert-success py-2 px-3 small mb-3">
           <i class="bi bi-check-circle-fill me-1"></i>{{ uploadFeedback }}
         </div>
@@ -316,3 +354,98 @@
   </div>
 </div>
 
+<!-- ================= 3. EDIT PHARMACIST PROFILE & PREMISES MODAL ================= -->
+<div *ngIf="showEditModal" class="modal-backdrop fade show"></div>
+<div *ngIf="showEditModal" class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content cert-modal-content">
+      <div class="modal-header cert-modal-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-person-badge text-emerald-400 fs-4"></i>
+          <div>
+            <h5 class="modal-title fw-bold text-white mb-0">Edit Pharmacist Profile &amp; Store Credentials</h5>
+            <small class="text-emerald-200">Update supervising clinical dispenser details and licensed dispensary premise info</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
+      </div>
+
+      <form (ngSubmit)="savePharmacistProfile()">
+        <div class="modal-body p-4 bg-white" style="max-height: 75vh; overflow-y: auto;">
+          <!-- Section A: Pharmacist Details -->
+          <h6 class="fw-bold text-slate-800 border-bottom pb-2 mb-3">
+            <i class="bi bi-person-vcard text-emerald-600 me-2"></i>Supervising Pharmacist Information
+          </h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Pharmacist Full Name</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.name" name="name" required placeholder="e.g. Dr. A. Karim">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Designation / Role Title</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.title" name="title" required placeholder="e.g. Chief Supervising Pharmacist &amp; Administrator">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">State Pharmacy Council Reg Number</label>
+              <input type="text" class="form-control font-mono" [(ngModel)]="editForm.regNumber" name="regNumber" required placeholder="e.g. WB-SPC/REG/2021/84920">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Registering State Council</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.council" name="council" required placeholder="e.g. West Bengal State Pharmacy Council (Pharmacy Act, 1948)">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Academic Qualifications</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.qualifications" name="qualifications" required placeholder="e.g. B.Pharm, Pharm.D">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Dispensing Authority Level</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.dispensingAuthority" name="dispensingAuthority" required placeholder="e.g. Schedule H, H1 &amp; X Authorized Sign-Off">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Official Email Address</label>
+              <input type="email" class="form-control bg-light" [(ngModel)]="editForm.email" name="email" readonly>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Emergency / Contact Phone</label>
+              <input type="tel" class="form-control" [(ngModel)]="editForm.phone" name="phone" required placeholder="e.g. +91 98301 22450">
+            </div>
+          </div>
+
+          <!-- Section B: Store & Premises Details -->
+          <h6 class="fw-bold text-slate-800 border-bottom pb-2 mb-3">
+            <i class="bi bi-hospital text-emerald-600 me-2"></i>Dispensary &amp; Licensed Premises Info
+          </h6>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Dispensary Hub / Branch Name</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.branchName" name="branchName" required placeholder="e.g. Auto-Meds Central Distribution Hub &amp; Retail Dispensary (Unit 4)">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Registered Physical Premise Address</label>
+              <input type="text" class="form-control" [(ngModel)]="editForm.branchAddress" name="branchAddress" required placeholder="e.g. Plot 14, Health City Complex, Main Avenue, Kolkata - 700091">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light p-3 border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary btn-sm px-3" (click)="closeEditModal()" [disabled]="savingProfile">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-success btn-sm px-4 fw-bold" [disabled]="savingProfile">
+            <span *ngIf="savingProfile" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <i *ngIf="!savingProfile" class="bi bi-check2-circle me-1"></i>
+            Save Profile Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
