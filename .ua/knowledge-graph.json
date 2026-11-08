@@ -24,8 +24,8 @@
       "NGINX"
     ],
     "description": "Smart E-Pharma, Automated Refill Subscriptions & Clinical Triage Platform with OCR prescription verification, 2-tier inventory soft-locking, and Twilio WhatsApp interactive refills.",
-    "analyzedAt": "2026-11-08T14:31:26.993Z",
-    "gitCommitHash": "2b7990acd6d7b39c6f7fdccee747008eb65c89da"
+    "analyzedAt": "2026-11-08T14:53:08.303Z",
+    "gitCommitHash": "87d49a9f984a9e99a80b85eb241aa03d7560948d"
   },
   "nodes": [
     {
@@ -104,30 +104,6 @@
         "md",
         "documentation",
         "guide"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "config:auto-meds-backend/auto-meds-backend/.classpath",
-      "type": "config",
-      "name": ".classpath",
-      "filePath": "auto-meds-backend/auto-meds-backend/.classpath",
-      "summary": "Source artifact: auto-meds-backend/auto-meds-backend/.classpath",
-      "tags": [
-        "file",
-        "text"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "config:auto-meds-backend/auto-meds-backend/.project",
-      "type": "config",
-      "name": ".project",
-      "filePath": "auto-meds-backend/auto-meds-backend/.project",
-      "summary": "Source artifact: auto-meds-backend/auto-meds-backend/.project",
-      "tags": [
-        "file",
-        "text"
       ],
       "complexity": "simple"
     },
@@ -3887,78 +3863,6 @@
       "complexity": "simple"
     },
     {
-      "id": "document:automeds-architecture.browser-check.json",
-      "type": "document",
-      "name": "automeds-architecture.browser-check.json",
-      "filePath": "automeds-architecture.browser-check.json",
-      "summary": "Project configuration / manifest: automeds-architecture.browser-check.json",
-      "tags": [
-        "file",
-        "json"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "document:automeds-architecture.delivery.json",
-      "type": "document",
-      "name": "automeds-architecture.delivery.json",
-      "filePath": "automeds-architecture.delivery.json",
-      "summary": "Project configuration / manifest: automeds-architecture.delivery.json",
-      "tags": [
-        "file",
-        "json"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "document:automeds-architecture.finalize-summary.json",
-      "type": "document",
-      "name": "automeds-architecture.finalize-summary.json",
-      "filePath": "automeds-architecture.finalize-summary.json",
-      "summary": "Project configuration / manifest: automeds-architecture.finalize-summary.json",
-      "tags": [
-        "file",
-        "json"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "document:automeds-architecture.finalize.json",
-      "type": "document",
-      "name": "automeds-architecture.finalize.json",
-      "filePath": "automeds-architecture.finalize.json",
-      "summary": "Project configuration / manifest: automeds-architecture.finalize.json",
-      "tags": [
-        "file",
-        "json"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "document:automeds-architecture.html",
-      "type": "document",
-      "name": "automeds-architecture.html",
-      "filePath": "automeds-architecture.html",
-      "summary": "Source artifact: automeds-architecture.html",
-      "tags": [
-        "file",
-        "html"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "document:automeds-architecture.json",
-      "type": "document",
-      "name": "automeds-architecture.json",
-      "filePath": "automeds-architecture.json",
-      "summary": "Project configuration / manifest: automeds-architecture.json",
-      "tags": [
-        "file",
-        "json"
-      ],
-      "complexity": "simple"
-    },
-    {
       "id": "document:AWS_DEPLOYMENT_GUIDE.md",
       "type": "document",
       "name": "AWS_DEPLOYMENT_GUIDE.md",
@@ -4054,32 +3958,6 @@
         "md",
         "documentation",
         "guide"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "document:ROADMAP_NEXT_SESSION.md",
-      "type": "document",
-      "name": "ROADMAP_NEXT_SESSION.md",
-      "filePath": "ROADMAP_NEXT_SESSION.md",
-      "summary": "Project documentation: ROADMAP_NEXT_SESSION.md",
-      "tags": [
-        "file",
-        "md",
-        "documentation",
-        "guide"
-      ],
-      "complexity": "simple"
-    },
-    {
-      "id": "pipeline:test_phase5.ps1",
-      "type": "pipeline",
-      "name": "test_phase5.ps1",
-      "filePath": "test_phase5.ps1",
-      "summary": "Source artifact: test_phase5.ps1",
-      "tags": [
-        "file",
-        "ps1"
       ],
       "complexity": "simple"
     },
@@ -5238,8 +5116,8 @@
       "description": "Component template/style bound to navbar.component.ts"
     },
     {
-      "source": "document:APPLICATION_TRAFFIC_FLOW.md",
-      "target": "document:automeds-architecture.html",
+      "source": "document:README.md",
+      "target": "document:APPLICATION_TRAFFIC_FLOW.md",
       "type": "related",
       "direction": "bidirectional",
       "weight": 0.9,
@@ -5316,22 +5194,6 @@
       "direction": "forward",
       "weight": 0.5,
       "description": "Project artifact reference"
-    },
-    {
-      "source": "file:auto-meds-backend/auto-meds-backend/src/main/java/com/automeds/AutoMedsApplication.java",
-      "target": "config:auto-meds-backend/auto-meds-backend/.classpath",
-      "type": "contains",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Backend component membership"
-    },
-    {
-      "source": "file:auto-meds-backend/auto-meds-backend/src/main/java/com/automeds/AutoMedsApplication.java",
-      "target": "config:auto-meds-backend/auto-meds-backend/.project",
-      "type": "contains",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Backend component membership"
     },
     {
       "source": "file:auto-meds-backend/auto-meds-backend/src/main/java/com/automeds/AutoMedsApplication.java",
@@ -6415,46 +6277,6 @@
     },
     {
       "source": "document:README.md",
-      "target": "document:automeds-architecture.browser-check.json",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
-      "target": "document:automeds-architecture.delivery.json",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
-      "target": "document:automeds-architecture.finalize-summary.json",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
-      "target": "document:automeds-architecture.finalize.json",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
-      "target": "document:automeds-architecture.json",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
       "target": "document:AWS_DEPLOYMENT_GUIDE.md",
       "type": "documents",
       "direction": "forward",
@@ -6480,22 +6302,6 @@
     {
       "source": "document:README.md",
       "target": "document:DOCKER.md",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
-      "target": "document:ROADMAP_NEXT_SESSION.md",
-      "type": "documents",
-      "direction": "forward",
-      "weight": 0.5,
-      "description": "Project artifact reference"
-    },
-    {
-      "source": "document:README.md",
-      "target": "pipeline:test_phase5.ps1",
       "type": "documents",
       "direction": "forward",
       "weight": 0.5,
@@ -6848,8 +6654,6 @@
         "pipeline:.github/workflows/ci-cd.yml",
         "config:.gitignore",
         "document:APPLICATION_TRAFFIC_FLOW.md",
-        "config:auto-meds-backend/auto-meds-backend/.classpath",
-        "config:auto-meds-backend/auto-meds-backend/.project",
         "config:auto-meds-backend/auto-meds-backend/pom.xml",
         "file:auto-meds-backend/auto-meds-backend/src/main/java/com/automeds/AutoMedsApplication.java",
         "file:auto-meds-backend/auto-meds-backend/src/main/java/com/automeds/config/CacheConfig.java",
@@ -6877,19 +6681,11 @@
         "file:auto-meds-frontend/auto-meds-frontend/src/main.ts",
         "config:auto-meds-frontend/auto-meds-frontend/tsconfig.app.json",
         "config:auto-meds-frontend/auto-meds-frontend/tsconfig.json",
-        "document:automeds-architecture.browser-check.json",
-        "document:automeds-architecture.delivery.json",
-        "document:automeds-architecture.finalize-summary.json",
-        "document:automeds-architecture.finalize.json",
-        "document:automeds-architecture.html",
-        "document:automeds-architecture.json",
         "document:AWS_DEPLOYMENT_GUIDE.md",
         "pipeline:deploy/aws-ec2-setup.sh",
         "pipeline:deploy/setup-ssl.sh",
         "document:DOCKER.md",
-        "document:README.md",
-        "document:ROADMAP_NEXT_SESSION.md",
-        "pipeline:test_phase5.ps1"
+        "document:README.md"
       ]
     }
   ],
