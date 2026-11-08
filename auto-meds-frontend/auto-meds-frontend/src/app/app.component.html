@@ -1,4 +1,5 @@
-<div class="d-flex flex-column min-vh-100" style="overflow-x: hidden;">
+<!-- ================= 1. PATIENT & PUBLIC PORTAL LAYOUT ================= -->
+<div *ngIf="!authService.isAdmin()" class="d-flex flex-column min-vh-100" style="overflow-x: hidden;">
   <app-navbar></app-navbar>
 
   <main class="flex-grow-1" style="min-width: 0; width: 100%; overflow-x: hidden;">
@@ -10,4 +11,106 @@
       <span>&copy; 2026 Auto-Meds E-Pharma Platform. All rights reserved.</span>
     </div>
   </footer>
+</div>
+
+<!-- ================= 2. PHARMACIST / ADMIN MEDISTOCK SIDEBAR LAYOUT ================= -->
+<div *ngIf="authService.isAdmin()" class="medistock-admin-layout">
+  <!-- Mobile Backdrop Overlay -->
+  <div *ngIf="mobileSidebarOpen" class="sidebar-backdrop" (click)="closeMobileSidebar()"></div>
+
+  <!-- Left-Side Vertical Sidebar (MediStock Theme) -->
+  <aside class="medistock-sidebar" [class.sidebar-open]="mobileSidebarOpen">
+    <!-- Top Brand Logo -->
+    <div class="sidebar-header">
+      <a routerLink="/admin/dashboard" class="sidebar-brand-link text-decoration-none" (click)="closeMobileSidebar()">
+        <div class="sidebar-emblem">
+          <i class="bi bi-plus-lg"></i>
+        </div>
+        <div class="sidebar-brand-text">
+          <span class="brand-name">Auto-Meds</span>
+          <span class="brand-tagline">PHARMACY INVENTORY</span>
+        </div>
+      </a>
+      <button class="btn btn-sm btn-close-sidebar d-lg-none" (click)="closeMobileSidebar()">✕</button>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a routerLink="/admin/medicines" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-capsule"></i>
+        <span>Medicines</span>
+      </a>
+
+      <a routerLink="/admin/inventory" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-boxes"></i>
+        <span>Inventory</span>
+      </a>
+
+      <a routerLink="/admin/subscription-requests" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-file-earmark-medical"></i>
+        <span>Subscriptions</span>
+      </a>
+
+      <a routerLink="/admin/orders" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-box-seam"></i>
+        <span>Orders</span>
+      </a>
+
+      <a routerLink="/admin/users" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-people"></i>
+        <span>Patients</span>
+      </a>
+
+      <a routerLink="/admin/audit-logs" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-shield-check"></i>
+        <span>Audit Logs</span>
+      </a>
+
+      <a routerLink="/admin/profile" routerLinkActive="active" class="sidebar-nav-item" (click)="closeMobileSidebar()">
+        <i class="bi bi-award-fill"></i>
+        <span>Store Compliance</span>
+      </a>
+    </nav>
+
+    <!-- Bottom Pharmacist Profile Card (Dr. Karim / MediStock) -->
+    <div class="sidebar-footer">
+      <a routerLink="/admin/profile" class="user-profile-card text-decoration-none" (click)="closeMobileSidebar()" title="View Pharmacist Profile &amp; Compliance Vault">
+        <div class="user-avatar-pill">
+          <span>AK</span>
+        </div>
+        <div class="user-meta">
+          <span class="user-title">Dr. A. Karim</span>
+          <span class="user-role">Pharmacist &bull; Admin</span>
+        </div>
+      </a>
+      <button (click)="logout()" class="btn-sidebar-signout" title="Sign Out of Portal">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="medistock-content-area">
+    <!-- Top Header Bar for Mobile -->
+    <div class="admin-mobile-header d-lg-none">
+      <button class="btn-menu-toggle" (click)="toggleMobileSidebar()">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="d-flex align-items-center gap-2">
+        <span class="brand-mobile-title">Auto-Meds</span>
+        <span class="badge bg-success bg-opacity-25 text-success small">Pharmacist</span>
+      </div>
+      <a routerLink="/admin/profile" class="mobile-avatar-btn">AK</a>
+    </div>
+
+    <!-- Main View Outlet -->
+    <main class="medistock-main-view">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 </div>

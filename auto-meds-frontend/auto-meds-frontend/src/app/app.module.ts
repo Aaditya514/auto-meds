@@ -28,6 +28,7 @@ import { AdminSubscriptionRequestsComponent } from './admin/subscriptions/admin-
 import { AdminOrdersComponent } from './admin/orders/admin-orders.component';
 import { AdminUsersComponent } from './admin/users/admin-users.component';
 import { AdminAuditLogsComponent } from './admin/audit-logs/admin-audit-logs.component';
+import { AdminProfileComponent } from './admin/profile/admin-profile.component';
 import { DispensingSlipModalComponent } from './shared/components/dispensing-slip-modal/dispensing-slip-modal.component';
 
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
@@ -59,6 +60,7 @@ import { CaregiverComponent } from './patient/caregiver/caregiver.component';
     AdminOrdersComponent,
     AdminUsersComponent,
     AdminAuditLogsComponent,
+    AdminProfileComponent,
     CaregiverComponent
   ],
   imports: [

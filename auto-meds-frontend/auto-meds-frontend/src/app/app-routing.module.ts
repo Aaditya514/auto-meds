@@ -22,6 +22,7 @@ import { AdminSubscriptionRequestsComponent } from './admin/subscriptions/admin-
 import { AdminOrdersComponent } from './admin/orders/admin-orders.component';
 import { AdminUsersComponent } from './admin/users/admin-users.component';
 import { AdminAuditLogsComponent } from './admin/audit-logs/admin-audit-logs.component';
+import { AdminProfileComponent } from './admin/profile/admin-profile.component';
 
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
@@ -58,6 +59,7 @@ const routes: Routes = [
   { path: 'admin/orders', component: AdminOrdersComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'ADMIN' } },
   { path: 'admin/users', component: AdminUsersComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'ADMIN' } },
   { path: 'admin/audit-logs', component: AdminAuditLogsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'ADMIN' } },
+  { path: 'admin/profile', component: AdminProfileComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'ADMIN' } },
 
   { path: '**', redirectTo: 'home' }
 ];

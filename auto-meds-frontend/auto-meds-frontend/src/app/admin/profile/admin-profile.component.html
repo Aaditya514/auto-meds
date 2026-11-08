@@ -1,0 +1,317 @@
+<div class="medistock-profile-container">
+  <!-- Top Page Header -->
+  <div class="medistock-page-header">
+    <div>
+      <div class="system-badge mb-2">
+        <span class="live-dot"></span>
+        <span class="system-text">Phase 1 Active • Licensed Pharmacy Premises &amp; Registered Pharmacist Verification</span>
+      </div>
+      <h1 class="header-title">Pharmacist Identity &amp; Store Compliance Vault</h1>
+      <p class="header-subtitle">
+        Supervising clinical dispenser credentials, retail &amp; wholesale drug licenses, and statutory regulatory certificates under CDSCO &amp; Pharmacy Act.
+      </p>
+    </div>
+
+    <!-- Quick Stats Pills -->
+    <div class="header-actions">
+      <span class="badge-active-pill">
+        <i class="bi bi-shield-fill-check me-1.5"></i>{{ getActiveCount() }} Active Licenses
+      </span>
+      <span *ngIf="getRenewalCount() > 0" class="badge-renewal-pill">
+        <i class="bi bi-exclamation-triangle-fill me-1.5"></i>{{ getRenewalCount() }} Renewal in &lt;60 Days
+      </span>
+    </div>
+  </div>
+
+  <!-- Section 1: Pharmacist Identity & Store Overview Grid -->
+  <div class="row g-4 mb-4">
+    <!-- Pharmacist Identity Card -->
+    <div class="col-lg-6">
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <div class="d-flex align-items-center gap-3">
+            <div class="pharmacist-avatar-lg">
+              <span>AK</span>
+              <span class="avatar-verified-badge" title="State Council Verified"><i class="bi bi-check-lg"></i></span>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0 text-slate-900">{{ pharmacistProfile.name }}</h4>
+                <span class="badge-role-pill">Pharmacist In-Charge</span>
+              </div>
+              <p class="text-slate-500 small mb-0">{{ pharmacistProfile.title }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card-body">
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-award text-emerald-600 me-2"></i>Pharmacy Council Reg No:</span>
+            <span class="cred-value cred-reg">{{ pharmacistProfile.regNumber }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-mortarboard text-emerald-600 me-2"></i>Qualifications:</span>
+            <span class="cred-value">{{ pharmacistProfile.qualifications }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-building text-emerald-600 me-2"></i>State Council:</span>
+            <span class="cred-value">{{ pharmacistProfile.council }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-shield-shaded text-emerald-600 me-2"></i>Dispensing Authority:</span>
+            <span class="cred-value text-emerald-700 fw-bold">{{ pharmacistProfile.dispensingAuthority }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-envelope text-emerald-600 me-2"></i>Official Email:</span>
+            <span class="cred-value">{{ pharmacistProfile.email }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-telephone text-emerald-600 me-2"></i>Emergency Hotline:</span>
+            <span class="cred-value">{{ pharmacistProfile.phone }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pharmacy Store & Premises Card -->
+    <div class="col-lg-6">
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <div class="d-flex align-items-center gap-3">
+            <div class="store-icon-lg">
+              <i class="bi bi-hospital"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0 text-slate-900">Auto-Meds Central Hub</h4>
+                <span class="badge-store-pill">Unit 4 Dispensary</span>
+              </div>
+              <p class="text-slate-500 small mb-0">Authorized Chronic Refill &amp; Cold-Chain Vault Facility</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card-body">
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-geo-alt text-emerald-600 me-2"></i>Registered Premise Address:</span>
+            <span class="cred-value">{{ pharmacistProfile.branchAddress }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-clock-history text-emerald-600 me-2"></i>Operating Hours:</span>
+            <span class="cred-value fw-semibold text-slate-800">24x7 Continuous Care &amp; Automated FEFO Allocation</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-file-earmark-check text-emerald-600 me-2"></i>Last Statutory Audit:</span>
+            <span class="cred-value text-emerald-700 fw-bold">{{ pharmacistProfile.lastAuditDate }}</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-thermometer-snow text-emerald-600 me-2"></i>Cold Chain Storage:</span>
+            <span class="cred-value">Monitored 2°C – 8°C Medical Refrigeration (ShedLock Telemetry)</span>
+          </div>
+
+          <div class="credential-row">
+            <span class="cred-label"><i class="bi bi-lock-fill text-emerald-600 me-2"></i>Controlled Drug Vault:</span>
+            <span class="cred-value">Biometric Double-Lock Schedule X Approved Locker</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Statutory Licenses & Compliance Certificates Vault -->
+  <div class="vault-header-strip mb-3">
+    <div>
+      <h3 class="fw-bold text-slate-900 mb-1">
+        <i class="bi bi-folder-check text-emerald-600 me-2"></i>Statutory Licenses &amp; Certificates
+      </h3>
+      <p class="text-slate-500 small mb-0">
+        Mandatory documents for operating an allopathic pharmacy and automated prescription fulfillment platform in compliance with CDSCO regulations.
+      </p>
+    </div>
+  </div>
+
+  <!-- Certificates Grid -->
+  <div class="row g-4">
+    <div class="col-md-6 col-xl-4" *ngFor="let cert of certificates">
+      <div class="cert-card" [class.cert-card-warning]="cert.status === 'RENEWAL_DUE'">
+        <div class="cert-card-top">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="cert-form-badge">{{ cert.formNumber }}</span>
+            <span class="badge-status-pill" [ngClass]="cert.status === 'ACTIVE' ? 'status-active' : 'status-warning'">
+              <i [ngClass]="cert.status === 'ACTIVE' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-circle-fill'" class="me-1"></i>
+              {{ cert.status === 'ACTIVE' ? 'Active & Verified' : 'Renewal Due' }}
+            </span>
+          </div>
+
+          <h5 class="cert-title">{{ cert.title }}</h5>
+          <p class="cert-authority">{{ cert.authority }}</p>
+        </div>
+
+        <div class="cert-card-body">
+          <div class="cert-info-line">
+            <span class="label">License No:</span>
+            <span class="value font-mono">{{ cert.licenseNumber }}</span>
+          </div>
+
+          <div class="cert-info-line">
+            <span class="label">Issued Date:</span>
+            <span class="value">{{ cert.issueDate }}</span>
+          </div>
+
+          <div class="cert-info-line">
+            <span class="label">Expiry / Validity:</span>
+            <span class="value" [class.text-amber-700]="cert.status === 'RENEWAL_DUE'">{{ cert.expiryDate }}</span>
+          </div>
+
+          <p class="cert-desc">{{ cert.description }}</p>
+        </div>
+
+        <div class="cert-card-footer">
+          <button (click)="openPreview(cert)" class="btn-cert-view">
+            <i class="bi bi-file-earmark-pdf-fill me-1.5 text-emerald-600"></i>View Document
+          </button>
+          <button (click)="openUpload(cert)" class="btn-cert-upload" title="Upload Renewal or Updated License">
+            <i class="bi bi-arrow-repeat me-1"></i>Update
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DOCUMENT PREVIEW MODAL ================= -->
+<div *ngIf="showPreviewModal && selectedCertificate" class="modal-backdrop fade show"></div>
+<div *ngIf="showPreviewModal && selectedCertificate" class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content cert-modal-content">
+      <div class="modal-header cert-modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-shield-check text-emerald-400 fs-4"></i>
+          <div>
+            <h5 class="modal-title fw-bold text-white mb-0">{{ selectedCertificate.title }}</h5>
+            <small class="text-emerald-200">Official Government Statutory Certificate &bull; License #{{ selectedCertificate.licenseNumber }}</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closePreview()"></button>
+      </div>
+
+      <div class="modal-body p-4 bg-slate-50">
+        <!-- Certificate Layout Sheet Simulation -->
+        <div class="simulated-certificate">
+          <div class="cert-emblem-seal">
+            <div class="seal-circle">
+              <i class="bi bi-shield-shaded"></i>
+            </div>
+            <div class="seal-text">
+              <strong>GOVERNMENT OF INDIA &bull; DRUGS CONTROL ADMINISTRATION</strong>
+              <span>STATUTORY FORM OF LICENCE UNDER THE DRUGS AND COSMETICS ACT, 1940</span>
+            </div>
+          </div>
+
+          <hr class="cert-divider">
+
+          <div class="cert-body-content text-center my-3">
+            <h4 class="fw-bold text-slate-900 mb-2">{{ selectedCertificate.formNumber }}</h4>
+            <p class="text-slate-600 small mb-3">
+              This is to certify that <strong>{{ pharmacistProfile.branchName }}</strong> situated at 
+              <em>{{ pharmacistProfile.branchAddress }}</em> is hereby granted a valid regulatory license to conduct 
+              authorized pharmaceutical activities subject to the provisions of the Act and rules thereunder.
+            </p>
+
+            <div class="row g-3 text-start small p-3 bg-white rounded-3 border my-3">
+              <div class="col-6">
+                <span class="text-muted d-block">License Number:</span>
+                <strong class="font-mono text-slate-900 fs-6">{{ selectedCertificate.licenseNumber }}</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block">Supervising Registered Pharmacist:</span>
+                <strong class="text-slate-900 fs-6">{{ pharmacistProfile.name }} ({{ pharmacistProfile.regNumber }})</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block">Date of Issue:</span>
+                <strong class="text-slate-900">{{ selectedCertificate.issueDate }}</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block">Valid Until:</span>
+                <strong class="text-slate-900">{{ selectedCertificate.expiryDate }}</strong>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-end mt-4 pt-3 border-top">
+              <div class="text-start">
+                <div class="qr-code-placeholder">
+                  <i class="bi bi-qr-code fs-1 text-slate-800"></i>
+                </div>
+                <small class="text-muted" style="font-size: 10px;">CDSCO National Drug Register Verified</small>
+              </div>
+
+              <div class="text-end">
+                <div class="signature-line">
+                  <span class="text-emerald-700 font-italic fw-bold" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem;">Dr. A. Karim</span>
+                </div>
+                <small class="text-muted d-block" style="font-size: 11px;">State Licensing Authority Sign-Off</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-white">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="closePreview()">Close</button>
+        <button type="button" class="btn btn-success btn-sm fw-semibold" (click)="closePreview()">
+          <i class="bi bi-printer me-1"></i>Print Official Certificate Copy
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= UPLOAD/UPDATE MODAL ================= -->
+<div *ngIf="showUploadModal && selectedCertificate" class="modal-backdrop fade show"></div>
+<div *ngIf="showUploadModal && selectedCertificate" class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cert-modal-content">
+      <div class="modal-header cert-modal-header">
+        <h5 class="modal-title fw-bold text-white mb-0">Update {{ selectedCertificate.formNumber }} Certificate</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeUpload()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div *ngIf="uploadFeedback" class="alert alert-success py-2 px-3 small mb-3">
+          <i class="bi bi-check-circle-fill me-1"></i>{{ uploadFeedback }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">License / Registration Number:</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedCertificate.licenseNumber">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">New Expiry Date:</label>
+          <input type="date" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Upload Scanned Certificate Document (PDF / JPEG):</label>
+          <input type="file" class="form-control" accept=".pdf,image/*">
+          <small class="text-muted">Must be signed &amp; stamped by the State Licensing Authority or Pharmacy Council.</small>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="closeUpload()">Cancel</button>
+        <button type="button" class="btn btn-success btn-sm fw-bold" (click)="handleUploadSuccess()">
+          Submit &amp; Queue Verification
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
