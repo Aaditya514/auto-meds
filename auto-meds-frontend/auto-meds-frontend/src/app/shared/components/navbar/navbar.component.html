@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-pharma sticky-top" [ngClass]="{'navbar-admin-medistock': authService.isAdmin()}">
   <div class="container-fluid px-3 px-md-4">
-    <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-3 me-xl-4 text-decoration-none py-0" routerLink="/">
+    <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-3 me-xl-4 text-decoration-none py-0" [routerLink]="authService.isAdmin() ? '/admin/dashboard' : '/home'">
       <div *ngIf="authService.isAdmin()" class="admin-brand-icon me-2">
         <i class="bi bi-plus-lg"></i>
       </div>

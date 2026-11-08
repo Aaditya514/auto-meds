@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { SubscriptionService } from '../../core/services/subscription.service';
 import { OrderService } from '../../core/services/order.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -23,10 +25,16 @@ export class HomeComponent implements OnInit {
   constructor(
     private subscriptionService: SubscriptionService,
     private orderService: OrderService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
+    if (this.authService.isAdmin()) {
+      this.router.navigate(['/admin/dashboard']);
+      return;
+    }
     this.loadDashboardData();
   }
 

@@ -52,7 +52,8 @@ export class AdminLoginComponent implements OnInit {
       next: (res) => {
         this.loading = false;
         if (res.role === 'ADMIN') {
-          this.router.navigateByUrl(this.returnUrl);
+          const dest = (this.returnUrl && !this.returnUrl.startsWith('/admin')) ? '/admin/dashboard' : this.returnUrl;
+          this.router.navigateByUrl(dest);
         } else {
           this.authService.logout();
           this.error = 'Access denied. This portal is for administrators only.';

@@ -38,7 +38,7 @@ const routes: Routes = [
   { path: 'admin/register-admin', component: AdminRegisterComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'ADMIN' } },
   
   // Patient Routes
-  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'PATIENT' } },
   { path: 'medicines', component: MedicinesComponent },
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
   { path: 'checkout', component: CheckoutComponent, canActivate: [AuthGuard] },
