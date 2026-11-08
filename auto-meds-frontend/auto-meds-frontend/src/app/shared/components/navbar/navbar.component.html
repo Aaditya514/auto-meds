@@ -1,30 +1,30 @@
-<nav class="navbar navbar-expand-lg navbar-pharma sticky-top" [ngClass]="{'navbar-admin-medistock': authService.isAdmin()}">
-  <div class="container-fluid px-3 px-md-4">
+<nav class="navbar navbar-expand-xl navbar-pharma sticky-top" [ngClass]="{'navbar-admin-medistock': authService.isAdmin()}">
+  <div class="container-fluid px-2 px-md-3 px-xl-4">
     <!-- Brand Logo -->
-    <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-3 me-xl-4 text-decoration-none py-0" [routerLink]="authService.isAdmin() ? '/admin/dashboard' : '/home'">
-      <i *ngIf="!authService.isAdmin()" class="bi bi-prescription2 text-primary fs-2 me-2"></i>
-      <div *ngIf="authService.isAdmin()" class="admin-brand-icon me-2">
+    <a class="navbar-brand d-flex align-items-center flex-shrink-0 me-2 me-xl-3 text-decoration-none py-0" [routerLink]="authService.isAdmin() ? '/admin/dashboard' : '/home'">
+      <i *ngIf="!authService.isAdmin()" class="bi bi-prescription2 text-primary fs-3 me-1.5"></i>
+      <div *ngIf="authService.isAdmin()" class="admin-brand-icon me-1.5">
         <i class="bi bi-hospital"></i>
       </div>
       <div class="d-flex flex-column align-items-start lh-1">
-        <span class="brand-title fs-4 fw-bold mb-1" [ngClass]="authService.isAdmin() ? 'brand-admin-text' : 'brand-gradient'">Auto-Meds</span>
+        <span class="brand-title fs-5 fw-bold mb-0.5" [ngClass]="authService.isAdmin() ? 'brand-admin-text' : 'brand-gradient'">Auto-Meds</span>
         <span *ngIf="authService.isAdmin()" class="badge text-uppercase fw-bold text-nowrap admin-portal-badge">
           Pharmacist Portal
         </span>
-        <span *ngIf="!authService.isAdmin() && authService.isPatient()" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 small" style="font-size: 0.6rem; letter-spacing: 0.05em;">
+        <span *ngIf="!authService.isAdmin() && authService.isPatient()" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 small admin-portal-badge">
           PATIENT CARE
         </span>
       </div>
     </a>
     
-    <!-- Mobile Hamburger Toggle Button -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <!-- Mobile / Tablet Hamburger Toggle Button (< 1200px) -->
+    <button class="navbar-toggler border-0 shadow-none px-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon" [ngClass]="{'navbar-toggler-icon-white': authService.isAdmin()}"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarContent">
       <!-- 1. Patient Navigation Links -->
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="authService.isPatient()">
+      <ul class="navbar-nav me-auto mb-2 mb-xl-0" *ngIf="authService.isPatient()">
         <li class="nav-item">
           <a class="nav-link fw-medium" routerLink="/home" routerLinkActive="active"><i class="bi bi-house-door me-1"></i> Home</a>
         </li>
@@ -45,45 +45,61 @@
         </li>
       </ul>
 
-      <!-- 2. Admin / Pharmacist Navigation Links -->
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1" *ngIf="authService.isAdmin()">
+      <!-- 2. Admin / Pharmacist Navigation Links (Compact & Auto-Scaling) -->
+      <ul class="navbar-nav me-auto mb-2 mb-xl-0 gap-0 gap-xxl-1" *ngIf="authService.isAdmin()">
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/dashboard" routerLinkActive="active"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/dashboard" routerLinkActive="active" title="Clinical Command Center">
+            <i class="bi bi-speedometer2 me-1"></i><span>Dashboard</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/medicines" routerLinkActive="active"><i class="bi bi-capsule me-1"></i> Medicines</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/medicines" routerLinkActive="active" title="Formulary Catalog">
+            <i class="bi bi-capsule me-1"></i><span>Medicines</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/inventory" routerLinkActive="active"><i class="bi bi-boxes me-1"></i> Inventory</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/inventory" routerLinkActive="active" title="Warehouse Soft-Lock Inventory">
+            <i class="bi bi-boxes me-1"></i><span>Inventory</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/subscription-requests" routerLinkActive="active"><i class="bi bi-file-earmark-medical me-1"></i> Subscriptions</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/subscription-requests" routerLinkActive="active" title="Subscription Triage &amp; OCR Verification">
+            <i class="bi bi-file-earmark-medical me-1"></i><span>Subscriptions</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/orders" routerLinkActive="active"><i class="bi bi-receipt me-1"></i> Orders</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/orders" routerLinkActive="active" title="Fulfillment &amp; Dispensing Slip Desk">
+            <i class="bi bi-receipt me-1"></i><span>Orders</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/users" routerLinkActive="active"><i class="bi bi-people me-1"></i> Patients</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/users" routerLinkActive="active" title="Patient Safety Directory">
+            <i class="bi bi-people me-1"></i><span>Patients</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/audit-logs" routerLinkActive="active"><i class="bi bi-shield-check me-1"></i> Audit Logs</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/audit-logs" routerLinkActive="active" title="CDSCO Regulatory Audit Ledger">
+            <i class="bi bi-shield-check me-1"></i><span>Audit Logs</span>
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/profile" routerLinkActive="active"><i class="bi bi-award-fill me-1"></i> Compliance &amp; Profile</a>
+          <a class="nav-link fw-medium text-nowrap" routerLink="/admin/profile" routerLinkActive="active" title="Store Compliance Certificates &amp; Pharmacist Credentials">
+            <i class="bi bi-award-fill me-1"></i><span>Compliance</span>
+          </a>
         </li>
       </ul>
 
       <!-- 3. Public Visitor Navigation Links -->
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="!authService.isLoggedIn()">
+      <ul class="navbar-nav me-auto mb-2 mb-xl-0" *ngIf="!authService.isLoggedIn()">
         <li class="nav-item">
           <a class="nav-link fw-medium" routerLink="/medicines" routerLinkActive="active"><i class="bi bi-capsule me-1"></i> Browse Medicines</a>
         </li>
       </ul>
 
       <!-- Right Nav Buttons (Cart, User Profile Dropdown, Login/Register) -->
-      <ul class="navbar-nav ms-auto align-items-center gap-2">
+      <ul class="navbar-nav ms-auto align-items-center gap-1.5 flex-row">
         <!-- Patient Cart Icon Button -->
-        <li class="nav-item" *ngIf="authService.isPatient()">
+        <li class="nav-item me-1" *ngIf="authService.isPatient()">
           <a class="nav-link position-relative cart-icon-btn p-0" routerLink="/cart" title="Shopping Cart">
             <i class="bi bi-cart3 fs-5"></i>
             <span *ngIf="cartItemCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge">
@@ -94,27 +110,27 @@
 
         <!-- Logged Out Actions -->
         <ng-container *ngIf="!authService.isLoggedIn()">
-          <li class="nav-item me-2">
-            <a class="btn btn-outline-primary rounded-pill px-4 fw-semibold" routerLink="/login/patient">Patient Login</a>
+          <li class="nav-item me-1">
+            <a class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold" routerLink="/login/patient">Patient Login</a>
           </li>
-          <li class="nav-item me-2">
-            <a class="btn btn-outline-success rounded-pill px-3 fw-semibold" routerLink="/login/admin">Pharmacist Login</a>
+          <li class="nav-item me-1">
+            <a class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold" routerLink="/login/admin">Pharmacist Login</a>
           </li>
           <li class="nav-item">
-            <a class="btn btn-pharma-primary rounded-pill px-4" routerLink="/register">Register</a>
+            <a class="btn btn-pharma-primary btn-sm rounded-pill px-3" routerLink="/register">Register</a>
           </li>
         </ng-container>
 
         <!-- Logged In User Dropdown -->
         <li class="nav-item dropdown flex-shrink-0" *ngIf="authService.isLoggedIn()">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-3 text-nowrap" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1.5 py-1 px-1.5 rounded-3 text-nowrap" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <div class="avatar-pharma avatar-sm avatar-interactive flex-shrink-0" [ngClass]="authService.isPharmacist() ? 'avatar-pharmacist' : 'avatar-patient'">
               {{ getUserInitials() }}
               <span class="avatar-status-dot avatar-status-online" title="Session Active"></span>
             </div>
-            <div class="d-none d-md-flex flex-column text-start lh-1">
-              <span class="fw-semibold text-nowrap" [ngClass]="authService.isAdmin() ? 'text-white' : 'text-dark'" style="font-size: 0.88rem;">{{ currentUser?.name }}</span>
-              <span [ngClass]="authService.isAdmin() ? 'text-emerald-300' : 'text-muted'" style="font-size: 0.72rem;">{{ authService.isPharmacist() ? 'Pharmacist • Admin' : 'Patient • Active Care' }}</span>
+            <div class="d-none d-lg-flex flex-column text-start lh-1" style="max-width: 110px;">
+              <span class="fw-semibold text-truncate" [ngClass]="authService.isAdmin() ? 'text-white' : 'text-dark'" style="font-size: 0.82rem;">{{ currentUser?.name }}</span>
+              <span class="d-none d-xxl-block text-truncate" [ngClass]="authService.isAdmin() ? 'text-emerald-300' : 'text-muted'" style="font-size: 0.68rem;">{{ authService.isPharmacist() ? 'Pharmacist' : 'Patient' }}</span>
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
