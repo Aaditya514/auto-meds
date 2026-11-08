@@ -1,6 +1,10 @@
 # Stage 1: Build Angular Application
 FROM node:18-alpine AS build
 WORKDIR /app
+
+# Prevent JavaScript heap out of memory during Angular production compilation
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
