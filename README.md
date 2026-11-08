@@ -8,6 +8,7 @@
   [![Java](https://img.shields.io/badge/Java-17-ED8B00.svg?logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
   [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
   [![AWS](https://img.shields.io/badge/AWS-EC2%20Free%20Tier%20($0/mo)-FF9900.svg?logo=amazon-aws&logoColor=white)](AWS_DEPLOYMENT_GUIDE.md)
+  [![Knowledge Graph](https://img.shields.io/badge/Knowledge%20Graph-Understand--Anything-blueviolet.svg?logo=gitbook&logoColor=white)](#-interactive-codebase-knowledge-graph)
   [![JWT](https://img.shields.io/badge/Security-JWT%20Stateless-000000.svg?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
   [![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%20AA-blueviolet.svg)](https://www.w3.org/WAI/standards-guidelines/wcag/)
   [![License](https://img.shields.io/badge/License-MIT-success.svg)](LICENSE)
@@ -18,6 +19,7 @@
 
   [Features](#-key-features) •
   [Architecture](#-system-architecture) •
+  [Knowledge Graph](#-interactive-codebase-knowledge-graph) •
   [Refill Lifecycle](#-autonomous-chronic-refill-lifecycle-6-phase-coordinated-engine) •
   [Getting Started](#-getting-started) •
   [Docker](#-docker-deployment) •
@@ -132,6 +134,32 @@ Millions of patients suffering from chronic conditions (hypertension, diabetes, 
 
 ---
 
+## 🗺️ Interactive Codebase Knowledge Graph
+
+Auto-Meds includes a pre-compiled, interactive multi-agent **Knowledge Graph** generated via [Egonex-AI/Understand-Anything](https://github.com/Egonex-AI/Understand-Anything). Instead of navigating flat files or standard directory trees, developers and contributors can explore the entire codebase topology, REST endpoints, database schema mappings, and dependency graphs inside an interactive visual web dashboard.
+
+### 🚀 Launching the Dashboard
+
+Explore the graph in your browser with zero build steps or LLM requirements:
+
+```bash
+# Launch the standalone visualizer for Auto-Meds:
+npx https://github.com/Egonex-AI/Understand-Anything/releases/latest/download/understand-anything-viewer.tgz .
+```
+
+*The viewer starts a local server on `http://127.0.0.1:5173`, prints a secure tokenized URL, and opens the visual dashboard.*
+
+### 🔍 Knowledge Graph Metrics & Layers
+
+| Dimension | Details |
+| :--- | :--- |
+| **Graph Scale** | **310 Nodes & 271 Edges** across 288 analyzed project files (Java Spring Boot, Angular 16, Liquibase migrations, Docker/Nginx infra, and documentation). |
+| **9 Architectural Layers** | **1. Ingress & Reverse Proxy** (NGINX, Docker Compose)<br/>**2. Frontend Presentation** (Angular SPA, Patient & Admin Portals)<br/>**3. Frontend Reactive Services** (HTTP clients, SSE bus, JWT interceptor, Auth guards)<br/>**4. Security Filter Chain** (Correlation ID MDC, Token-Bucket Rate Limiter, JWT Filter)<br/>**5. REST API & Controllers** (Spring Controllers, DTOs, and REST Endpoints)<br/>**6. Domain Business Services** (2-tier inventory soft-lock engine, DDI checker, Twilio WhatsApp)<br/>**7. Schedulers & Workers** (Distributed ShedLock refill cron, async OCR thread pools)<br/>**8. Persistence & Data Tier** (PostgreSQL 16, Liquibase migrations 01-09, JPA repositories, entities)<br/>**9. DevOps & Documentation** (AWS EC2 setup runbooks, Docker, traffic flow docs) |
+| **6 Interactive Guided Tours** | **Tour 1**: Ingress & Edge Proxying (NGINX to Undertow :8080)<br/>**Tour 2**: Security Interceptor & JWT Filter Chain<br/>**Tour 3**: Prescription Upload & OCR Triage Flow<br/>**Tour 4**: 2-Tier Inventory Engine & 5-Day Soft-Locking<br/>**Tour 5**: ShedLock 5-Day Refill & Twilio Interactive Flow<br/>**Tour 6**: Frontend Reactive State & Real-Time SSE Bus |
+| **Offline Graph Data** | Persisted locally in [`.ua/knowledge-graph.json`](.ua/knowledge-graph.json) and verifiable via `ua-inline-validate`. |
+
+---
+
 ## 🔄 Autonomous Chronic Refill Lifecycle (6-Phase Coordinated Engine)
 
 Auto-Meds eliminates medication therapy drop-offs for chronic illnesses (hypertension, diabetes, cardiovascular care) through a closed-loop **6-Phase Refill Lifecycle** coordinated between the distributed background scheduler, inventory soft-locking engine, caregiver communication bus, and pharmacist fulfillment desk:
@@ -194,6 +222,7 @@ sequenceDiagram
 | **Caching & Scheduling** | Caffeine Cache, ShedLock (Distributed lock over JDBC) |
 | **Asynchronous & Realtime** | Spring `@Async` ThreadPoolTaskExecutor, Server-Sent Events (`SseEmitter`) |
 | **Integrations** | Twilio SMS API, Tesseract OCR Engine, JavaMailSender SMTP |
+| **Architecture & Visual Graph** | Egonex-AI Understand-Anything Multi-Agent Knowledge Graph (`.ua`), Interactive Web Canvas |
 | **DevOps & Containers** | Docker (Multi-stage build), Docker Compose, NGINX Alpine Reverse Proxy |
 
 ---
