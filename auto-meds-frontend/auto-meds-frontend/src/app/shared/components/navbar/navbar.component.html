@@ -96,8 +96,22 @@
         </li>
       </ul>
 
-      <!-- Right Nav Buttons (Cart, User Profile Dropdown, Login/Register) -->
+      <!-- Right Nav Buttons (Font Scale, Cart, User Profile Dropdown, Login/Register) -->
       <ul class="navbar-nav ms-auto align-items-center gap-1.5 flex-row">
+        <!-- Accessibility Font-Size Scaling Switcher (WCAG 1.4.4 Resize Text) -->
+        <li class="nav-item me-1">
+          <button (click)="toggleFontSize()" 
+                  type="button" 
+                  class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1 font-scale-btn shadow-none"
+                  [attr.aria-label]="'Change text size. Current: ' + currentFontSize"
+                  title="Adjust text size for better readability (Normal / Large / Extra Large)">
+            <i class="bi bi-fonts fs-6 text-primary"></i>
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 11px;">
+              {{ currentFontSize === 'normal' ? 'A' : (currentFontSize === 'large' ? 'A+' : 'A++') }}
+            </span>
+          </button>
+        </li>
+
         <!-- Patient Cart Icon Button -->
         <li class="nav-item me-1" *ngIf="authService.isPatient()">
           <a class="nav-link position-relative cart-icon-btn p-0" routerLink="/cart" title="Shopping Cart">

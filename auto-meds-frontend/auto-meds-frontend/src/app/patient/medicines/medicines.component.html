@@ -64,77 +64,83 @@
     <div class="col-md-6 col-lg-4" *ngFor="let med of medicines">
       <div class="card card-pharma h-100 bg-white shadow-sm border-0 d-flex flex-column">
         <div class="card-body p-4 d-flex flex-column">
-          <!-- Top Row: Title & Brand -->
-          <div class="mb-2">
+          <!-- 1. Header: Medicine Name & Manufacturer ("by XYZ") -->
+          <div class="mb-3">
             <h5 class="fw-bold text-dark mb-1">{{ med.medicineName }}</h5>
-            <span class="badge-brand">{{ med.brandName }}</span>
+            <div class="text-muted small">
+              by <span class="fw-semibold text-secondary">{{ med.manufacturer || med.brandName || 'Standard Pharmaceuticals' }}</span>
+            </div>
           </div>
 
-          <!-- Formula Details Box -->
-          <div class="bg-light p-3 rounded-3 my-3 border small">
-            <div class="d-flex justify-content-between mb-1">
-              <span class="text-muted">Composition:</span>
+          <!-- 2. Composition & Strength Spec Box -->
+          <div class="bg-light p-3 rounded-3 mb-3 border small">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Composition</span>
               <strong class="text-dark">{{ med.composition }}</strong>
             </div>
-            <div class="d-flex justify-content-between mb-1">
-              <span class="text-muted">Strength:</span>
-              <strong class="text-dark">{{ med.strength }}</strong>
-            </div>
             <div class="d-flex justify-content-between">
-              <span class="text-muted">Manufacturer:</span>
-              <span class="text-muted">{{ med.manufacturer || 'Standard Pharma' }}</span>
+              <span class="text-muted">Strength</span>
+              <strong class="text-dark">{{ med.strength }}</strong>
             </div>
           </div>
 
-          <!-- Symptoms Tags -->
-          <div *ngIf="med.symptoms" class="d-flex flex-wrap gap-1 mb-2">
-            <span *ngFor="let sym of med.symptoms.split(',')" class="badge bg-light text-muted border" style="font-size: 10px;">
-              <i class="bi bi-tag-fill text-primary opacity-50 me-1"></i>{{ sym.trim() }}
+          <!-- 3. Symptoms / Category Tags (e.g. Diabetes • Type 2 Diabetes) -->
+          <div *ngIf="med.symptoms || med.category" class="d-flex flex-wrap align-items-center gap-1 mb-3">
+            <span *ngIf="med.category" class="badge bg-light text-primary border me-1 small">
+              {{ med.category }}
+            </span>
+            <span *ngFor="let sym of (med.symptoms ? med.symptoms.split(',') : []) | slice:0:3" 
+                  class="badge bg-light text-muted border small">
+              • {{ sym.trim() }}
             </span>
           </div>
 
-          <!-- Generic Savings Visualizer Badge -->
+          <!-- 4. Generic Savings Callout Box (🐷 Save 25% with generic | [View]) -->
           <div *ngIf="med.genericSavingsText" class="generic-savings-badge p-2 px-3 rounded-3 mb-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-piggy-bank-fill text-success fs-5"></i>
-              <div>
-                <strong class="text-success small d-block">Generic Smart-Save</strong>
-                <span class="text-dark small" style="font-size: 11px;">{{ med.genericSavingsText }}</span>
-              </div>
+              <span class="fs-5" role="img" aria-label="Savings">🐷</span>
+              <span class="fw-bold text-success small">{{ med.genericSavingsText }}</span>
             </div>
             <button *ngIf="med.genericAlternativeId" 
                     (click)="switchToGeneric(med.genericAlternativeId)" 
-                    class="btn btn-sm btn-success rounded-pill px-2 py-1 fw-bold text-nowrap" 
-                    style="font-size: 11px;">
-              View Generic
+                    class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 fw-bold text-nowrap" 
+                    style="font-size: 12px;">
+              [View]
             </button>
           </div>
 
-          <!-- Price (No stock status or counts on patient view) -->
-          <div class="mb-3">
-            <span class="text-muted small">Price: </span>
-            <span class="price-tag">₹{{ med.price }}</span>
-          </div>
+          <!-- 5. Footer: Price & Action Buttons ([Add] [Subscribe]) -->
+          <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between">
+            <!-- Price Display -->
+            <div class="d-flex align-items-baseline">
+              <span class="fw-bold fs-4 text-dark">₹{{ med.price }}</span>
+            </div>
 
-          <!-- Action Buttons -->
-          <div class="mt-auto pt-3 border-top d-flex flex-column gap-2">
-            <!-- Add to Cart (Auto-disabled if medicine is out of stock) -->
-            <button (click)="addToCart(med)" 
-                    [disabled]="!isMedicineInStock(med)"
-                    class="btn w-100 fw-semibold" 
-                    [ngClass]="isMedicineInStock(med) ? 'btn-outline-primary' : 'btn-secondary text-muted opacity-75'"
-                    [title]="isMedicineInStock(med) ? 'Add to Cart' : 'Currently Unavailable'">
-              <i [ngClass]="isMedicineInStock(med) ? 'bi bi-cart-plus me-1' : 'bi bi-cart-x me-1'"></i>
-              {{ isMedicineInStock(med) ? 'Add to Cart' : 'Add to Cart (Unavailable)' }}
-            </button>
+            <!-- Action Buttons Group -->
+            <div class="d-flex align-items-center gap-2">
+              <!-- Add to Cart Button -->
+              <button (click)="addToCart(med)" 
+                      [disabled]="!isMedicineInStock(med)"
+                      class="btn btn-sm px-3 py-2 fw-semibold" 
+                      [ngClass]="isMedicineInStock(med) ? 'btn-outline-primary' : 'btn-light text-muted border'"
+                      [title]="isMedicineInStock(med) ? 'Add to Cart' : 'Currently Unavailable'">
+                <i class="bi bi-cart-plus me-1"></i> Add
+              </button>
 
-            <!-- Secondary Actions -->
-            <button *ngIf="isMedicineInStock(med)" (click)="navigateToSubscribe(med.id)" class="btn btn-pharma-primary w-100">
-              <i class="bi bi-arrow-repeat me-1"></i> Subscribe
-            </button>
-            <button *ngIf="!isMedicineInStock(med)" (click)="openAlternativesModal(med)" class="btn btn-warning text-dark w-100 fw-bold">
-              <i class="bi bi-search me-1"></i> Find Alternatives
-            </button>
+              <!-- Subscribe Button -->
+              <button *ngIf="isMedicineInStock(med)" 
+                      (click)="navigateToSubscribe(med.id)" 
+                      class="btn btn-sm btn-pharma-primary px-3 py-2 fw-semibold">
+                <i class="bi bi-arrow-repeat me-1"></i> Subscribe
+              </button>
+
+              <!-- Out of Stock Alternative Action -->
+              <button *ngIf="!isMedicineInStock(med)" 
+                      (click)="openAlternativesModal(med)" 
+                      class="btn btn-sm btn-warning text-dark px-3 py-2 fw-bold">
+                Alternatives
+              </button>
+            </div>
           </div>
         </div>
       </div>

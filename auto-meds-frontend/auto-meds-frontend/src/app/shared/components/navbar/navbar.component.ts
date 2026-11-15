@@ -14,6 +14,7 @@ export class NavbarComponent implements OnInit {
   currentUser: AuthResponse | null = null;
   cartItemCount: number = 0;
   unreadNotificationCount: number = 0;
+  currentFontSize: 'normal' | 'large' | 'xlarge' = 'normal';
 
   constructor(
     public authService: AuthService,
@@ -23,6 +24,11 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Restore saved font-size preference
+    const savedSize = localStorage.getItem('automeds_font_size') as 'normal' | 'large' | 'xlarge' | null;
+    if (savedSize && ['normal', 'large', 'xlarge'].includes(savedSize)) {
+      this.setFontSize(savedSize, false);
+    }
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
@@ -77,5 +83,28 @@ export class NavbarComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  setFontSize(size: 'normal' | 'large' | 'xlarge', persist: boolean = true): void {
+    this.currentFontSize = size;
+    const htmlEl = document.documentElement;
+    if (size === 'normal') {
+      htmlEl.removeAttribute('data-font-size');
+    } else {
+      htmlEl.setAttribute('data-font-size', size);
+    }
+    if (persist) {
+      localStorage.setItem('automeds_font_size', size);
+    }
+  }
+
+  toggleFontSize(): void {
+    if (this.currentFontSize === 'normal') {
+      this.setFontSize('large');
+    } else if (this.currentFontSize === 'large') {
+      this.setFontSize('xlarge');
+    } else {
+      this.setFontSize('normal');
+    }
   }
 }

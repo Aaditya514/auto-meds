@@ -17,6 +17,7 @@
     <strong>An enterprise-grade, compliance-driven E-Pharmacy platform automating maintenance medication cycles, clinical prescription verification, real-time inventory soft-locking, and caregiver delegation — with built-in WCAG AA accessibility for elderly patients.</strong>
   </p>
 
+  [Product Docs (PM/TPM)](#-product-management--architecture-documentation) •
   [Features](#-key-features) •
   [Architecture](#-system-architecture) •
   [Knowledge Graph](#-interactive-codebase-knowledge-graph) •
@@ -29,6 +30,21 @@
   [Demo Credentials](#-demo-credentials)
 
 </div>
+
+---
+
+## 📚 Product Management & Architecture Documentation
+
+For Technical Program Managers (TPMs), Product Managers, Clinical Leads, and Recruiters evaluating system requirements, clinical workflows, and trade-offs:
+
+| Document | Focus Area | Description |
+| :--- | :--- | :--- |
+| [📋 `PRODUCT_OVERVIEW.md`](docs/PRODUCT_OVERVIEW.md) | **Product Strategy** | Problem space, target clinical cohorts, value pillars, MVP planned scope vs. boundaries, and healthcare KPIs. |
+| [👥 `USER_NEEDS_AND_STORIES.md`](docs/USER_NEEDS_AND_STORIES.md) | **Requirements Engineering** | Real persona breakdowns and Agile user stories with clear acceptance criteria across iterative epics. |
+| [🔄 `USER_FLOWS.md`](docs/USER_FLOWS.md) | **Interaction & Systems Design** | Native GitHub Mermaid diagrams for the 6-phase refill stepper, SMS verification, pharmacist triaging, and FEFO inventory restocking. |
+| [🗺️ `PRODUCT_ROADMAP.md`](docs/PRODUCT_ROADMAP.md) | **Agile Product Roadmap** | Incremental Agile delivery progression from Base Model (Walking Skeleton) through 5 progressive 2-3 feature iterations. |
+| [⚖️ `FEATURE_PRIORITIZATION.md`](docs/FEATURE_PRIORITIZATION.md) | **Agile Prioritization** | RICE scoring matrix mapped to Agile release slices, clinical risk gating, and architectural evaluation debates. |
+| [📓 `DECISION_LOG.md`](docs/DECISION_LOG.md) | **Architecture Decision Records** | 8 formal pre-build ADRs evaluating trade-offs (e.g., Two-Tier Soft-Locking, Undertow, Caffeine, ShedLock, Async OCR, SSE). |
 
 ---
 
